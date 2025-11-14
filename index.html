@@ -1424,6 +1424,7 @@
           this.lastState = null; // 用于比较状态
           this.localPlayerId = null;
           this.highlightCards = new Set();
+          this.isSpectating = false; // *** 新增: 观战状态锁 ***
 
           // 绑定加注滑块
           document.getElementById("raise-slider").oninput = () => {
@@ -1570,8 +1571,12 @@
           // 9. 游戏结束画面
           // *** 修复: (请求 #4) 检查逻辑 ***
           const screen = document.getElementById("game-over-screen");
-          if (localPlayer && screen.classList.contains("hidden")) {
-            // Only trigger if hidden
+          
+          // *** 修复: 添加 !this.isSpectating 检查，防止观战时重复弹出 ***
+          if (localPlayer && screen.classList.contains("hidden") && !this.isSpectating) {
+            // Only trigger if hidden AND not spectating
+            // *** 结束修复 ***
+            
             // *** 修改: (请求 #1) 游戏结束现在是 'waiting' 状态 ***
             // const isGameFinished = (state.status === 'finished'); // 旧逻辑
             // 现在的 "游戏结束" 是指 "我被淘汰了"
@@ -1625,6 +1630,11 @@
           // 10. *** 新增: 等待室 UI ***
           const waitOverlay = document.getElementById("waiting-room-overlay");
           if (state.status === "waiting") {
+            // *** 修复: 如果游戏回到等待室, 重置观战状态 ***
+            if (this.isSpectating) {
+                this.isSpectating = false;
+            }
+            // *** 结束修复 ***
             waitOverlay.classList.remove("hidden");
             network.updateWaitingRoomUI(state, localId); // *** 修复: 改为调用 network.updateWaitingRoomUI ***
           } else {
@@ -1996,6 +2006,7 @@
         // *** 修复: (请求 #4) 修正函数位置，移到 GameUIManager 内部 ***
         spectate(isGameFinished) {
           document.getElementById("game-over-screen").classList.add("hidden");
+          this.isSpectating = true; // *** 新增: 激活观战锁 ***
           if (isGameFinished) {
             this.showMessage("游戏已结束。等待房主重新开始...");
           } else {
