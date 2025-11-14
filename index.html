@@ -872,45 +872,35 @@
 
         const playersWithChips = activePlayers.filter((p) => p.chips > 0);
 
-        // 检查是否所有人都跟注了
-        const isBetsMatched = activePlayers.every(
-          (p) =>
-            p.chips === 0 || // All-in 玩家
-            p.currentBet === newState.currentMaxBet || // 已跟注
-            p.folded // 已弃牌
-        );
+        // --- 修复: 移植 读博.html 的 "isRoundComplete" 逻辑 ---
+        // (删除旧的 isBetsMatched, allActed, bigBlindHadOption)
+        const isRoundComplete = activePlayers.every(p => {
+            const isAllIn = p.chips === 0 && !p.folded; // 必须是 all-in 且未弃牌
+            const matchBet = p.currentBet === newState.currentMaxBet; 
+            const hasActed = newState.playersActed.includes(p.uid);
 
-        // 检查是否所有人都行动了
-        const allActed = activePlayers.every(
-          (p) =>
-            p.chips === 0 || // All-in
-            p.folded || // 弃牌
-            newState.playersActed.includes(p.uid) // 已行动
-        );
-
-        // 特殊情况：大盲注 "Option"
-        // (在 preflop 且无人加注时, 大盲注是最后行动)
-        let bigBlindHadOption = true;
-        if (
-          newState.phase === "preflop" &&
-          newState.currentMaxBet === BIG_BLIND
-        ) {
-          const bbIndex =
-            (newState.dealerIndex + 2) % newState.playerOrder.length;
-          const bbPlayerId = newState.playerOrder[bbIndex];
-          if (!newState.playersActed.includes(bbPlayerId)) {
-            bigBlindHadOption = false; // 大盲注还未行动
-          }
-        }
+            if (isAllIn) return true; // All-in 玩家被视为 "已完成"
+            
+            // 检查大盲注 'option'
+            if (newState.phase === 'preflop' && newState.currentMaxBet === BIG_BLIND) {
+                const bbIndex = (newState.dealerIndex + 2) % newState.playerOrder.length;
+                const bbPlayerId = newState.playerOrder[bbIndex];
+                if (p.uid === bbPlayerId && !hasActed) {
+                     return false; // 大盲注玩家尚未行动
+                }
+            }
+            return hasActed && matchBet; // 其他玩家必须已行动且匹配
+        });
+        // --- 修复结束 ---
 
         // --- 检查1: 是否只剩一个赢家 (其他人全弃牌) ---
         if (activePlayers.length === 1) {
           newState = advanceToShowdown(newState, activePlayers[0]); // 传入唯一赢家
         }
         // --- 检查3: 是否自动摊牌 (多人All-in) ---
-        // *** 修正: 必须在 "检查2" 之前检查 ***
+        // (playersWithChips <= 1 确保了 all-in)
         else if (
-          isBetsMatched &&
+          isRoundComplete && // 使用新逻辑
           playersWithChips.length <= 1 &&
           newState.phase !== "showdown"
         ) {
@@ -919,25 +909,35 @@
           newState = runAutoShowdown(newState);
         }
         // --- 检查2: 是否进入下一阶段 ---
-        else if (isBetsMatched && allActed && bigBlindHadOption) {
+        else if (isRoundComplete) {
           // 回合结束，进入下一阶段 (flop, turn, river, showdown)
           newState = advanceToNextPhase(newState);
         }
         // --- 检查4: 轮到下一个人 ---
         else {
           // 循环找到下一个未弃牌、未All-in的玩家
+          // (移植 读博.html 的 nextTurn 查找逻辑)
           let loops = 0;
           do {
             newState.currentPlayerIndex =
               (newState.currentPlayerIndex + 1) % newState.playerOrder.length;
+            
             const nextPlayerId =
               newState.playerOrder[newState.currentPlayerIndex];
             const nextPlayer = newState.players[nextPlayerId];
-            if (!nextPlayer.folded && nextPlayer.chips > 0) {
-              break; // 找到了
+            
+            const hasActed = newState.playersActed.includes(nextPlayerId);
+            const isAllIn = nextPlayer.chips === 0;
+
+            // 跳过: 弃牌的, 或者 (All-in 且 已行动) 的
+            if (nextPlayer.folded || (isAllIn && hasActed)) {
+                loops++;
+                continue; // 跳过这个玩家
             }
-            loops++;
-          } while (loops <= newState.playerOrder.length);
+
+            break; // 找到了
+            
+          } while (loops <= newState.playerOrder.length * 2); // 增加循环保护
         }
 
         // 7. 处理 All-in 特效 (注意：这是客户端逻辑，但我们需要一个标记)
