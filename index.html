@@ -1123,80 +1123,139 @@
             newState.highlightCards = new Set(); // 用于高亮获胜卡牌
 
             // 4c. 逐级计算边池
-            for (let i = 0; i < betLevels.length; i++) {
-              const lowBet = betLevels[i];
-              // highBet 是下一个级别，或者是无穷大
-              const highBet =
-                i === betLevels.length - 1 ? Infinity : betLevels[i + 1];
+            // --- 全新边池/退款逻辑 (修复Bug) ---
+            // 我们需要一个循环来不断创建彩池, 直到所有的赌注都分配完毕
+            while (true) {
+              // 1. 找出所有 *仍有* 赌注 (accumulatedBet > 0) 的玩家 (包括已弃牌)
+              let contributingPlayers = allPlayers.filter(
+                (p) => p.accumulatedBet > 0
+              );
 
-              // 1. 计算这个池有多少钱
+              // 2. 找出所有 *未弃牌* 且 *仍有* 赌注的玩家 (他们是这个彩池的潜在赢家)
+              let eligiblePlayers = activePlayers.filter(
+                (p) => p.accumulatedBet > 0
+              );
+
+              // --- 检查循环结束条件 ---
+
+              // 2a. 如果没有任何玩家有赌注了, 结束
+              if (contributingPlayers.length === 0) {
+                break;
+              }
+
+              // 2b. 如果 *有* 赌注, 但 *没有* 未弃牌的玩家 (例如, 所有人all-in, 一个人弃牌, 钱算错了)
+              // 这种情况理论上不该发生, 但作为保险, 退还所有剩余赌注
+              if (eligiblePlayers.length === 0) {
+                winnerLogs.push("--- 错误: 发现无人有资格的赌注, 正在退款 ---");
+                contributingPlayers.forEach((p) => {
+                  newState.players[p.uid].chips += p.accumulatedBet;
+                  winnerLogs.push(`${p.name} 获得退款 $${p.accumulatedBet}`);
+                  p.accumulatedBet = 0;
+                });
+                break;
+              }
+
+              // 2c. (Bug 2 修复: 退款)
+              // 如果 *有* 赌注的玩家中, 只有一个人是 *未弃牌* 的 (eligiblePlayers.length === 1),
+              // 那么这个彩池就是他自己的钱 (和可能来自已弃牌玩家的钱)
+              // 或者是, *总共* 只有一个人还有赌注 (contributingPlayers.length === 1)
+              // 这两种情况都意味着这是最后一笔钱, 应该退款或判赢
+              if (eligiblePlayers.length === 1) {
+                let soleEligiblePlayer = eligiblePlayers[0];
+                let potAmount = 0;
+
+                contributingPlayers.forEach((p) => {
+                  potAmount += p.accumulatedBet;
+                  p.accumulatedBet = 0;
+                });
+
+                if (potAmount > 0) {
+                  // 如果唯一的玩家是 Player B (bet 500), 且 Player A (bet 100) 已经处理完
+                  // 此时 contributingPlayers 只有 [B (bet 400)], eligiblePlayers 只有 [B (bet 400)]
+                  // 这 400 应该退还
+                  // (Bug 1 修复: 只有两个玩家时, 这就是退款, 不叫 "边池")
+                  if (
+                    contributingPlayers.length === 1 &&
+                    eligiblePlayers.length === 1
+                  ) {
+                    winnerLogs.push(
+                      `${soleEligiblePlayer.name} 获得退款 $${potAmount}`
+                    );
+                  } else {
+                    // 如果 Player C (弃牌) 也有 100, B 拿走 C 的 100
+                    winnerLogs.push(
+                      `${soleEligiblePlayer.name} 赢得 $${potAmount} (无人跟注)`
+                    );
+                  }
+                  newState.players[soleEligiblePlayer.uid].chips += potAmount;
+                }
+                break; // 结束
+              }
+
+              // --- 正常彩池计算 (有 >= 2 个未弃牌玩家) ---
+
+              // 3. 找到 *未弃牌* 玩家中的最小赌注, 这定义了当前彩池的级别
+              let potLevel = Math.min(
+                ...eligiblePlayers.map((p) => p.accumulatedBet)
+              ); // e.g., 100
+
+              if (potLevel === 0) break; // 不应该发生, 但作为保险
+
               let potAmount = 0;
-              // 遍历 *所有* 玩家 (包括已弃牌的) 累加
-              allPlayers.forEach((p) => {
-                if (p.accumulatedBet > lowBet) {
-                  potAmount += Math.min(p.accumulatedBet, highBet) - lowBet;
+
+              // 4. 从 *所有* 有赌注的玩家那里收取
+              contributingPlayers.forEach((p) => {
+                let contribution = Math.min(p.accumulatedBet, potLevel);
+                potAmount += contribution;
+                p.accumulatedBet -= contribution; // 减去已贡献的
+              });
+
+              if (potAmount === 0) continue; // 没钱, 跳过
+
+              // 5. 从 eligiblePlayers (有资格的) 中找出赢家
+              let bestScore = -1;
+              let winners = [];
+              let winHandName = "";
+
+              eligiblePlayers.forEach((p) => {
+                if (p.bestHand.score > bestScore) {
+                  bestScore = p.bestHand.score;
+                  winners = [p];
+                  winHandName = p.bestHand.name;
+                } else if (Math.abs(p.bestHand.score - bestScore) < 0.1) {
+                  winners.push(p);
                 }
               });
 
-              if (potAmount === 0) continue; // 这个池没钱，跳过
+              // 6. 分钱
+              const winPer = Math.floor(potAmount / winners.length);
+              let remainder = potAmount % winners.length;
 
-              // 2. 找出有资格赢这个池的玩家
-              // (必须是 *未弃牌* 且 *下注额* 至少达到 lowBet 的下一个级别，即 highBet 或 lowBet以上)
-              // *** 修复: 筛选 activePlayers (未弃牌) ***
-              let contributors = activePlayers.filter(
-                (p) => p.accumulatedBet > lowBet
+              // (Bug 1 修复: 只有两个玩家时, 不应该叫 "边池")
+              const potName = "彩池";
+              let winnerNames = winners.map((w) => w.name).join(", ");
+              winnerLogs.push(
+                `${potName}($${potAmount}): ${winnerNames} 获胜 (${winHandName})`
               );
 
-              if (contributors.length > 0) {
-                // 3. 从有资格的人中找出赢家
-                let bestScore = -1;
-                let winners = [];
-                let winHandName = "";
+              winners.forEach((w, index) => {
+                let winnings = winPer;
+                if (remainder > 0) {
+                  winnings++;
+                  remainder--;
+                }
+                newState.players[w.uid].chips += winnings;
+                newState.highlightWinner = w.uid; // 高亮
+                if (w.bestHand.bestCards) {
+                  w.bestHand.bestCards.forEach((c) =>
+                    newState.highlightCards.add(c.id)
+                  );
+                }
+              });
 
-                contributors.forEach((p) => {
-                  if (p.bestHand.score > bestScore) {
-                    bestScore = p.bestHand.score;
-                    winners = [p];
-                    winHandName = p.bestHand.name;
-                  } else if (Math.abs(p.bestHand.score - bestScore) < 0.1) {
-                    winners.push(p);
-                  }
-                });
-
-                // 4. 分钱
-                const winPer = Math.floor(potAmount / winners.length);
-                // 确保整除导致的余数被分配
-                let remainder = potAmount % winners.length;
-
-                const potName = i === 0 ? "主池" : `边池${i}`;
-                let winnerNames = winners.map((w) => w.name).join(", ");
-                winnerLogs.push(
-                  `${potName}($${potAmount}): ${winnerNames} 获胜 (${winHandName})`
-                );
-
-                winners.forEach((w, index) => {
-                  let winnings = winPer;
-                  if (remainder > 0) {
-                    winnings++;
-                    remainder--;
-                  }
-                  newState.players[w.uid].chips += winnings;
-                  newState.highlightWinner = w.uid; // 高亮
-                  // 高亮获胜牌
-                  if (w.bestHand.bestCards) {
-                    w.bestHand.bestCards.forEach((c) =>
-                      newState.highlightCards.add(c.id)
-                    );
-                  }
-                });
-
-                // 5. AI 语音 (输家)
-                let losers = contributors.filter((p) => !winners.includes(p));
-                losers.forEach((l) => {
-                  // *** 移除: AI 语音触发 ***
-                });
-              }
+              // 循环继续, 处理下一轮 (e.g., Player B 剩下的 400)
             }
+            // --- 边池逻辑结束 ---
 
             // 将 Set 转换为数组以便
             newState.highlightCards = Array.from(newState.highlightCards);
