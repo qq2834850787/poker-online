@@ -997,6 +997,7 @@
                 this.lastState = null; // 用于比较状态
                 this.localPlayerId = null;
                 this.highlightCards = new Set();
+                this.hasAcknowledgedElimination = false; // *** BUGFIX: 添加淘汰确认标记 ***
                 
                 // 绑定加注滑块
                 document.getElementById('raise-slider').oninput = () => {
@@ -1126,26 +1127,28 @@
                 
 
                 // 9. 游戏结束画面
-                // *** 修复: (请求 #4) 检查逻辑 ***
                 const screen = document.getElementById('game-over-screen');
+                // *** BUGFIX: 检查 localPlayer 是否存在 ***
                 if (localPlayer && screen.classList.contains('hidden')) { // Only trigger if hidden
-                    // *** 修改: (请求 #1) 游戏结束现在是 'waiting' 状态 ***
-                    // const isGameFinished = (state.status === 'finished'); // 旧逻辑
-                    // 现在的 "游戏结束" 是指 "我被淘汰了"
                     const isEliminated = (localPlayer.status === '淘汰' && localPlayer.chips === 0);
-                    
-                    // *** 修改: (请求 #1) 游戏冠军现在在 'waiting' 状态下判断 ***
                     const isChampion = (state.status === 'waiting' && state.highlightWinner === localId && state.logs[state.logs.length-2].includes("游戏结束"));
 
                     if (isChampion) {
-                        // Game just finished, and I am the champion.
                         this.showGameOver(true, true, localPlayer); // (isWin, isGameFinished, player)
+                        this.hasAcknowledgedElimination = false; // 重置
                     } else if (isEliminated && state.status === 'playing') {
-                        // Game is ongoing, but I am out.
-                        this.showGameOver(false, false, localPlayer); // (isWin=false, isGameFinished=false, player)
+                        // 游戏进行中，但我破产了
+                        
+                        // *** BUGFIX: 检查是否已确认淘汰 ***
+                        if (!this.hasAcknowledgedElimination) {
+                             this.showGameOver(false, false, localPlayer); // (isWin=false, isGameFinished=false, player)
+                             this.hasAcknowledgedElimination = true; // 标记为已显示
+                        }
+                        
                     } else if (isEliminated && state.status === 'waiting') {
-                         // Game finished, but I lost earlier.
+                         // 游戏结束了，但我之前就输了
                          this.showGameOver(false, true, localPlayer); // (isWin=false, isGameFinished=true, player)
+                         this.hasAcknowledgedElimination = false; // 重置
                     }
                 }
                 
@@ -1165,12 +1168,16 @@
                                     screen.classList.add('hidden');
                                     this.showMessage("游戏结束，等待房主重新开始...");
                                 }
+                                // *** BUGFIX: 重置确认状态 ***
+                                this.hasAcknowledgedElimination = false;
                             }, 4000); // 延迟4秒隐藏
                         }
                         
                     } else {
                         // 如果不是游戏结束（例如玩家刚加入），立即隐藏
                          screen.classList.add('hidden');
+                         // *** BUGFIX: 玩家刚加入时也重置 ***
+                         this.hasAcknowledgedElimination = false;
                     }
                 }
                 
@@ -1816,6 +1823,9 @@
                 this.currentRoomId = null;
                 if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
                 if (this.nextPhaseTimeout) clearTimeout(this.nextPhaseTimeout); // *** 新增: 清除计时器 ***
+                
+                // *** BUGFIX: 重置 gameUI 状态 ***
+                this.gameUI.hasAcknowledgedElimination = false;
                 
                 document.getElementById('game-area').classList.add('hidden');
                 document.getElementById('game-over-screen').classList.add('hidden');
