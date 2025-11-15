@@ -574,44 +574,29 @@
       </div>
 
       <!-- *** 新增: 等待室遮罩 (用于显示玩家列表和 AI 控制) *** -->
-      <div
+<div
         id="waiting-room-overlay"
-        class="hidden absolute top-0 left-0 w-full h-full bg-gray-900 bg-opacity-90 z-40 flex flex-col items-center justify-center p-8"
+        class="hidden absolute top-0 left-0 w-full h-full z-40 flex flex-col items-center justify-center pointer-events-none"
       >
-        <div
-          class="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700 w-full max-w-md"
-        >
-          <h2 class="text-2xl font-bold text-yellow-500 mb-4 text-center">
-            等待中...
-          </h2>
-          <p id="wait-message" class="text-gray-400 text-sm text-center mb-4">
-            等待房主开始游戏
-          </p>
-
-          <div class="mb-4">
-            <label class="block text-gray-400 mb-2 text-sm font-bold"
-              >房间内玩家 (<span id="wait-player-count">0</span>/10)</label
-            >
-            <div
-              id="wait-player-list"
-              class="max-h-48 overflow-y-auto bg-gray-900 p-3 rounded-md border border-gray-700 space-y-2"
-            >
-              <!-- 玩家列表将在这里动态生成 -->
-            </div>
-          </div>
-
-          <!-- 仅房主可见 -->
-          <div id="wait-host-controls" class="hidden flex flex-col space-y-3">
-            <!-- *** 移除: AI 按钮 *** -->
-            <button
-              id="btn-start-game"
-              onclick="network.startGame()"
-              class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-5 rounded-lg shadow-lg border-b-4 border-green-800 active:border-b-0 active:translate-y-1"
-            >
-              开始游戏
-            </button>
-          </div>
+        <div id="wait-host-controls" class="hidden pointer-events-auto transition-transform duration-300 hover:scale-105">
+          <button
+            id="btn-start-game"
+            onclick="network.startGame()"
+            class="bg-gradient-to-b from-red-500 to-red-700 hover:from-red-400 hover:to-red-600 text-white font-black text-3xl py-6 px-16 rounded-full shadow-[0_0_40px_rgba(220,38,38,0.6)] border-4 border-red-900 active:scale-95 transition-all tracking-widest uppercase"
+          >
+            开始游戏
+          </button>
         </div>
+
+        <p 
+            id="wait-message" 
+            class="mt-8 text-yellow-400 font-bold text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] pointer-events-auto bg-black/40 px-6 py-2 rounded-lg backdrop-blur-sm border border-white/10"
+        >
+            等待房主开始...
+        </p>
+
+        <div id="wait-player-list" class="hidden"></div>
+        <span id="wait-player-count" class="hidden"></span>
       </div>
       <!-- *** 结束新增 *** -->
     </div>
@@ -2113,55 +2098,43 @@
           }
         }
 
-        // --- 新增: 更新等待室 UI ---
         updateWaitingRoomUI(state, localId) {
-          const listEl = document.getElementById("wait-player-list");
+          // 获取元素
           const hostControls = document.getElementById("wait-host-controls");
           const btnStartGame = document.getElementById("btn-start-game");
-          const playerCountEl = document.getElementById("wait-player-count");
           const waitMessage = document.getElementById("wait-message");
 
-          listEl.innerHTML = ""; // 清空
-          // *** 修改: (请求 #1) playerOrder 现在包含所有人 ***
           const playerCount = state.playerOrder.length;
-          playerCountEl.innerText = playerCount;
-
-          // *** 修改: (请求 #1) 遍历 playerOrder 来保证顺序 ***
-          state.playerOrder.forEach((uid) => {
-            const p = state.players[uid];
-            if (!p) return; // 以防万一
-
-            const pEl = document.createElement("div");
-            pEl.className =
-              "text-gray-300 text-sm flex justify-between items-center bg-gray-700 p-2 rounded";
-
-            let icon = p.uid === state.hostId ? "👑" : "👤";
-            let name = p.name;
-            if (p.uid === localId) name = `${name} (你)`;
-
-            pEl.innerHTML = `<span>${icon} ${name}</span>`;
-
-            // *** 移除: AI 移除按钮 ***
-            listEl.appendChild(pEl);
-          });
 
           // 切换房主控件
           if (state.hostId === localId) {
+            // --- 如果我是房主 ---
             hostControls.classList.remove("hidden");
-            waitMessage.innerText = "你是房主，等人齐后请开始游戏。";
-
-            // *** 移除: AI 按钮检查 ***
-
+            
+            // 检查人数是否足够
             if (playerCount < 2) {
-              btnStartGame.classList.add("btn-disabled");
-              btnStartGame.innerText = `开始游戏 (至少2人)`;
+              // 人数不足：按钮变灰，不可点击
+              btnStartGame.classList.add("grayscale", "cursor-not-allowed");
+              btnStartGame.classList.remove("hover:scale-105", "active:scale-95");
+              btnStartGame.innerText = `等待玩家 (${playerCount}/10)`;
+              btnStartGame.onclick = null; // 临时禁用点击
+              waitMessage.innerText = "至少需要 2 人才能开始...";
             } else {
-              btnStartGame.classList.remove("btn-disabled");
-              btnStartGame.innerText = `开始游戏 (${playerCount}人)`;
+              // 人数足够：按钮变亮，可以点击
+              btnStartGame.classList.remove("grayscale", "cursor-not-allowed");
+              btnStartGame.classList.add("hover:scale-105", "active:scale-95");
+              btnStartGame.innerText = "开始游戏";
+              btnStartGame.onclick = () => network.startGame(); // 恢复点击
+              waitMessage.innerText = `当前人数: ${playerCount}人`;
             }
           } else {
-            hostControls.classList.add("hidden");
-            waitMessage.innerText = "等待房主开始游戏...";
+            // --- 如果我是普通玩家 ---
+            hostControls.classList.add("hidden"); // 隐藏大按钮
+            
+            // 获取房主名字
+            const hostPlayer = state.players[state.hostId];
+            const hostName = hostPlayer ? hostPlayer.name : "房主";
+            waitMessage.innerText = `等待 ${hostName} 开始游戏 (${playerCount}人已准备)...`;
           }
         }
 
@@ -3160,3 +3133,4 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
