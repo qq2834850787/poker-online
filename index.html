@@ -1425,6 +1425,8 @@
           this.lastState = null; // 用于比较状态
           this.localPlayerId = null;
           this.highlightCards = new Set();
+          this.bankruptcyScreenShown = false; // *** 新增: 破产界面显示标志 ***
+          this.lastAllInPlayerTriggered = null; // *** 修复: 移到构造函数 ***
 
           // 绑定加注滑块
           document.getElementById("raise-slider").oninput = () => {
@@ -1571,31 +1573,47 @@
           // 9. 游戏结束画面
           // *** 修复: (请求 #4) 检查逻辑 ***
           const screen = document.getElementById("game-over-screen");
-          if (localPlayer && screen.classList.contains("hidden")) {
-            // Only trigger if hidden
-            // *** 修改: (请求 #1) 游戏结束现在是 'waiting' 状态 ***
-            // const isGameFinished = (state.status === 'finished'); // 旧逻辑
-            // 现在的 "游戏结束" 是指 "我被淘汰了"
+          
+          // *** 修复: (请求 #12) 使用 this.bankruptcyScreenShown 标志 ***
+          if (localPlayer) {
             const isEliminated =
               localPlayer.status === "淘汰" && localPlayer.chips === 0;
 
-            // *** 修改: (请求 #1) 游戏冠军现在在 'waiting' 状态下判断 ***
+            // 检查是否是冠军 (游戏在 waiting 状态结束)
             const isChampion =
               state.status === "waiting" &&
               state.highlightWinner === localId &&
+              state.logs.length > 0 && // 确保日志存在
               state.logs[state.logs.length - 2].includes("游戏结束");
 
             if (isChampion) {
-              // Game just finished, and I am the champion.
-              this.showGameOver(true, true, localPlayer); // (isWin, isGameFinished, player)
-            } else if (isEliminated && state.status === "playing") {
-              // Game is ongoing, but I am out.
+              // 游戏刚结束, 我是冠军.
+              // 只有在屏幕隐藏时才显示
+              if (screen.classList.contains("hidden")) {
+                this.showGameOver(true, true, localPlayer); // (isWin, isGameFinished, player)
+              }
+              this.bankruptcyScreenShown = false; // 重置破产标志
+            } 
+            // 检查是否 *刚刚* 破产 (游戏中)
+            else if (isEliminated && state.status === "playing" && !this.bankruptcyScreenShown) {
+              // 游戏正在进行, 但我刚破产了, 并且 *还未显示过* 破产界面.
               this.showGameOver(false, false, localPlayer); // (isWin=false, isGameFinished=false, player)
-            } else if (isEliminated && state.status === "waiting") {
-              // Game finished, but I lost earlier.
-              this.showGameOver(false, true, localPlayer); // (isWin=false, isGameFinished=true, player)
+              // *** 关键: 设置标志, 防止重复触发 ***
+              this.bankruptcyScreenShown = true; 
+            }
+            // 检查是否是输家 (游戏在 waiting 状态结束)
+            else if (isEliminated && state.status === "waiting") {
+              // 游戏结束了, 但我早先就输了.
+              // 只有在屏幕隐藏时才显示 (避免覆盖 "观战中" 消息)
+              if (screen.classList.contains("hidden") && this.bankruptcyScreenShown) {
+                 this.showGameOver(false, true, localPlayer); // (isWin=false, isGameFinished=true, player)
+              }
+              // 游戏结束, 无论如何都要重置标志
+              this.bankruptcyScreenShown = false; 
             }
           }
+          // *** 结束修复 ***
+
 
           // *** (请求 #1) 如果重置了, 隐藏结束画面 ***
           // *** 修改: 自动隐藏所有人的结束画面 (冠军/输家)，以显示等待室 ***
@@ -1609,6 +1627,10 @@
               // 我们可以通过检查 msg 文本来判断
               const msg = document.getElementById("game-over-msg").innerText;
               if (msg.includes("房间已重置")) {
+                
+                // *** 新增: 重置标志 ***
+                this.bankruptcyScreenShown = false; 
+                
                 setTimeout(() => {
                   // 确保它仍然没有被用户手动隐藏
                   if (!screen.classList.contains("hidden")) {
@@ -1620,6 +1642,8 @@
             } else {
               // 如果不是游戏结束（例如玩家刚加入），立即隐藏
               screen.classList.add("hidden");
+              // *** 新增: 重置标志 ***
+              this.bankruptcyScreenShown = false; 
             }
           }
 
@@ -2359,6 +2383,9 @@
           this.currentRoomId = null;
           if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
           if (this.nextPhaseTimeout) clearTimeout(this.nextPhaseTimeout); // *** 新增: 清除计时器 ***
+
+          // *** 新增: 重置破产标志 (请求 #12) ***
+          this.gameUI.bankruptcyScreenShown = false;
 
           document.getElementById("game-area").classList.add("hidden");
           document.getElementById("game-over-screen").classList.add("hidden");
