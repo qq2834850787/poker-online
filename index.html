@@ -2098,7 +2098,7 @@
           }
         }
 
-        // *** 修改: 使用 disabled 属性修复按钮卡死问题 ***
+        // *** 修改: 修复按钮颜色逻辑 ***
         updateWaitingRoomUI(state, localId) {
           const hostControls = document.getElementById("wait-host-controls");
           const btnStartGame = document.getElementById("btn-start-game");
@@ -2110,16 +2110,24 @@
             // 我是房主
             hostControls.classList.remove("hidden");
             
-            // 核心修复：使用 HTML disabled 属性
-            // 当人数 < 2 时，浏览器会自动禁用按钮并应用 disabled 样式
-            // 当人数 >= 2 时，浏览器会自动启用按钮并恢复点击
             if (playerCount < 2) {
-              btnStartGame.disabled = true; 
+              // --- 人数不足 ---
+              // 使用 opacity-50 (半透明) 代替 grayscale (变灰)，保持红色色调
+              btnStartGame.classList.add("opacity-50", "cursor-not-allowed");
+              // 移除点击效果类，防止误导
+              btnStartGame.classList.remove("hover:bg-red-500", "active:translate-y-1", "active:border-b-0");
+              
               btnStartGame.innerText = `等待玩家 (${playerCount}/10)`;
+              btnStartGame.onclick = null; 
               waitMessage.innerText = "至少需要 2 人才能开始...";
             } else {
-              btnStartGame.disabled = false;
+              // --- 人数足够 ---
+              btnStartGame.classList.remove("opacity-50", "cursor-not-allowed");
+              // 恢复点击效果类
+              btnStartGame.classList.add("hover:bg-red-500", "active:translate-y-1", "active:border-b-0");
+              
               btnStartGame.innerText = "开始游戏";
+              btnStartGame.onclick = () => network.startGame();
               waitMessage.innerText = `当前人数: ${playerCount}人 (点击按钮开始)`;
             }
           } else {
@@ -3155,4 +3163,5 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
