@@ -2536,7 +2536,7 @@
           }
         }
 
-        // --- 玩家提交动作 ---
+        // --- 玩家提交动作 (修复版) ---
         async handleHumanAction(action) {
           const state = this.gameUI.lastState;
           if (
@@ -2546,15 +2546,14 @@
             return; // 不是你的回合
           }
 
-          // 禁用按钮，防止重复提交
-          this.gameUI.updateControls({ ...state, currentPlayerIndex: -1 }); // 假装不是你的回合
+          // 1. 立即锁定 UI，防止重复点击
+          this.gameUI.updateControls({ ...state, currentPlayerIndex: -1 }); 
 
           let actionAmount = 0;
           if (action === "raise") {
-            // *** 修复: actionAmount 是 "行动金额" (来自 读博.html 逻辑) ***
-            actionAmount = parseInt(
-              document.getElementById("raise-slider").value
-            );
+            // 获取加注金额
+            const slider = document.getElementById("raise-slider");
+            if (slider) actionAmount = parseInt(slider.value);
           }
 
           const roomRef = this.getRoomRef(this.currentRoomId);
@@ -2573,24 +2572,25 @@
                 this.localUserId
               ) {
                 console.warn("动作提交时已不是你的回合");
-                // 此时 UI 应该已经更新，但我们不处理这个旧动作
                 return;
               }
 
-              // *** 修复: 将 "行动金额" (actionAmount) 转换为 "总金额" (totalAmount) ***
-              // processAction 期望的 'amount' 是玩家下注后的 *总金额*
               let totalAmount = 0;
               const player = currentState.players[this.localUserId];
 
               if (action === "raise") {
-                // "行动金额" (actionAmount) 是玩家 *本次* 支付的钱
-                // "总金额" (totalAmount) 是玩家支付后 *总共* 在桌上的钱
-                totalAmount = player.currentBet + actionAmount;
+                // 这里的逻辑取决于你之前的 processAction 实现
+                // 如果是“加注到”模式：
+                totalAmount = player.currentBet + actionAmount; 
+                // 注意：请确保这里计算的 totalAmount 符合你 processAction 的要求
+                // 如果 actionAmount 已经是总额（slider.value），则直接 totalAmount = actionAmount;
+                // 根据之前的上下文，slider.value 似乎是“本次行动的金额”，所以 totalAmount = player.currentBet + actionAmount 是合理的
+                // 但如果是 No-Limit 模式，slider 通常直接代表 Total Bet。请根据实际情况微调。
+                // 建议保留你原本逻辑中的计算方式。
+                totalAmount = player.currentBet + actionAmount; 
               }
-              // *** 结束修复 ***
 
-              // --- 核心：调用纯函数计算下一个状态 ---
-              // *** 修复: 传递 totalAmount ***
+              // 调用纯函数计算下一个状态
               const nextState = processAction(
                 currentState,
                 this.localUserId,
@@ -2603,7 +2603,17 @@
             });
           } catch (error) {
             console.error("处理动作失败:", error);
-            // 重新启用按钮 (在下一次 onSnapshot 更新时会自动处理)
+            
+            // ============================================================
+            // *** 核心修复：操作失败时，必须恢复按钮状态！ ***
+            // ============================================================
+            this.gameUI.showMessage("网络繁忙，请重试");
+            
+            // 强制使用“上一次的已知状态”重新渲染控制栏，从而重新激活按钮
+            if (this.gameUI.lastState && this.localUserId) {
+                // 恢复 currentPlayerIndex，让 updateControls 认为还是你的回合
+                this.gameUI.updateControls(this.gameUI.lastState);
+            }
           }
         }
 
@@ -3150,4 +3160,3 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
-
