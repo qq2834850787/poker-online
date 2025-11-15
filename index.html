@@ -1491,7 +1491,7 @@
               this.sound.playCheck();
             } else if (newLog.includes("跟注")) {
               this.sound.playChip();
-            } else if (newLog.includes("加注到") || newLog.includes("全押")) { // 顺便把全押加上
+            } else if (newLog.includes("加注到")) {
               this.sound.playRaise();
             }
             // All-in sound is handled by showAllInEffect
@@ -3143,5 +3143,6 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
