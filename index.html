@@ -1472,11 +1472,18 @@
           this.initSound();
 
           // *** 新增: 客户端音效 (基于日志) (请求 #1) ***
-          if (
-            this.lastState &&
-            state.logs.length > this.lastState.logs.length
-          ) {
-            const newLog = state.logs[state.logs.length - 1];
+          // *** 修复: 解决日志满20条后音效失效的Bug ***
+          const lastLog = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
+          const prevLog = (this.lastState && this.lastState.logs.length > 0) ? this.lastState.logs[this.lastState.logs.length - 1] : "";
+          
+          // 判断条件：长度增加 或者 (长度没变但最后一条内容变了)
+          const hasNewLog = this.lastState && (
+              state.logs.length > this.lastState.logs.length || 
+              (state.logs.length > 0 && lastLog !== prevLog)
+          );
+
+          if (hasNewLog) {
+            const newLog = lastLog; // 使用获取到的最新日志
 
             if (newLog.includes("弃牌")) {
               this.sound.playFold();
@@ -1484,16 +1491,16 @@
               this.sound.playCheck();
             } else if (newLog.includes("跟注")) {
               this.sound.playChip();
-            } else if (newLog.includes("加注到")) {
+            } else if (newLog.includes("加注到") || newLog.includes("全押")) { // 顺便把全押加上
               this.sound.playRaise();
             }
             // All-in sound is handled by showAllInEffect
 
             // 牌局音效
             if (
-              newLog.includes("--- 翻牌 ---") || // *** 修复: 移除 "圈" ***
-              newLog.includes("--- 转牌 ---") || // *** 修复: 移除 "圈" ***
-              newLog.includes("--- 河牌 ---") // *** 修复: 移除 "圈" ***
+              newLog.includes("--- 翻牌 ---") || 
+              newLog.includes("--- 转牌 ---") || 
+              newLog.includes("--- 河牌 ---") 
             ) {
               this.sound.playCard();
             }
@@ -3136,4 +3143,5 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
