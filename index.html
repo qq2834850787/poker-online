@@ -2099,39 +2099,31 @@
         }
 
         updateWaitingRoomUI(state, localId) {
-          // 获取元素
           const hostControls = document.getElementById("wait-host-controls");
           const btnStartGame = document.getElementById("btn-start-game");
           const waitMessage = document.getElementById("wait-message");
 
           const playerCount = state.playerOrder.length;
 
-          // 切换房主控件
           if (state.hostId === localId) {
-            // --- 如果我是房主 ---
+            // 我是房主
             hostControls.classList.remove("hidden");
             
-            // 检查人数是否足够
             if (playerCount < 2) {
-              // 人数不足：按钮变灰，不可点击
-              btnStartGame.classList.add("grayscale", "cursor-not-allowed");
-              btnStartGame.classList.remove("hover:scale-105", "active:scale-95");
-              btnStartGame.innerText = `等待玩家 (${playerCount}/10)`;
-              btnStartGame.onclick = null; // 临时禁用点击
+              // --- 人数不足 (样式变灰) ---
+              btnStartGame.classList.add("opacity-50", "cursor-not-allowed");
+              btnStartGame.classList.remove("hover:bg-red-500", "active:translate-y-1", "active:border-b-0");
               waitMessage.innerText = "至少需要 2 人才能开始...";
             } else {
-              // 人数足够：按钮变亮，可以点击
-              btnStartGame.classList.remove("grayscale", "cursor-not-allowed");
-              btnStartGame.classList.add("hover:scale-105", "active:scale-95");
-              btnStartGame.innerText = "开始游戏";
-              btnStartGame.onclick = () => network.startGame(); // 恢复点击
-              waitMessage.innerText = `当前人数: ${playerCount}人`;
+              // --- 人数足够 (恢复亮色) ---
+              btnStartGame.classList.remove("opacity-50", "cursor-not-allowed");
+              btnStartGame.classList.add("hover:bg-red-500", "active:translate-y-1", "active:border-b-0");
+              waitMessage.innerText = `当前人数: ${playerCount}人 (点击按钮开始)`;
             }
+            // *** 关键修改：不再此处处理 onclick，交由 startGame 内部判断 ***
           } else {
-            // --- 如果我是普通玩家 ---
-            hostControls.classList.add("hidden"); // 隐藏大按钮
-            
-            // 获取房主名字
+            // 我是普通玩家
+            hostControls.classList.add("hidden");
             const hostPlayer = state.players[state.hostId];
             const hostName = hostPlayer ? hostPlayer.name : "房主";
             waitMessage.innerText = `等待 ${hostName} 开始游戏 (${playerCount}人已准备)...`;
@@ -2506,35 +2498,44 @@
           // 3. 移除了 AI 行动检查
         }
 
-        // --- 房主开始游戏 ---
+        // --- 房主开始游戏 (已修改: 增加内部人数检查) ---
         async startGame() {
+          // 1. 基础检查
           if (
             !this.currentRoomId ||
             this.localUserId !== this.gameUI.lastState.hostId
           )
             return;
 
+          const currentState = this.gameUI.lastState; // 使用本地的最新状态
+
+          // *** 新增: 核心修复，在逻辑层拦截人数不足的情况 ***
+          if (currentState.playerOrder.length < 2) {
+             this.gameUI.showMessage("至少需要2名玩家才能开始！");
+             return; 
+          }
+
           const btn = document.getElementById("btn-start-game");
-          if (btn.classList.contains("btn-disabled")) return;
+          if (btn.classList.contains("btn-disabled")) return; // 双重保险
 
           btn.classList.add("btn-disabled");
 
           const roomRef = this.getRoomRef(this.currentRoomId);
           try {
-            const currentState = this.gameUI.lastState; // 使用本地的最新状态
             if (currentState.status !== "waiting") return;
 
-            // 1. 标记游戏开始
+            // 2. 标记游戏开始
             currentState.status = "playing";
 
-            // 2. 调用新回合逻辑
+            // 3. 调用新回合逻辑
             const nextState = startNewRound(currentState);
 
-            // 3. 写入 Firestore
+            // 4. 写入 Firestore
             await setDoc(roomRef, nextState);
           } catch (error) {
             console.error("开始游戏失败:", error);
             btn.classList.remove("btn-disabled");
+            this.gameUI.showMessage("开始游戏失败，请重试");
           }
         }
 
@@ -3162,6 +3163,7 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
 
