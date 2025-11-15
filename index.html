@@ -2098,7 +2098,7 @@
           }
         }
 
-        // *** 修改: 修复按钮颜色逻辑 ***
+        // *** 修复: 强制刷新按钮状态，解决“点不动”的 Bug ***
         updateWaitingRoomUI(state, localId) {
           const hostControls = document.getElementById("wait-host-controls");
           const btnStartGame = document.getElementById("btn-start-game");
@@ -2106,28 +2106,30 @@
 
           const playerCount = state.playerOrder.length;
 
+          // 调试日志：按 F12 看控制台，确认 JS 是否在运行
+          console.log(`更新等待界面: 房主=${state.hostId}, 我=${localId}, 人数=${playerCount}`);
+
           if (state.hostId === localId) {
             // 我是房主
             hostControls.classList.remove("hidden");
             
             if (playerCount < 2) {
-              // --- 人数不足 ---
-              // 使用 opacity-50 (半透明) 代替 grayscale (变灰)，保持红色色调
+              // --- 人数不足：强制禁用 ---
+              btnStartGame.disabled = true;
+              // 手动添加灰色样式 (以防 disabled 属性不生效)
               btnStartGame.classList.add("opacity-50", "cursor-not-allowed");
-              // 移除点击效果类，防止误导
-              btnStartGame.classList.remove("hover:bg-red-500", "active:translate-y-1", "active:border-b-0");
               
               btnStartGame.innerText = `等待玩家 (${playerCount}/10)`;
-              btnStartGame.onclick = null; 
               waitMessage.innerText = "至少需要 2 人才能开始...";
             } else {
-              // --- 人数足够 ---
+              // --- 人数足够：强制激活 ---
+              btnStartGame.disabled = false;
+              btnStartGame.removeAttribute("disabled"); // 双重保险：彻底移除属性
+              
+              // 手动移除灰色样式
               btnStartGame.classList.remove("opacity-50", "cursor-not-allowed");
-              // 恢复点击效果类
-              btnStartGame.classList.add("hover:bg-red-500", "active:translate-y-1", "active:border-b-0");
               
               btnStartGame.innerText = "开始游戏";
-              btnStartGame.onclick = () => network.startGame();
               waitMessage.innerText = `当前人数: ${playerCount}人 (点击按钮开始)`;
             }
           } else {
@@ -3163,5 +3165,6 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
