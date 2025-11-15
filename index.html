@@ -905,7 +905,6 @@
           newState.phase !== "showdown"
         ) {
           // 所有人都跟了, 且只有0或1个玩家还有筹码
-          newState.logs.push("--- 多人All-in, 自动发牌 ---");
           newState = runAutoShowdown(newState);
         }
         // --- 检查2: 是否进入下一阶段 ---
@@ -1031,7 +1030,6 @@
         });
 
         newState.currentPlayerIndex = -1; // 停止所有玩家行动
-        newState.logs.push("--- 全员梭哈 自动亮牌 ---");
 
         // 2. 推进到下一个发牌阶段
         if (newState.phase === "preflop") {
@@ -3138,3 +3136,4 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
