@@ -3097,15 +3097,17 @@
                 if (card) {
                   // 确保卡片被找到
                   best5.push(card);
-                  usedIds.add(c.id);
+                  
+                  // *** 修复 1: 这里原来是 c.id，必须改为 card.id ***
+                  usedIds.add(card.id); 
+                  // *** 修复结束 ***
                 }
               });
-              // *** 修复: 必须确保找到了5张牌 ***
+              // 必须确保找到了5张牌
               if (best5.length === 5) return { cards: best5, high: 5 };
-              // *** 结束修复 ***
             }
 
-            // K-Q-J-10-9 顺子
+            // K-Q-J-10-9 普通顺子
             for (let i = 0; i <= uniqueVals.length - 5; i++) {
               if (uniqueVals[i] - uniqueVals[i + 4] === 4) {
                 const straightVals = uniqueVals.slice(i, i + 5);
@@ -3119,13 +3121,15 @@
                   if (card) {
                     // 确保卡片被找到
                     best5.push(card);
-                    usedIds.add(c.id);
+                    
+                    // *** 修复 2: 这里原来是 c.id，必须改为 card.id ***
+                    usedIds.add(card.id);
+                    // *** 修复结束 ***
                   }
                 });
-                // *** 修复: 必须确保找到了5张牌 ***
+                // 必须确保找到了5张牌
                 if (best5.length === 5)
                   return { cards: best5, high: uniqueVals[i] };
-                // *** 结束修复 ***
               }
             }
             return null;
@@ -3273,6 +3277,7 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
 
