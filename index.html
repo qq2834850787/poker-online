@@ -431,28 +431,27 @@
         id="top-bar"
         class="h-16 bg-gray-900 w-full flex items-center justify-between px-6 shadow-lg z-10 border-b border-gray-800 relative z-50"
       >
-        <!-- Left Side: Pot -->
         <div class="flex items-center space-x-2">
           <div class="text-yellow-500 font-black text-2xl tracking-tight">
             底池: $<span id="pot-display">0</span>
           </div>
         </div>
 
-        <!-- *** 修复: 移除了 host-controls, 它现在在等待室遮罩中 *** -->
-
-        <!-- Right Side: Info & Leave Button -->
         <div class="flex items-center space-x-4">
-          <!-- *** 恢复的逻辑: 盲注和玩家计数 *** -->
+          
+          <div class="flex flex-col items-end mr-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
+            <span class="text-gray-500 text-[10px] font-bold leading-none mb-1">房间号</span>
+            <span id="display-room-id" class="text-yellow-500 font-mono font-bold text-sm leading-none">---</span>
+          </div>
           <div class="text-right hidden sm:block">
-            <!-- 在小屏幕上隐藏以避免混乱 -->
-            <div class="text-gray-400 text-xs font-bold tracking-wider">
+            <div id="blinds-display" class="text-gray-400 text-xs font-bold tracking-wider">
               盲注 $10/$20
             </div>
             <div class="text-gray-600 text-[10px]">
               在线玩家: <span id="active-players-count">0</span>
             </div>
           </div>
-          <!-- *** 结束 *** -->
+          
           <button
             id="btn-leave-room"
             onclick="network.leaveRoom()"
@@ -1585,6 +1584,13 @@
           document.getElementById("pot-display").innerText = state.pot;
           document.getElementById("phase-display").innerText =
             PHASE_NAME_MAP[state.phase] || "未知";
+
+          if (state.config) {
+              const blindsEl = document.getElementById("blinds-display");
+              if (blindsEl) {
+                  blindsEl.innerText = `盲注 $${state.config.smallBlind}/$${state.config.bigBlind}`;
+              }
+          }
 
           // 2. 渲染牌桌
           this.renderTableLayout(state, localId);
@@ -3295,6 +3301,7 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
 
