@@ -2250,7 +2250,7 @@
               uid: this.localUserId,
               id: 0, // 房主总是 0
               name: localPlayerName,
-              chips: 1000,
+              chips: 2000,
               holeCards: [],
               folded: false,
               currentBet: 0,
@@ -2279,7 +2279,7 @@
               currentPlayerIndex: -1, // -1 表示游戏未开始
               currentMaxBet: 0,
               phase: "waiting",
-              lastRaiseAmount: BIG_BLIND,
+              lastRaiseAmount: 20,
               deck: [], // 游戏开始时再洗牌
               logs: [`${localPlayerName} 创建了房间.`],
               highlightWinner: null,
@@ -3249,6 +3249,7 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
 
