@@ -588,7 +588,7 @@
                 <input 
                     type="number" 
                     id="setting-initial-chips" 
-                    value="1000" 
+                    value="2000" 
                     step="100" 
                     onkeydown="if(['.','e','E','+','-'].includes(event.key)) event.preventDefault()"
                     class="w-full bg-gray-900 text-white border border-gray-600 rounded px-2 py-1 text-sm focus:border-yellow-500 outline-none font-mono"
@@ -1316,7 +1316,7 @@
             if (p) {
               resetPlayers[uid] = {
                 ...p,
-                chips: config.initialChips, // <--- 使用配置值 (原为 1000)
+                chips: config.initialChips,
                 holeCards: [],
                 folded: false,
                 currentBet: 0,
@@ -2650,7 +2650,7 @@
           const chipsInput = document.getElementById("setting-initial-chips");
           const blindInput = document.getElementById("setting-big-blind");
           
-          let newInitChips = chipsInput ? parseInt(chipsInput.value) : 1000;
+          let newInitChips = chipsInput ? parseInt(chipsInput.value) : 2000;
           let newBigBlind = blindInput ? parseInt(blindInput.value) : 20;
 
           newInitChips = Math.floor(newInitChips);
@@ -3344,6 +3344,7 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
 
