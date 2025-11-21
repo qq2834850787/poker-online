@@ -433,24 +433,6 @@
     </p>
   </div>
 
-  <!-- 结束页 -->
-  <div id="game-over-screen"
-    class="hidden absolute z-[60] bg-black bg-opacity-95 w-full h-full flex flex-col items-center justify-center text-center">
-    <h2 id="game-over-title" class="text-6xl font-black mb-4 text-white">
-      游戏结束
-    </h2>
-    <p id="game-over-msg" class="text-xl text-gray-400 mb-8">...</p>
-    <!-- *** 修改: 按钮改为 "返回大厅" *** -->
-    <!-- *** 再次修改: 变为按钮容器 (请求 #3) *** -->
-    <div id="game-over-buttons" class="flex space-x-4">
-      <button onclick="network.leaveRoom()"
-        class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg">
-        返回大厅
-      </button>
-      <!-- 观战按钮将由JS动态添加 -->
-    </div>
-  </div>
-
   <!-- 游戏主界面 -->
   <div id="game-area" class="hidden w-full h-full relative flex flex-col">
     <!-- *** 修改: 恢复了盲注和玩家计数UI *** -->
@@ -1637,96 +1619,6 @@
 
         // 6. 更新控制按钮
         this.updateControls(state);
-
-        // *** 修复: 移除了旧的房主控制逻辑 (Section 7) ***
-
-        // 8. All-in 特效 (逻辑已移到本函数开头)
-
-        // 9. 游戏结束画面
-        // *** 修复: (请求 #4) 检查逻辑 ***
-        const screen = document.getElementById("game-over-screen");
-
-        // *** 修复: (请求 #12) 使用 this.bankruptcyScreenShown 标志 ***
-        if (localPlayer) {
-          const isEliminated =
-            localPlayer.status === "淘汰" && localPlayer.chips === 0;
-
-          // 检查是否是冠军 (游戏在 waiting 状态结束)
-          const isChampion =
-            state.status === "waiting" &&
-            state.highlightWinner === localId &&
-            state.logs.length > 0 && // 确保日志存在
-            state.logs[state.logs.length - 2].includes("游戏结束");
-
-          if (isChampion) {
-            // 游戏刚结束, 我是冠军.
-            // 只有在屏幕隐藏时才显示
-            if (screen.classList.contains("hidden")) {
-              this.showGameOver(true, true, localPlayer); // (isWin, isGameFinished, player)
-            }
-            this.bankruptcyScreenShown = false; // 重置破产标志
-          }
-          // 检查是否 *刚刚* 破产 (游戏中)
-          else if (isEliminated && state.status === "playing" && !this.bankruptcyScreenShown) {
-            // 游戏正在进行, 但我刚破产了, 并且 *还未显示过* 破产界面.
-            this.showGameOver(false, false, localPlayer); // (isWin=false, isGameFinished=false, player)
-            // *** 关键: 设置标志, 防止重复触发 ***
-            this.bankruptcyScreenShown = true;
-          }
-          // 检查是否是输家 (游戏在 waiting 状态结束)
-          else if (isEliminated && state.status === "waiting") {
-            // 游戏结束了, 但我早先就输了.
-            // 只有在屏幕隐藏时才显示 (避免覆盖 "观战中" 消息)
-            if (screen.classList.contains("hidden") && this.bankruptcyScreenShown) {
-              this.showGameOver(false, true, localPlayer); // (isWin=false, isGameFinished=true, player)
-            }
-            // 游戏结束, 无论如何都要重置标志
-            this.bankruptcyScreenShown = false;
-          }
-        }
-        // *** 结束修复 ***
-
-
-        // *** (请求 #1) 如果重置了, 隐藏结束画面 ***
-        // *** 修改: 自动隐藏所有人的结束画面 (冠军/输家)，以显示等待室 ***
-        if (
-          state.status === "waiting" &&
-          !screen.classList.contains("hidden")
-        ) {
-          // 检查是否是由"游戏结束"（即有赢家高亮）触发的
-          if (state.highlightWinner) {
-            // showGameOver 刚刚被调用, 检查它是否设置了 "isGameFinished" 状态
-            // 我们可以通过检查 msg 文本来判断
-            const msg = document.getElementById("game-over-msg").innerText;
-            if (msg.includes("房间已重置")) {
-
-              // *** 新增: 重置标志 ***
-              this.bankruptcyScreenShown = false;
-
-              setTimeout(() => {
-                // 确保它仍然没有被用户手动隐藏
-                if (!screen.classList.contains("hidden")) {
-                  screen.classList.add("hidden");
-                  this.showMessage("游戏结束，等待房主重新开始...");
-                }
-              }, 4000); // 延迟4秒隐藏
-            }
-          } else {
-            // 如果不是游戏结束（例如玩家刚加入），立即隐藏
-            screen.classList.add("hidden");
-            // *** 新增: 重置标志 ***
-            this.bankruptcyScreenShown = false;
-          }
-        }
-
-        // 10. *** 新增: 等待室 UI ***
-        const waitOverlay = document.getElementById("waiting-room-overlay");
-        if (state.status === "waiting") {
-          waitOverlay.classList.remove("hidden");
-          network.updateWaitingRoomUI(state, localId); // *** 修复: 改为调用 network.updateWaitingRoomUI ***
-        } else {
-          waitOverlay.classList.add("hidden");
-        }
       }
 
       // --- 渲染牌桌布局 (根据状态) ---
@@ -2049,58 +1941,6 @@
             }, 300);
           }, 1250);
         });
-      }
-
-      // --- 游戏结束 ---
-      // *** 修复: (请求 #4) 修正函数位置，移到 GameUIManager 内部 ***
-      showGameOver(isWin, isGameFinished, player) {
-        const screen = document.getElementById("game-over-screen");
-        const title = document.getElementById("game-over-title");
-        const msg = document.getElementById("game-over-msg");
-        const btnContainer = document.getElementById("game-over-buttons"); // *** 新增 ***
-
-        screen.classList.remove("hidden");
-
-        if (isWin) {
-          // *** 冠军 (请求 #4) ***
-          title.innerText = "冠军";
-          title.className = "text-6xl font-black mb-4 text-yellow-500";
-          msg.innerText = `你击败了所有对手！房间已重置。`; // *** 修改: (请求 #1) ***
-          sound.playWin();
-
-          // *** 修改: 游戏结束自动重置, 移除按钮 ***
-          btnContainer.innerHTML = `<p class="text-gray-500 text-sm">将在4秒后自动返回等待室...</p>`;
-        } else {
-          // *** 破产 (请求 #4) ***
-          title.innerText = "破产";
-          title.className = "text-6xl font-black mb-4 text-red-600";
-          msg.innerText = "你的筹码已耗尽。";
-          sound.playLose();
-
-          if (isGameFinished) {
-            // 游戏结束了，我是输家
-            msg.innerText = "你的筹码已耗尽。房间已重置。"; // *** 修改: (请求 #1) ***
-            // *** 修改: 游戏结束自动重置, 移除按钮 ***
-            btnContainer.innerHTML = `<p class="text-gray-500 text-sm">将在4秒后自动返回等待室...</p>`;
-          } else {
-            // 游戏还在继续，我可以观战 (保持按钮)
-            btnContainer.innerHTML = `
-                            <button onclick="network.leaveRoom()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg">返回大厅</button>
-                            <button onclick="gameUI.spectate(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg">继续观战</button>
-                        `;
-          }
-        }
-      }
-
-      // *** 修复: (请求 #4) 修正函数位置，移到 GameUIManager 内部 ***
-      spectate(isGameFinished) {
-        document.getElementById("game-over-screen").classList.add("hidden");
-        if (isGameFinished) {
-          this.showMessage("游戏已结束。等待房主重新开始...");
-        } else {
-          this.showMessage("观战中... (筹码已耗尽)");
-        }
-        // 玩家仍在房间内, 仍会接收 onSnapshot 更新
       }
 
       // --- 创建卡牌元素 ---
@@ -2542,7 +2382,6 @@
         this.gameUI.bankruptcyScreenShown = false;
 
         document.getElementById("game-area").classList.add("hidden");
-        document.getElementById("game-over-screen").classList.add("hidden");
         document.getElementById("room-screen").classList.remove("hidden");
         this.disableRoomButtons(false);
       }
