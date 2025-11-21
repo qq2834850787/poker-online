@@ -1637,6 +1637,11 @@
         // 4. 同步高光数据
         this.highlightCards = new Set(state.highlightCards || []);
 
+        if (state.lastAllInPlayer && state.lastAllInPlayer !== this.lastAllInPlayerTriggered) {
+          this.showAllInEffect(state.lastAllInPlayer);
+          this.lastAllInPlayerTriggered = state.lastAllInPlayer;
+        }
+
         // 5. 处理弃牌检测
         this.handleFoldAnimations(state);
 
