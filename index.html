@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
-  <!-- *** 修正: 改为 UTF-8 *** -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>德州扑克 (联机版)</title>
+  <title>Texas Hold'em (Online)</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠️</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* ... existing styles ... */
-    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Black+Ops+One&family=Noto+Sans+JP:wght@500;700&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Black+Ops+One&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+SC:wght@500;700&display=swap");
 
     body {
-      font-family: "Inter", "Noto Sans JP", "Microsoft YaHei", sans-serif;
+      font-family: "Inter", "Noto Sans JP", "Noto Sans SC", "Microsoft YaHei", sans-serif;
       background-color: #111827;
       color: white;
       overflow: hidden;
@@ -24,7 +22,7 @@
       width: 100vw;
     }
 
-    /* --- 卡牌样式 --- */
+    /* --- Card Styles --- */
     .card {
       width: 42px;
       height: 60px;
@@ -73,33 +71,24 @@
       display: none;
     }
 
-    /* *** 修改: 智能虚线框 (只在空的时候显示虚线) *** */
     .card-placeholder {
-      /* 基础尺寸: 与 .card 保持一致 */
       width: 42px;
       height: 60px;
       border-radius: 4px;
-
-      /* 布局属性 */
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-
-      /* 默认没有边框，这样有牌的时候就不会漏出来 */
       border: none;
       background: transparent;
     }
 
-    /* *** 关键: 只有当里面为空时，才显示虚线框 *** */
     .card-placeholder:empty {
       border: 2px dashed rgba(255, 255, 255, 0.2);
       background-color: rgba(0, 0, 0, 0.2);
-      /* 加上这个确保加了边框后整体尺寸不变 */
       box-sizing: border-box;
     }
 
-    /* 平板/电脑端尺寸调整 */
     @media (min-width: 768px) {
       .card-placeholder {
         width: 56px;
@@ -108,25 +97,22 @@
       }
     }
 
-    /* --- 获胜牌高亮特效 --- */
     .card.winning-card {
       box-shadow: 0 0 15px 5px rgba(251, 191, 36, 0.9);
       border: 3px solid #fbbf24;
       z-index: 100;
     }
 
-    /* --- 牌桌 --- */
+    /* --- Table --- */
     .poker-table {
       background: radial-gradient(circle, #15803d 0%, #064e3b 90%, #022c22 100%);
       box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9), 0 0 0 12px #374151, 0 0 0 16px #1f2937;
       position: relative;
       border-radius: 180px;
-      /* *** 修复 2: 手机端移除向下位移，腾出底部空间 *** */
       transform: translateY(0px);
       will-change: transform;
     }
 
-    /* 仅在电脑/大屏上保留位移 */
     @media (min-width: 768px) {
       .poker-table {
         transform: translateY(30px);
@@ -143,8 +129,7 @@
 
     .player-seat {
       position: absolute;
-      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.6s,
-        top 0.6s;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.6s, top 0.6s;
       width: 120px;
       height: 110px;
       display: flex;
@@ -160,9 +145,7 @@
     }
 
     .player-info-box {
-      background: linear-gradient(180deg,
-          rgba(31, 41, 55, 0.95) 0%,
-          rgba(17, 24, 39, 0.98) 100%);
+      background: linear-gradient(180deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.98) 100%);
       border: 1px solid #4b5563;
       border-radius: 6px;
       padding: 4px 2px;
@@ -207,9 +190,7 @@
       z-index: 50;
     }
 
-    /* --- 聊天气泡样式 (移除) --- */
-
-    /* --- All-in 特效 --- */
+    /* --- All-in VFX --- */
     .all-in-fullscreen-overlay {
       position: fixed;
       top: 0;
@@ -270,10 +251,7 @@
       white-space: nowrap;
       text-transform: uppercase;
       letter-spacing: 4px;
-      background: linear-gradient(to bottom,
-          #fef08a 0%,
-          #eab308 45%,
-          #a16207 100%);
+      background: linear-gradient(to bottom, #fef08a 0%, #eab308 45%, #a16207 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 5px 3px rgba(0, 0, 0, 0.5));
@@ -304,10 +282,7 @@
       left: -100%;
       width: 30%;
       height: 100%;
-      background: linear-gradient(to right,
-          transparent,
-          rgba(255, 255, 255, 0.4),
-          transparent);
+      background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
       transform: skewX(-25deg);
       animation: shine 1s infinite 0.5s;
     }
@@ -331,14 +306,13 @@
       background-color: #4b5563;
     }
 
-    /* 智能透明类 */
     .smart-transparent {
       opacity: 0.15 !important;
       transition: opacity 0.2s ease-out;
       pointer-events: none;
     }
 
-    /* --- 新增: Firebase 加载和房间选择界面 --- */
+    /* --- Loader & Screens --- */
     .firebase-loader {
       display: flex;
       flex-direction: column;
@@ -374,7 +348,6 @@
       backdrop-filter: blur(10px);
     }
 
-    /* 按钮禁用样式 */
     .btn-disabled {
       background-color: #4b5563 !important;
       border-color: #374151 !important;
@@ -390,82 +363,88 @@
 </head>
 
 <body class="h-[100dvh] w-screen flex flex-col items-center justify-center bg-gray-950">
-  <!-- *** 新增: Firebase 加载动画 *** -->
   <div id="firebase-loader" class="firebase-loader">
     <div class="spinner"></div>
-    <p class="text-gray-400 mt-4 text-sm font-medium">连接到游戏服务器...</p>
+    <p class="text-gray-400 mt-4 text-sm font-medium" data-i18n="connecting">Connecting to server...</p>
   </div>
 
-  <!-- *** 修改: 启动页改为房间选择页 *** -->
+  <!-- Room Selection Screen -->
   <div id="room-screen"
     class="hidden absolute z-50 bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700 w-11/12 max-w-md">
-    <h1 class="text-3xl font-bold text-yellow-500 mb-6 tracking-tight text-center">
-      德州扑克
+    <!-- Language Selector -->
+    <div class="absolute top-4 right-4">
+      <select id="language-selector" onchange="updateLanguage(this.value)"
+        class="bg-gray-800 text-gray-300 text-xs rounded px-2 py-1 border border-gray-600 focus:outline-none focus:border-yellow-500">
+        <option value="en" selected>English</option>
+        <option value="ja">日本語</option>
+        <option value="zh">中文</option>
+      </select>
+    </div>
+
+    <h1 class="text-3xl font-bold text-yellow-500 mb-6 tracking-tight text-center" data-i18n="gameTitle">
+      Texas Hold'em
     </h1>
 
-    <!-- *** 修复: 移除了 AI 玩家列表 (它们现在在等待室) *** -->
-
     <div class="mb-4">
-      <label class="block text-gray-400 mb-2 text-sm font-bold" for="player-name-input">你的昵称</label>
+      <label class="block text-gray-400 mb-2 text-sm font-bold" for="player-name-input" data-i18n="nicknameLabel">Your
+        Nickname</label>
       <input type="text" id="player-name-input"
         class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-        placeholder="例如: 赌神" />
+        placeholder="Guest" />
     </div>
     <div class="mb-6">
-      <label class="block text-gray-400 mb-2 text-sm font-bold" for="room-id-input">房间 ID</label>
+      <label class="block text-gray-400 mb-2 text-sm font-bold" for="room-id-input" data-i18n="roomIdLabel">Room
+        ID</label>
       <input type="text" id="room-id-input"
         class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-        placeholder="输入房间ID (例如: 888)" />
+        placeholder="888" />
     </div>
     <div class="flex space-x-4 mb-4">
-      <button onclick="network.joinRoom()" id="btn-join-room"
+      <button onclick="network.joinRoom()" id="btn-join-room" data-i18n="joinRoomBtn"
         class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
-        加入房间
+        Join Room
       </button>
-      <button onclick="network.createRoom()" id="btn-create-room"
+      <button onclick="network.createRoom()" id="btn-create-room" data-i18n="createRoomBtn"
         class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 shadow-lg border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1">
-        创建房间
+        Create Room
       </button>
     </div>
-    <p id="room-error" class="text-red-400 text-sm h-5"></p>
-    <p class="text-gray-500 text-xs mt-4">
-      你的 User ID: <span id="user-id-display">...</span>
+    <p id="room-error" class="text-red-400 text-sm h-5 text-center"></p>
+    <p class="text-gray-500 text-xs mt-4 text-center">
+      User ID: <span id="user-id-display">...</span>
     </p>
   </div>
 
-  <!-- 游戏主界面 -->
+  <!-- Game Area -->
   <div id="game-area" class="hidden w-full h-full relative flex flex-col">
-    <!-- *** 修改: 恢复了盲注和玩家计数UI *** -->
     <div id="top-bar"
       class="h-16 bg-gray-900 w-full flex items-center justify-between px-6 shadow-lg z-10 border-b border-gray-800 relative z-50">
       <div class="flex items-center space-x-2">
         <div class="text-yellow-500 font-black text-2xl tracking-tight">
-          底池: $<span id="pot-display">0</span>
+          <span data-i18n="pot">Pot</span>: $<span id="pot-display">0</span>
         </div>
       </div>
 
       <div class="flex items-center space-x-4">
-
         <div class="flex flex-col items-center mr-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
-          <span class="text-gray-500 text-[10px] font-bold leading-none mb-1">房间号</span>
+          <span class="text-gray-500 text-[10px] font-bold leading-none mb-1" data-i18n="room">Room</span>
           <span id="display-room-id" class="text-yellow-500 font-mono font-bold text-sm leading-none">---</span>
         </div>
         <div class="text-right hidden sm:block">
           <div id="blinds-display" class="text-gray-400 text-xs font-bold tracking-wider">
-            盲注 $10/$20
+            Blinds $10/$20
           </div>
           <div class="text-gray-600 text-[10px]">
-            在线玩家: <span id="active-players-count">0</span>
+            <span data-i18n="online">Online</span>: <span id="active-players-count">0</span>
           </div>
         </div>
 
-        <button id="btn-leave-room" onclick="network.leaveRoom()"
+        <button id="btn-leave-room" onclick="network.leaveRoom()" data-i18n="leaveRoomBtn"
           class="bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg text-xs shadow-md">
-          退出房间
+          Leave
         </button>
       </div>
     </div>
-    <!-- *** 结束修改 *** -->
 
     <div id="table-area"
       class="flex-grow relative overflow-hidden flex items-center justify-center bg-gray-950 cursor-grab active:cursor-grabbing">
@@ -493,12 +472,12 @@
       class="bg-gray-900 p-4 shadow-[0_-5px_15px_rgba(0,0,0,0.5)] z-20 border-t border-gray-800 relative z-50">
       <div id="game-log"
         class="h-16 overflow-y-auto text-xs text-gray-500 mb-3 font-mono bg-gray-950 p-2 rounded border border-gray-800 scroll-smooth leading-5">
-        <div class="text-green-600">系统: 欢迎游玩德州扑克。</div>
+        <div class="text-green-600">System: Welcome to Texas Hold'em.</div>
       </div>
       <div id="player-controls"
         class="flex flex-col items-center opacity-50 pointer-events-none transition-all duration-300 transform translate-y-2">
         <div id="raise-slider-container" class="w-full max-w-md mb-4 flex items-center space-x-2 px-2">
-          <span class="text-xs text-gray-500 font-bold tracking-wider w-8 text-center">加注</span>
+          <span class="text-xs text-gray-500 font-bold tracking-wider w-8 text-center" data-i18n="raiseLabel">Bet</span>
           <button onclick="gameUI.adjustRaise(-1)"
             class="adjust-btn w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full text-yellow-500 font-bold flex items-center justify-center shadow border border-gray-700">
             -
@@ -512,27 +491,27 @@
           <span id="raise-val-display" class="text-sm text-yellow-400 w-14 text-right font-mono font-bold">$0</span>
         </div>
         <div class="flex justify-center space-x-3 w-full max-w-lg">
-          <!-- *** 修改: onclick 事件 *** -->
-          <button onclick="network.handleHumanAction('fold')"
+          <button onclick="network.handleHumanAction('fold')" data-i18n="foldBtn"
             class="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-gray-900 active:border-b-0 active:translate-y-1">
-            弃牌
+            Fold
           </button>
-          <button onclick="network.handleHumanAction('check')" id="btn-check"
+          <button onclick="network.handleHumanAction('check')" id="btn-check" data-i18n="checkBtn"
             class="flex-1 bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-blue-900 active:border-b-0 active:translate-y-1">
-            过牌
+            Check
           </button>
-          <button onclick="network.handleHumanAction('call')" id="btn-call"
+          <button onclick="network.handleHumanAction('call')" id="btn-call" data-i18n="callBtn"
             class="flex-1 bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-blue-900 active:border-b-0 active:translate-y-1 hidden">
-            跟注
+            Call
           </button>
-          <button onclick="network.handleHumanAction('raise')" id="btn-raise"
+          <button onclick="network.handleHumanAction('raise')" id="btn-raise" data-i18n="raiseBtn"
             class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1">
-            加注
+            Raise
           </button>
         </div>
       </div>
       <div class="text-center mt-2 text-gray-700 text-[10px] font-mono tracking-wider">
-        阶段: <span id="phase-display" class="text-gray-500">等待中</span>
+        <span data-i18n="phaseLabel">Phase</span>: <span id="phase-display" class="text-gray-500"
+          data-i18n="waiting">Waiting</span>
       </div>
     </div>
 
@@ -546,24 +525,22 @@
 
           <div class="mb-3">
             <div class="flex justify-between items-center mb-1">
-              <label class="block text-yellow-500 text-xs font-bold">初始筹码</label>
+              <label class="block text-yellow-500 text-xs font-bold" data-i18n="initialChips">Initial Chips</label>
               <span id="error-chips-inline" class="text-red-500 text-[10px] font-bold animate-pulse"></span>
             </div>
             <input type="number" id="setting-initial-chips" value="2000" step="100"
-              onkeydown="if(['.','e','E','+','-'].includes(event.key)) event.preventDefault()"
               class="w-full bg-gray-900 text-white border border-gray-600 rounded px-2 py-1 text-sm focus:border-yellow-500 outline-none font-mono">
           </div>
 
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label class="block text-yellow-500 text-xs font-bold">大盲注</label>
+              <label class="block text-yellow-500 text-xs font-bold" data-i18n="bigBlind">Big Blind</label>
               <span id="error-blind-inline" class="text-red-500 text-[10px] font-bold animate-pulse"></span>
             </div>
             <input type="number" id="setting-big-blind" value="20" step="2" min="2"
-              onkeydown="if(['.','e','E','+','-'].includes(event.key)) event.preventDefault()"
               class="w-full bg-gray-900 text-white border border-gray-600 rounded px-2 py-1 text-sm focus:border-yellow-500 outline-none font-mono">
-            <p class="text-gray-400 text-[10px] mt-1 text-right">小盲注自动设为: <span id="setting-sb-display"
-                class="text-white font-bold">10</span></p>
+            <p class="text-gray-400 text-[10px] mt-1 text-right"><span data-i18n="smallBlindAuto">SB Auto</span>: <span
+                id="setting-sb-display" class="text-white font-bold">10</span></p>
           </div>
         </div>
 
@@ -571,720 +548,614 @@
       </div>
 
       <p id="wait-message"
-        class="mt-8 text-yellow-400 font-bold text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] pointer-events-auto bg-black/40 px-6 py-2 rounded-lg backdrop-blur-sm border border-white/10">
-        等待房主开始...
+        class="mt-8 text-yellow-400 font-bold text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] pointer-events-auto bg-black/40 px-6 py-2 rounded-lg backdrop-blur-sm border border-white/10"
+        data-i18n="waitForHost">
+        Waiting for host to start...
       </p>
-
-      <div id="wait-player-list" class="hidden"></div>
-      <span id="wait-player-count" class="hidden"></span>
     </div>
-    <!-- *** 结束新增 *** -->
   </div>
 
-  <!-- *** Firebase 模块导入
-        *** -->
   <script type="module">
-    // --- 导入 Firebase SDK ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import {
-      getAuth,
-      signInAnonymously,
-      onAuthStateChanged,
-      signInWithCustomToken, // 确保导入
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc,
-      updateDoc,
-      onSnapshot,
-      runTransaction,
-      deleteDoc,
-      setLogLevel, // 导入 setLogLevel
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, runTransaction, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.firestoreUpdateDoc = updateDoc;
 
-    // --- 游戏常量和工具函数 ---
+    // --- I18N SYSTEM ---
+    const TRANSLATIONS = {
+      en: {
+        connecting: "Connecting to server...",
+        gameTitle: "Texas Hold'em",
+        nicknameLabel: "Your Nickname",
+        roomIdLabel: "Room ID",
+        joinRoomBtn: "Join Room",
+        createRoomBtn: "Create Room",
+        pot: "Pot",
+        room: "Room",
+        online: "Players",
+        leaveRoomBtn: "Leave",
+        raiseLabel: "Bet",
+        foldBtn: "Fold",
+        checkBtn: "Check",
+        callBtn: "Call",
+        raiseBtn: "Raise",
+        allInBtn: "All-in",
+        phaseLabel: "Phase",
+        waiting: "Waiting",
+        initialChips: "Initial Chips",
+        bigBlind: "Big Blind",
+        smallBlindAuto: "SB Auto",
+        waitForHost: "Waiting for host...",
+        startGameBtn: "Start Game",
+        waitPlayerBtn: "Waiting Players",
+        // Status & Phase Codes
+        status_fold: "Fold",
+        status_check: "Check",
+        status_call: "Call",
+        status_raise: "Raise",
+        status_all_in: "All-in",
+        status_small_blind: "Small Blind",
+        status_big_blind: "Big Blind",
+        status_eliminated: "Eliminated",
+        status_won: "Won",
+        phase_preflop: "Preflop",
+        phase_flop: "Flop",
+        phase_turn: "Turn",
+        phase_river: "River",
+        phase_showdown: "Showdown",
+        // Hands
+        hand_high_card: "High Card",
+        hand_pair: "Pair",
+        hand_two_pairs: "Two Pairs",
+        hand_three_of_a_kind: "Three of a Kind",
+        hand_straight: "Straight",
+        hand_flush: "Flush",
+        hand_full_house: "Full House",
+        hand_four_of_a_kind: "Four of a Kind",
+        hand_straight_flush: "Straight Flush",
+        // Messages
+        msg_your_turn: "Your Turn",
+        msg_thinking: " Thinking",
+        msg_winner: "Winner!",
+        msg_bankruptcy: "You are bankrupt. Spectating.",
+        msg_game_reset: "Game resetting...",
+        error_nickname: "Nickname 2-10 chars",
+        error_room_id: "Room ID required",
+        error_room_dead: "Room expired/dead",
+        error_room_full: "Room full",
+        error_game_started: "Game already started",
+        error_join_fail: "Join Failed",
+        bet_prefix: "Bet",
+        call_prefix: "Call"
+      },
+      ja: {
+        connecting: "サーバーに接続中...",
+        gameTitle: "テキサスホールデム",
+        nicknameLabel: "ニックネーム",
+        roomIdLabel: "ルームID",
+        joinRoomBtn: "参加する",
+        createRoomBtn: "作成する",
+        pot: "ポット",
+        room: "部屋",
+        online: "人数",
+        leaveRoomBtn: "退出",
+        raiseLabel: "額",
+        foldBtn: "降りる",
+        checkBtn: "チェック",
+        callBtn: "コール",
+        raiseBtn: "レイズ",
+        allInBtn: "オールイン",
+        phaseLabel: "フェーズ",
+        waiting: "待機中",
+        initialChips: "初期チップ",
+        bigBlind: "ビッグブラインド",
+        smallBlindAuto: "SB自動",
+        waitForHost: "ホストの開始待ち...",
+        startGameBtn: "ゲーム開始",
+        waitPlayerBtn: "参加者待ち",
+        // Status & Phase
+        status_fold: "フォールド",
+        status_check: "チェック",
+        status_call: "コール",
+        status_raise: "レイズ",
+        status_all_in: "オールイン",
+        status_small_blind: "SB",
+        status_big_blind: "BB",
+        status_eliminated: "敗退",
+        status_won: "勝利",
+        phase_preflop: "プリフロップ",
+        phase_flop: "フロップ",
+        phase_turn: "ターン",
+        phase_river: "リバー",
+        phase_showdown: "ショーダウン",
+        // Hands
+        hand_high_card: "ハイカード",
+        hand_pair: "ワンペア",
+        hand_two_pairs: "ツーペア",
+        hand_three_of_a_kind: "スリーカード",
+        hand_straight: "ストレート",
+        hand_flush: "フラッシュ",
+        hand_full_house: "フルハウス",
+        hand_four_of_a_kind: "フォーカード",
+        hand_straight_flush: "ストレートフラッシュ",
+        // Messages
+        msg_your_turn: "あなたの番です",
+        msg_thinking: " 思考中...",
+        msg_winner: "優勝！",
+        msg_bankruptcy: "破産しました。観戦モードへ。",
+        msg_game_reset: "リセット中...",
+        error_nickname: "名前は2〜10文字",
+        error_room_id: "IDを入力してください",
+        error_room_dead: "部屋が無効です",
+        error_room_full: "満員です",
+        error_game_started: "ゲーム進行中",
+        error_join_fail: "参加失敗",
+        bet_prefix: "ベット",
+        call_prefix: "コール"
+      },
+      zh: {
+        connecting: "连接服务器中...",
+        gameTitle: "德州扑克 (联机版)",
+        nicknameLabel: "你的昵称",
+        roomIdLabel: "房间 ID",
+        joinRoomBtn: "加入房间",
+        createRoomBtn: "创建房间",
+        pot: "底池",
+        room: "房间",
+        online: "在线",
+        leaveRoomBtn: "退出",
+        raiseLabel: "加注",
+        foldBtn: "弃牌",
+        checkBtn: "过牌",
+        callBtn: "跟注",
+        raiseBtn: "加注",
+        allInBtn: "全押",
+        phaseLabel: "阶段",
+        waiting: "等待中",
+        initialChips: "初始筹码",
+        bigBlind: "大盲注",
+        smallBlindAuto: "小盲自动",
+        waitForHost: "等待房主开始...",
+        startGameBtn: "开始游戏",
+        waitPlayerBtn: "等待玩家",
+        // Status & Phase
+        status_fold: "弃牌",
+        status_check: "过牌",
+        status_call: "跟注",
+        status_raise: "加注",
+        status_all_in: "全押",
+        status_small_blind: "小盲",
+        status_big_blind: "大盲",
+        status_eliminated: "淘汰",
+        status_won: "获胜",
+        phase_preflop: "翻牌前",
+        phase_flop: "翻牌",
+        phase_turn: "转牌",
+        phase_river: "河牌",
+        phase_showdown: "摊牌",
+        // Hands
+        hand_high_card: "高牌",
+        hand_pair: "一对",
+        hand_two_pairs: "两对",
+        hand_three_of_a_kind: "三条",
+        hand_straight: "顺子",
+        hand_flush: "同花",
+        hand_full_house: "葫芦",
+        hand_four_of_a_kind: "四条",
+        hand_straight_flush: "同花顺",
+        // Messages
+        msg_your_turn: "你的回合",
+        msg_thinking: " 思考中",
+        msg_winner: "你是冠军！",
+        msg_bankruptcy: "你已破产，进入观战模式",
+        msg_game_reset: "游戏即将重置...",
+        error_nickname: "昵称必须2-10字符",
+        error_room_id: "请输入房间ID",
+        error_room_dead: "房间已失效",
+        error_room_full: "房间已满",
+        error_game_started: "游戏已开始",
+        error_join_fail: "加入失败",
+        bet_prefix: "下注",
+        call_prefix: "跟注"
+      }
+    };
+
+    let currentLang = "en";
+
+    window.updateLanguage = (lang) => {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      
+      // Update all static elements with data-i18n
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (TRANSLATIONS[lang][key]) {
+          el.innerText = TRANSLATIONS[lang][key];
+        }
+      });
+
+      // Trigger a re-render if game is active to update dynamic texts
+      if (gameUI && gameUI.lastState) {
+        gameUI.renderGameState(gameUI.lastState, network.localUserId);
+      }
+    };
+
+    const t = (key) => {
+      return TRANSLATIONS[currentLang][key] || key; // Fallback to key if not found
+    };
+
+
+    // --- CONSTANTS & UTILS ---
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    const getRandomInt = (min, max) =>
-      Math.floor(Math.random() * (max - min + 1)) + min;
     const SUITS = ["♠", "♥", "♣", "♦"];
-    const RANKS = [
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "J",
-      "Q",
-      "K",
-      "A",
-    ];
-    const RANK_VALUES = {
-      2: 2,
-      3: 3,
-      4: 4,
-      5: 5,
-      6: 6,
-      7: 7,
-      8: 8,
-      9: 9,
-      10: 10,
-      J: 11,
-      Q: 12,
-      K: 13,
-      A: 14,
-    };
-    const PHASE_NAME_MAP = {
-      waiting: "等待中",
-      preflop: "翻牌前",
-      flop: "翻牌",
-      turn: "转牌",
-      river: "河牌",
-      showdown: "摊牌",
+    const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+    const RANK_VALUES = { 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, J: 11, Q: 12, K: 13, A: 14 };
+    
+    // Map phases to translation keys
+    const PHASE_KEY_MAP = {
+      waiting: "waiting",
+      preflop: "phase_preflop",
+      flop: "phase_flop",
+      turn: "phase_turn",
+      river: "phase_river",
+      showdown: "phase_showdown",
     };
 
-    // --- 移除: AI 姓名库 ---
-
-    // --- 移除: AI 台词库 ---
-
-    // --- Firebase 全局变量 ---
+    // --- FIREBASE GLOBALS ---
     let db, auth, app;
     let localUserId = null;
-    let localPlayerName = "玩家";
-    let currentRoomId = null;
-    let unsubscribeRoom = null; // 用于取消 Firestore 监听
-    let sound; // 音效管理器
+    let localPlayerName = "Guest";
+    let sound;
 
-    // --- 你的 Firebase 配置 (已修改为使用环境变量) ---
-    const firebaseConfig =
-      typeof __firebase_config !== "undefined"
-        ? JSON.parse(__firebase_config)
-        : {
-          // 本地测试的回退 (使用你之前提供的配置)
-          apiKey: "AIzaSyBX_mHFj3VHsx6U38Ib9pDJWCrnlSlR_g4",
-          authDomain: "texas-hold-em-poker-1.firebaseapp.com",
-          projectId: "texas-hold-em-poker-1",
-          storageBucket: "texas-hold-em-poker-1.firebasestorage.app",
-          messagingSenderId: "401916350194",
-          appId: "1:401916350194:web:2b38d3da714968c8cd0a6b",
-          measurementId: "G-HRQ5N6G7KD",
-        };
+    const firebaseConfig = typeof __firebase_config !== "undefined" ? JSON.parse(__firebase_config) : {
+       apiKey: "AIzaSyBX_mHFj3VHsx6U38Ib9pDJWCrnlSlR_g4",
+       authDomain: "texas-hold-em-poker-1.firebaseapp.com",
+       projectId: "texas-hold-em-poker-1",
+       storageBucket: "texas-hold-em-poker-1.firebasestorage.app",
+       messagingSenderId: "401916350194",
+       appId: "1:401916350194:web:2b38d3da714968c8cd0a6b"
+    };
 
-    // --- Canvas 运行环境特定的全局变量 (用于本地测试的回退) ---
-    const appId =
-      typeof __app_id !== "undefined" ? __app_id : "poker-game-test";
-    const initialAuthToken =
-      typeof __initial_auth_token !== "undefined"
-        ? __initial_auth_token
-        : null;
+    const appId = typeof __app_id !== "undefined" ? __app_id : "poker-game-test";
+    const initialAuthToken = typeof __initial_auth_token !== "undefined" ? __initial_auth_token : null;
 
-    // --- 核心：游戏逻辑处理器 (纯函数) ---
-    // 这是一个纯函数，接收当前状态和动作，返回新状态
-    // 这是联机版的核心，所有客户端都依赖这个函数来同步游戏状态
+    // --- GAME LOGIC (PURE FUNCTIONS) ---
+    
     function processAction(currentState, actingUserId, action, amount = 0) {
-      // 复制一份新状态，避免修改原状态
       let newState = JSON.parse(JSON.stringify(currentState));
       const config = newState.config || { bigBlind: 20 };
       let player = newState.players[actingUserId];
 
-      // 1. 检查是否轮到该玩家
-      const currentPlayerId =
-        newState.playerOrder[newState.currentPlayerIndex];
+      const currentPlayerId = newState.playerOrder[newState.currentPlayerIndex];
       if (currentPlayerId !== actingUserId) {
-        console.warn(
-          `非法操作: ${actingUserId} 试图在 ${currentPlayerId} 的回合行动`
-        );
-        return currentState; // 返回原状态
+        return currentState;
       }
 
-      // 2. 玩家已弃牌或All-in，不能行动
-      if (
-        player.folded ||
-        (player.chips === 0 && newState.phase !== "waiting")
-      ) {
-        console.warn(`非法操作: ${actingUserId} 已经弃牌或All-in`);
-        // 自动跳到下一位
-        newState.currentPlayerIndex =
-          (newState.currentPlayerIndex + 1) % newState.playerOrder.length;
-        return newState; // 返回跳过后的状态
+      if (player.folded || (player.chips === 0 && newState.phase !== "waiting")) {
+        newState.currentPlayerIndex = (newState.currentPlayerIndex + 1) % newState.playerOrder.length;
+        return newState;
       }
 
       const diff = newState.currentMaxBet - player.currentBet;
       let triggerAllInEffect = false;
       let logMsg = "";
-      let actionContext = action; // 用于AI语音
 
-      // 3. 处理玩家动作
       if (action === "fold") {
         player.folded = true;
-        player.status = "弃牌";
-        logMsg = `${player.name} 弃牌`;
-        // *** 移除: sound.playFold() (请求 #1) ***
+        player.status = "status_fold"; 
+        logMsg = `${player.name} Folded`;
       } else if (action === "check") {
-        // 只有在 diff 为 0 时才能 check
-        if (diff > 0) {
-          console.warn(`非法操作: ${player.name} 试图在需要跟注时过牌`);
-          return currentState; // 非法操作，返回原状态
-        }
-        player.status = "过牌";
-        logMsg = `${player.name} 过牌`;
-        // *** 移除: sound.playCheck() (请求 #1) ***
+        if (diff > 0) return currentState;
+        player.status = "status_check";
+        logMsg = `${player.name} Checked`;
       } else if (action === "call") {
         let callAmount = Math.min(diff, player.chips);
         let isAllIn = callAmount === player.chips && diff > 0;
-
         player.chips -= callAmount;
         player.currentBet += callAmount;
         newState.pot += callAmount;
-
-        player.status = isAllIn ? "全押" : "跟注";
-        logMsg = `${player.name} ${isAllIn ? "全押" : "跟注"} $${callAmount}`;
-        if (isAllIn) {
-          triggerAllInEffect = true;
-          actionContext = "all_in";
-        } else {
-          // *** 移除: sound.playChip() (请求 #1) ***
-        }
+        player.status = isAllIn ? "status_all_in" : "status_call";
+        logMsg = `${player.name} ${isAllIn ? "All-in" : "Called"} $${callAmount}`;
+        if (isAllIn) triggerAllInEffect = true;
       } else if (action === "raise") {
-        // amount 是玩家 *总共* 投入的金额
-        let raiseAmount = amount - player.currentBet; // 本次额外投入的
-        let actualAmount = amount; // 本次动作的总支付额
+        let raiseAmount = amount - player.currentBet; 
+        let actualAmount = amount; 
 
-        // 验证加注
-        // 1. 支付额必须 > 当前最大下注
-        if (
-          actualAmount <= newState.currentMaxBet &&
-          actualAmount < player.chips
-        ) {
-          console.warn(
-            `非法加注: $${actualAmount} 小于等于 $${newState.currentMaxBet}`
-          );
-          return currentState;
-        }
-        // 2. 加注额必须 >= 上次加注额 (除非是All-in)
+        if (actualAmount <= newState.currentMaxBet && actualAmount < player.chips) return currentState;
         const extraRaise = actualAmount - newState.currentMaxBet;
-        if (
-          extraRaise < newState.lastRaiseAmount &&
-          actualAmount < player.chips
-        ) {
-          console.warn(
-            `非法加注: 额外加注 $${extraRaise} 小于最小加注 $${newState.lastRaiseAmount}`
-          );
-          return currentState;
-        }
+        if (extraRaise < newState.lastRaiseAmount && actualAmount < player.chips) return currentState;
 
-        // *** 错误修复:
-        // *** 原始错误逻辑: let isAllIn = (actualAmount >= player.chips);
-        // *** (actualAmount 是总下注额, player.chips 是剩余筹码, 导致在筹码和总下注额相等时错误触发All-in)
-        // *** 正确逻辑: 检查 "本次支付的金额" 是否大于或等于 "剩余筹码"
         let isAllIn = raiseAmount >= player.chips;
-        // *** 错误修复结束 ***
-
         if (isAllIn) {
-          actualAmount = player.chips + player.currentBet; // 总投入等于所有筹码
-          raiseAmount = player.chips; // 额外投入等于剩余筹码
+          actualAmount = player.chips + player.currentBet;
+          raiseAmount = player.chips;
           triggerAllInEffect = true;
-          actionContext = "all_in";
         }
 
-        // 更新玩家状态
         player.chips -= raiseAmount;
-        player.currentBet = actualAmount; // 总投入
+        player.currentBet = actualAmount;
         newState.pot += raiseAmount;
 
-        // 更新公共状态
-        const newRaiseAmount = actualAmount - newState.currentMaxBet; // 新的 *额外* 加注额
-        // 只有当不是 "小于最小加注的all-in" 时，才更新 lastRaiseAmount
+        const newRaiseAmount = actualAmount - newState.currentMaxBet; 
         if (!isAllIn || newRaiseAmount >= newState.lastRaiseAmount) {
           newState.lastRaiseAmount = newRaiseAmount;
         }
         newState.currentMaxBet = actualAmount;
-        newState.playersActed.length = 0; // 重置已行动玩家
+        newState.playersActed.length = 0; 
 
-        player.status = isAllIn ? "全押" : "加注";
-        logMsg = `${player.name} ${isAllIn ? "全押" : "加注"
-          } $${raiseAmount}`;
-
-        if (!isAllIn) {
-          // *** 移除: sound.playRaise() (请求 #1) ***
-          actionContext = `${newState.phase}_raise`;
-        }
+        player.status = isAllIn ? "status_all_in" : "status_raise";
+        logMsg = `${player.name} ${isAllIn ? "All-in" : "Raised to"} $${actualAmount}`;
       }
 
-      // 4. 记录日志和AI语音
       if (logMsg) {
         newState.logs.push(logMsg);
-        if (newState.logs.length > 20) newState.logs.shift(); // 保持日志简洁
-
-        // *** 移除: AI 语音触发 ***
+        if (newState.logs.length > 20) newState.logs.shift();
       }
 
-      // 5. 标记玩家已行动
       if (!newState.playersActed.includes(actingUserId)) {
         newState.playersActed.push(actingUserId);
       }
 
-      // 6. 检查回合是否结束，或进入下一阶段
+      const activePlayers = newState.playerOrder.map(uid => newState.players[uid]).filter(p => !p.folded);
+      const playersWithChips = activePlayers.filter(p => p.chips > 0);
 
-      const activePlayers = newState.playerOrder
-        .map((uid) => newState.players[uid])
-        .filter((p) => !p.folded);
-
-      const playersWithChips = activePlayers.filter((p) => p.chips > 0);
-
-      // --- 修复: 移植 读博.html 的 "isRoundComplete" 逻辑 ---
-      // (删除旧的 isBetsMatched, allActed, bigBlindHadOption)
       const isRoundComplete = activePlayers.every(p => {
-        const isAllIn = p.chips === 0 && !p.folded; // 必须是 all-in 且未弃牌
+        const isAllIn = p.chips === 0 && !p.folded; 
         const matchBet = p.currentBet === newState.currentMaxBet;
         const hasActed = newState.playersActed.includes(p.uid);
-
-        if (isAllIn) return true; // All-in 玩家被视为 "已完成"
-
-        // 检查大盲注 'option'
+        if (isAllIn) return true; 
         if (newState.phase === 'preflop' && newState.currentMaxBet === config.bigBlind) {
           const bbIndex = (newState.dealerIndex + 2) % newState.playerOrder.length;
-          const bbPlayerId = newState.playerOrder[bbIndex];
-          if (p.uid === bbPlayerId && !hasActed) {
-            return false; // 大盲注玩家尚未行动
-          }
+          if (p.uid === newState.playerOrder[bbIndex] && !hasActed) return false;
         }
-        return hasActed && matchBet; // 其他玩家必须已行动且匹配
+        return hasActed && matchBet; 
       });
-      // --- 修复结束 ---
 
-      // --- 检查1: 是否只剩一个赢家 (其他人全弃牌) ---
       if (activePlayers.length === 1) {
-        newState = advanceToShowdown(newState, activePlayers[0]); // 传入唯一赢家
+        newState = advanceToShowdown(newState, activePlayers[0]); 
       }
-      // --- 检查3: 是否自动摊牌 (多人All-in) ---
-      // (playersWithChips <= 1 确保了 all-in)
-      else if (
-        isRoundComplete && // 使用新逻辑
-        playersWithChips.length <= 1 &&
-        newState.phase !== "showdown"
-      ) {
-        // 所有人都跟了, 且只有0或1个玩家还有筹码
+      else if (isRoundComplete && playersWithChips.length <= 1 && newState.phase !== "showdown") {
         newState = runAutoShowdown(newState);
       }
-      // --- 检查2: 是否进入下一阶段 ---
       else if (isRoundComplete) {
-        // 回合结束，进入下一阶段 (flop, turn, river, showdown)
         newState = advanceToNextPhase(newState);
       }
-      // --- 检查4: 轮到下一个人 ---
       else {
-        // 循环找到下一个未弃牌、未All-in的玩家
-        // (移植 读博.html 的 nextTurn 查找逻辑)
         let loops = 0;
         do {
-          newState.currentPlayerIndex =
-            (newState.currentPlayerIndex + 1) % newState.playerOrder.length;
-
-          const nextPlayerId =
-            newState.playerOrder[newState.currentPlayerIndex];
-          const nextPlayer = newState.players[nextPlayerId];
-
-          // 不需要检查 hasActed，因为 All-in 玩家在任何情况下都不可能再行动
-          const isAllIn = nextPlayer.chips === 0;
-
-          if (nextPlayer.folded || isAllIn) {
+          newState.currentPlayerIndex = (newState.currentPlayerIndex + 1) % newState.playerOrder.length;
+          const nextPlayer = newState.players[newState.playerOrder[newState.currentPlayerIndex]];
+          if (nextPlayer.folded || nextPlayer.chips === 0) {
             loops++;
-            continue; // 跳过这个玩家
+            continue; 
           }
-          // *** 修复结束 ***
-
-          break; // 找到了
-
-        } while (loops <= newState.playerOrder.length * 2); // 增加循环保护
+          break; 
+        } while (loops <= newState.playerOrder.length * 2); 
       }
 
-      // 7. 处理 All-in 特效 (注意：这是客户端逻辑，但我们需要一个标记)
-      if (triggerAllInEffect) {
-        newState.lastAllInPlayer = player.name; // 标记谁触发了All-in
-      }
-
+      if (triggerAllInEffect) newState.lastAllInPlayer = player.name; 
       return newState;
     }
 
-    // --- 游戏逻辑：进入下一阶段 ---
     function advanceToNextPhase(currentState) {
       let newState = JSON.parse(JSON.stringify(currentState));
-
       const config = newState.config || { bigBlind: 20 };
-      // --- 新增: 立即退还多余的下注 ---
       newState = returnExcessBets(newState);
-      // --- 结束新增 ---
 
-      // 1. 结算本轮下注 (移入 accumulatedBet)
-      let totalPotForThisRound = 0;
-      newState.playerOrder.forEach((uid) => {
+      newState.playerOrder.forEach(uid => {
         const p = newState.players[uid];
         p.accumulatedBet += p.currentBet;
-        totalPotForThisRound += p.currentBet;
-        p.currentBet = 0; // 清空当前轮下注
-        p.status = ""; // 清空状态
+        p.currentBet = 0; 
+        p.status = ""; 
       });
 
-      // 2. 重置下注状态
       newState.currentMaxBet = 0;
-      newState.lastRaiseAmount = config.bigBlind; // 重置最小加注额
+      newState.lastRaiseAmount = config.bigBlind; 
       newState.playersActed = [];
 
-      // 3. 推进阶段
       if (newState.phase === "preflop") {
         newState.phase = "flop";
-        newState.communityCards.push(
-          newState.deck.pop(),
-          newState.deck.pop(),
-          newState.deck.pop()
-        );
-        newState.logs.push("--- 翻牌 ---"); // *** 修复: 移除 "圈" ***
-        // *** 移除: sound.playCard() (请求 #1) ***
+        newState.communityCards.push(newState.deck.pop(), newState.deck.pop(), newState.deck.pop());
+        newState.logs.push("--- Flop ---");
       } else if (newState.phase === "flop") {
         newState.phase = "turn";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 转牌 ---"); // *** 修复: 移除 "圈" ***
-        // *** 移除: sound.playCard() (请求 #1) ***
+        newState.logs.push("--- Turn ---");
       } else if (newState.phase === "turn") {
         newState.phase = "river";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 河牌 ---"); // *** 修复: 移除 "圈" ***
-        // *** 移除: sound.playCard() (请求 #1) ***
+        newState.logs.push("--- River ---");
       } else if (newState.phase === "river") {
-        // 进入摊牌
         newState = advanceToShowdown(newState);
-        return newState; // 摊牌逻辑会处理后续
+        return newState; 
       }
 
-      // 4. 找到下一个行动的玩家 (从庄家左侧开始)
       let nextIdx = (newState.dealerIndex + 1) % newState.playerOrder.length;
       let loops = 0;
       while (loops <= newState.playerOrder.length) {
-        const pId = newState.playerOrder[nextIdx];
-        const p = newState.players[pId];
-        if (!p.folded && p.chips > 0) {
-          break; // 找到了
-        }
+        const p = newState.players[newState.playerOrder[nextIdx]];
+        if (!p.folded && p.chips > 0) break; 
         nextIdx = (nextIdx + 1) % newState.playerOrder.length;
         loops++;
       }
       newState.currentPlayerIndex = nextIdx;
-
       return newState;
     }
 
-    // --- 游戏逻辑：自动发完所有牌 (多人All-in) ---
     function runAutoShowdown(currentState) {
       let newState = JSON.parse(JSON.stringify(currentState));
-
-      // --- 新增: 立即退还多余的下注 (来自 读博.html) ---
       newState = returnExcessBets(newState);
-      // --- 结束新增 ---
 
-      // 1. 结算当前轮
-      newState.playerOrder.forEach((uid) => {
+      newState.playerOrder.forEach(uid => {
         const p = newState.players[uid];
         p.accumulatedBet += p.currentBet;
         p.currentBet = 0;
-        p.status = p.chips === 0 && !p.folded ? "All-in" : p.status;
+        p.status = p.chips === 0 && !p.folded ? "status_all_in" : p.status;
       });
 
-      newState.currentPlayerIndex = -1; // 停止所有玩家行动
+      newState.currentPlayerIndex = -1; 
 
-      // 2. 推进到下一个发牌阶段
       if (newState.phase === "preflop") {
         newState.phase = "flop";
-        newState.communityCards.push(
-          newState.deck.pop(),
-          newState.deck.pop(),
-          newState.deck.pop()
-        );
-        newState.logs.push("--- 翻牌 ---");
-        // *** 移除: sound.playCard() (请求 #1) ***
-        newState.nextPhaseTimer = 1500; // 设置1.5秒计时器
+        newState.communityCards.push(newState.deck.pop(), newState.deck.pop(), newState.deck.pop());
+        newState.logs.push("--- Flop ---");
+        newState.nextPhaseTimer = 1500;
       } else if (newState.phase === "flop") {
         newState.phase = "turn";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 转牌 ---");
-        // *** 移除: sound.playCard() (请求 #1) ***
-        newState.nextPhaseTimer = 1500; // 设置1.5秒计时器
+        newState.logs.push("--- Turn ---");
+        newState.nextPhaseTimer = 1500;
       } else if (newState.phase === "turn") {
         newState.phase = "river";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 河牌 ---");
-        // *** 移除: sound.playCard() (请求 #1) ***
-        newState.nextPhaseTimer = 1500; // 设置1.5秒计时器
+        newState.logs.push("--- River ---");
+        newState.nextPhaseTimer = 1500;
       } else if (newState.phase === "river") {
-        // 牌已发完, 立即进入摊牌
-        newState.nextPhaseTimer = 0; // 确保清除计时器
+        newState.nextPhaseTimer = 0; 
         newState = advanceToShowdown(newState);
       }
-
       return newState;
     }
 
-    // --- 新增: 移植自 读博.html 的退款逻辑 ---
     function returnExcessBets(currentState) {
       let newState = JSON.parse(JSON.stringify(currentState));
-      const activePlayers = newState.playerOrder
-        .map((uid) => newState.players[uid])
-        .filter((p) => !p.folded);
-
+      const activePlayers = newState.playerOrder.map(uid => newState.players[uid]).filter(p => !p.folded);
       if (activePlayers.length < 2) return newState;
 
-      // 复制一份用于排序，不修改原始 players 对象
-      const sortedPlayers = [...activePlayers].sort(
-        (a, b) => b.currentBet - a.currentBet
-      );
-
+      const sortedPlayers = [...activePlayers].sort((a, b) => b.currentBet - a.currentBet);
       const highest = sortedPlayers[0];
       const secondHighest = sortedPlayers[1];
 
       if (highest.currentBet > secondHighest.currentBet) {
         const refund = highest.currentBet - secondHighest.currentBet;
-        const playerToRefund = newState.players[highest.uid]; // 获取原始对象
-
+        const playerToRefund = newState.players[highest.uid]; 
         playerToRefund.chips += refund;
         playerToRefund.currentBet -= refund;
         newState.pot -= refund;
-
-        newState.logs.push(
-          `退还 $${refund} 给 ${playerToRefund.name} (无人跟注)`
-        );
+        newState.logs.push(`Refunding $${refund} to ${playerToRefund.name}`);
       }
       return newState;
     }
-    // --- 结束新增 ---
 
-    // --- 游戏逻辑：摊牌或结算 ---
     function advanceToShowdown(currentState, soleWinner = null) {
-      let newState = JSON.parse(JSON.stringify(currentState)); // *** 修复: 必须克隆 ***
+      let newState = JSON.parse(JSON.stringify(currentState)); 
       newState.phase = "showdown";
-      newState.currentPlayerIndex = -1; // 停止行动
+      newState.currentPlayerIndex = -1; 
 
-      // 1. 结算最后一轮下注 (不再需要, pot 在 processAction 中已更新)
-      // let finalPot = 0; ... (旧的错误逻辑已移除)
-
-      // 2. 退还多余的下注 (不再需要, 已在 advanceToNextPhase 中处理)
-
-      // 3. 情况A: 只有一个赢家 (其他人都弃牌了)
       if (soleWinner) {
         const winnerPlayer = newState.players[soleWinner.uid];
-
-        // *** 修复: 不再重新计算底池 ***
-        // `newState.pot` 已经是正确的了 (来自 processAction)
-        // 我们只需要清空桌上的 'currentBet'
-        newState.playerOrder.forEach((uid) => {
-          newState.players[uid].currentBet = 0;
-        });
-
+        newState.playerOrder.forEach(uid => newState.players[uid].currentBet = 0);
         winnerPlayer.chips += newState.pot;
-        newState.logs.push(
-          `--- ${winnerPlayer.name} 获胜, 赢得 $${newState.pot} ---`
-        );
-        newState.highlightWinner = winnerPlayer.uid; // 标记赢家高亮
+        newState.logs.push(`--- ${winnerPlayer.name} Wins $${newState.pot} ---`);
+        newState.highlightWinner = winnerPlayer.uid; 
       }
-      // 4. 情况B: 多人摊牌 (*** 升级: 完整的边池计算逻辑 ***)
       else {
-        // *** 修复: 将 'currentBet' 移入 'accumulatedBet' 的逻辑移到这里 ***
         let finalPot = 0;
-        newState.playerOrder.forEach((uid) => {
+        newState.playerOrder.forEach(uid => {
           const p = newState.players[uid];
-          // if (!soleWinner) 总是 true
           p.accumulatedBet += p.currentBet;
-          finalPot += p.accumulatedBet; // 累加总底池
+          finalPot += p.accumulatedBet; 
           p.currentBet = 0;
         });
-        newState.pot = finalPot; // 确保底池金额正确
-        // *** 修复结束 ***
-
-        // *** 修复: 必须先获取所有玩家, 再筛选 activePlayers ***
-        const allPlayers = newState.playerOrder.map(
-          (uid) => newState.players[uid]
-        );
-        const activePlayers = allPlayers.filter((p) => !p.folded);
+        newState.pot = finalPot; 
+        const allPlayers = newState.playerOrder.map(uid => newState.players[uid]);
+        const activePlayers = allPlayers.filter(p => !p.folded);
 
         if (activePlayers.length === 0) {
-          newState.logs.push("--- 无人获胜？回合结束 ---");
+          newState.logs.push("--- Round End (No Winner?) ---");
         } else {
-          // 4a. 计算每个人的最佳手牌
-          activePlayers.forEach((p) => {
-            p.bestHand = HandEvaluator.evaluate(
-              p.holeCards,
-              newState.communityCards
-            );
-            p.status = p.bestHand.name; // 显示牌型
+          activePlayers.forEach(p => {
+            // Returns {score, name: 'hand_high_card', ...}
+            p.bestHand = HandEvaluator.evaluate(p.holeCards, newState.communityCards);
           });
 
-          // 4b. 找出所有不同的下注额 (边池级别)
-          // *** (还原为 读博.html 逻辑) ***
-          let distinctBets = [
-            ...new Set(activePlayers.map((p) => p.accumulatedBet)), // *** 修复: 必须使用 activePlayers, 而不是 allPlayers ***
-          ]
-            .filter((bet) => bet > 0) // (保留) 移除 0 赌注
-            .sort((a, b) => a - b);
-
-          // (不再需要 0 级别, 读博.html 的逻辑是从 prevBet=0 开始)
-
+          let distinctBets = [...new Set(activePlayers.map(p => p.accumulatedBet))].filter(bet => bet > 0).sort((a, b) => a - b);
           let winnerLogs = [];
-          newState.highlightCards = new Set(); // 用于高亮获胜卡牌
+          newState.highlightCards = new Set(); 
 
-          // 4c. 逐级计算边池
-          // --- 还原为 读博.html 的边池逻辑 ---
           let prevBet = 0;
-
           distinctBets.forEach((betLevel, index) => {
             let potAmount = 0;
-
-            // 1. 从 *所有* 玩家那里计算这个池的钱
-            allPlayers.forEach((p) => {
-              if (p.accumulatedBet >= betLevel) {
-                potAmount += betLevel - prevBet;
-              } else if (p.accumulatedBet > prevBet) {
-                potAmount += p.accumulatedBet - prevBet;
-              }
+            allPlayers.forEach(p => {
+              if (p.accumulatedBet >= betLevel) potAmount += betLevel - prevBet;
+              else if (p.accumulatedBet > prevBet) potAmount += p.accumulatedBet - prevBet;
             });
 
-            // 2. 找出有资格赢这个池的玩家 (未弃牌 且 赌注足够)
-            let contributors = activePlayers.filter(
-              (p) => p.accumulatedBet >= betLevel
-            );
-
+            let contributors = activePlayers.filter(p => p.accumulatedBet >= betLevel);
             if (potAmount > 0 && contributors.length > 0) {
-              // 3. 找出赢家
               let bestScore = -1;
               let winners = [];
-              let winHandName = "";
-
-              contributors.forEach((p) => {
+              
+              contributors.forEach(p => {
                 if (p.bestHand.score > bestScore) {
                   bestScore = p.bestHand.score;
                   winners = [p];
-                  winHandName = p.bestHand.name;
                 } else if (Math.abs(p.bestHand.score - bestScore) < 0.1) {
                   winners.push(p);
                 }
               });
 
-              // 4. 分钱
               const winPer = Math.floor(potAmount / winners.length);
               let remainder = potAmount % winners.length;
+              const potName = index === 0 ? "Main Pot" : `Side Pot ${index}`;
+              let winnerNames = winners.map(w => w.name).join(", ");
+              // Logs remain in English for consistency across clients
+              winnerLogs.push(`${potName}($${potAmount}): ${winnerNames} Wins`);
 
-              // 5. 正确命名 "主池" 和 "边池"
-              const potName = index === 0 ? "主池" : `边池${index}`;
-              let winnerNames = winners.map((w) => w.name).join(", ");
-              winnerLogs.push(
-                `${potName}($${potAmount}): ${winnerNames} 获胜 (${winHandName})`
-              );
-
-              winners.forEach((w, idx) => {
+              winners.forEach(w => {
                 let winnings = winPer;
-                if (remainder > 0) {
-                  winnings++;
-                  remainder--;
-                }
+                if (remainder > 0) { winnings++; remainder--; }
                 newState.players[w.uid].chips += winnings;
-                newState.highlightWinner = w.uid; // 高亮
-                // 高亮获胜牌
-                if (w.bestHand.bestCards) {
-                  w.bestHand.bestCards.forEach((c) =>
-                    newState.highlightCards.add(c.id)
-                  );
-                }
-              });
-
-              // 6. AI 语音 (输家)
-              let losers = contributors.filter((p) => !winners.includes(p));
-              losers.forEach((l) => {
-                // *** 移除: AI 语音触发 ***
+                newState.highlightWinner = w.uid; 
+                if (w.bestHand.bestCards) w.bestHand.bestCards.forEach(c => newState.highlightCards.add(c.id));
               });
             }
             prevBet = betLevel;
           });
-          // --- 边池逻辑结束 ---
 
-          // 将 Set 转换为数组以便
           newState.highlightCards = Array.from(newState.highlightCards);
-          newState.logs.push("--- 摊牌结果 ---", ...winnerLogs);
+          newState.logs.push("--- Showdown Results ---", ...winnerLogs);
         }
       }
-      // (*** 结束修改 ***)
-
-      // 5. 标记回合结束，准备下一轮
-      newState.nextRoundTimer = 6000; // 6秒后开始新回合
-
-      // --- 恢复的逻辑: 播放局结束音效 ---
+      newState.nextRoundTimer = 6000; 
       sound.playHandEnd();
-      // --- 结束 ---
-
       return newState;
     }
 
-    // --- 游戏逻辑：房主开始新回合 ---
     function startNewRound(currentState) {
       let newState = JSON.parse(JSON.stringify(currentState));
+      const config = newState.config || { initialChips: 2000, smallBlind: 10, bigBlind: 20 };
 
-      // *** 修改 1: 获取配置 (如果有)，否则使用默认值 ***
-      const config = newState.config || {
-        initialChips: 2000,
-        smallBlind: 10,
-        bigBlind: 20
-      };
-      // *** 结束修改 ***
-
-      // 1. 淘汰筹码为 0 的玩家
       let activePlayerIds = [];
-      const allPlayerIds = Object.keys(newState.players); // 获取所有玩家ID
+      const allPlayerIds = Object.keys(newState.players); 
 
-      allPlayerIds.forEach((uid) => {
-        if (newState.players[uid].chips > 0) {
-          activePlayerIds.push(uid);
-        } else {
-          newState.players[uid].folded = true; // 标记为旁观
-          newState.players[uid].status = "淘汰";
+      allPlayerIds.forEach(uid => {
+        if (newState.players[uid].chips > 0) activePlayerIds.push(uid);
+        else {
+          newState.players[uid].folded = true; 
+          newState.players[uid].status = "status_eliminated";
         }
       });
 
-      // 2. 检查游戏是否结束 (只剩1人或0人)
       if (activePlayerIds.length < 2) {
         const winnerId = activePlayerIds.length > 0 ? activePlayerIds[0] : null;
-        const winnerName = winnerId ? newState.players[winnerId].name : "无人";
-
+        const winnerName = winnerId ? newState.players[winnerId].name : "No one";
         let newLogs = [...newState.logs];
-        newLogs.push(`--- 游戏结束! ${winnerName} 获胜! ---`);
-        newLogs.push("--- 房间已重置, 等待房主重新开始 ---");
-        if (newLogs.length > 20) newLogs = newLogs.slice(newLogs.length - 20);
-
-        // *** 修改 2: 游戏结束后，重置筹码为配置的初始值 ***
+        newLogs.push(`--- Game Over! ${winnerName} Wins! ---`);
+        
         const resetPlayers = {};
-        allPlayerIds.forEach((uid) => {
+        allPlayerIds.forEach(uid => {
           const p = newState.players[uid];
           if (p) {
-            resetPlayers[uid] = {
-              ...p,
-              chips: config.initialChips,
-              holeCards: [],
-              folded: false,
-              currentBet: 0,
-              accumulatedBet: 0,
-              status: "等待中",
-              bestHand: null,
-            };
+            resetPlayers[uid] = { ...p, chips: config.initialChips, holeCards: [], folded: false, currentBet: 0, accumulatedBet: 0, status: "waiting", bestHand: null };
           }
         });
 
         return {
-          status: "waiting", // 回到等待状态
+          status: "waiting",
           hostId: newState.hostId,
-          config: config, // <--- 确保保留配置
+          config: config,
           players: resetPlayers,
           playerOrder: allPlayerIds,
           communityCards: [],
@@ -1293,7 +1164,7 @@
           currentPlayerIndex: -1,
           currentMaxBet: 0,
           phase: "waiting",
-          lastRaiseAmount: config.bigBlind, // <--- 使用配置值 (原为 BIG_BLIND)
+          lastRaiseAmount: config.bigBlind,
           deck: [],
           logs: newLogs,
           highlightWinner: winnerId,
@@ -1301,21 +1172,13 @@
           nextRoundTimer: 0,
           nextPhaseTimer: 0,
         };
-        // *** 结束修改 ***
       }
 
-      // 如果游戏未结束, 使用活跃玩家列表
       newState.playerOrder = activePlayerIds;
-
-      // 3. 重置状态
       newState.communityCards = [];
       newState.pot = 0;
       newState.currentMaxBet = 0;
-
-      // *** 修改 3: 重置最小加注额为大盲注配置 ***
-      newState.lastRaiseAmount = config.bigBlind; // <--- 使用配置值
-      // *** 结束修改 ***
-
+      newState.lastRaiseAmount = config.bigBlind; 
       newState.phase = "preflop";
       newState.playersActed = [];
       newState.highlightWinner = null;
@@ -1323,8 +1186,7 @@
       newState.nextRoundTimer = 0;
       newState.nextPhaseTimer = 0;
 
-      // 4. 重置玩家
-      newState.playerOrder.forEach((uid) => {
+      newState.playerOrder.forEach(uid => {
         const p = newState.players[uid];
         p.holeCards = [];
         p.folded = false;
@@ -1334,17 +1196,10 @@
         p.bestHand = null;
       });
 
-      // 5. 洗牌
       let deck = [];
       for (let suit of SUITS) {
         for (let rank of RANKS) {
-          deck.push({
-            suit,
-            rank,
-            value: RANK_VALUES[rank],
-            color: suit === "♥" || suit === "♦" ? "red" : "black",
-            id: Math.random().toString(36).substr(2, 9),
-          });
+          deck.push({ suit, rank, value: RANK_VALUES[rank], color: suit === "♥" || suit === "♦" ? "red" : "black", id: Math.random().toString(36).substr(2, 9) });
         }
       }
       for (let i = deck.length - 1; i > 0; i--) {
@@ -1353,333 +1208,192 @@
       }
       newState.deck = deck;
 
-      // 6. 移动庄家
-      newState.dealerIndex =
-        (newState.dealerIndex + 1) % newState.playerOrder.length;
+      newState.dealerIndex = (newState.dealerIndex + 1) % newState.playerOrder.length;
       const numPlayers = newState.playerOrder.length;
 
-      // 7. 放置盲注
       const sbIndex = (newState.dealerIndex + 1) % numPlayers;
       const bbIndex = (newState.dealerIndex + 2) % numPlayers;
+      const sbPlayer = newState.players[newState.playerOrder[sbIndex]];
+      const bbPlayer = newState.players[newState.playerOrder[bbIndex]];
 
-      const sbPlayerId = newState.playerOrder[sbIndex];
-      const bbPlayerId = newState.playerOrder[bbIndex];
-
-      // --- 修改开始: 小盲注全押检测 ---
-      const sbPlayer = newState.players[sbPlayerId];
       const sbAmount = Math.min(config.smallBlind, sbPlayer.chips);
       sbPlayer.chips -= sbAmount;
       sbPlayer.currentBet = sbAmount;
-      // 如果扣完钱筹码为0，状态必须是 "全押"，否则是 "小盲"
-      sbPlayer.status = sbPlayer.chips === 0 ? "全押" : "小盲";
-      // --- 修改结束 ---
+      sbPlayer.status = sbPlayer.chips === 0 ? "status_all_in" : "status_small_blind";
 
-      // --- 修改开始: 大盲注全押检测 ---
-      const bbPlayer = newState.players[bbPlayerId];
       const bbAmount = Math.min(config.bigBlind, bbPlayer.chips);
       bbPlayer.chips -= bbAmount;
       bbPlayer.currentBet = bbAmount;
-      // 如果扣完钱筹码为0，状态必须是 "全押"，否则是 "大盲"
-      bbPlayer.status = bbPlayer.chips === 0 ? "全押" : "大盲";
-      // --- 修改结束 ---
+      bbPlayer.status = bbPlayer.chips === 0 ? "status_all_in" : "status_big_blind";
 
       newState.pot = sbAmount + bbAmount;
       newState.currentMaxBet = config.bigBlind;
 
-      // 8. 发手牌
       for (let i = 0; i < 2; i++) {
-        for (let uid of newState.playerOrder) {
-          newState.players[uid].holeCards.push(newState.deck.pop());
-        }
+        for (let uid of newState.playerOrder) newState.players[uid].holeCards.push(newState.deck.pop());
       }
 
-      // 9. 设置第一个行动者 (从大盲注左侧开始找)
-      // (保留你刚才修好的跳过全押玩家的逻辑)
       let nextIdx = (bbIndex + 1) % numPlayers;
       let loopCount = 0;
-
       while (loopCount < numPlayers) {
-        const pId = newState.playerOrder[nextIdx];
-        const p = newState.players[pId];
-        if (p.chips > 0) {
-          break;
-        }
+        const p = newState.players[newState.playerOrder[nextIdx]];
+        if (p.chips > 0) break;
         nextIdx = (nextIdx + 1) % numPlayers;
         loopCount++;
       }
       newState.currentPlayerIndex = nextIdx;
 
-      // *** 新增: 检查盲注阶段是否直接形成 All-in 局面 ***
-      // 获取所有正在玩且未弃牌的人
-      const activePlayersInGame = newState.playerOrder
-        .map(uid => newState.players[uid])
-        .filter(p => !p.folded);
-
-      // 获取还有筹码的人
+      const activePlayersInGame = newState.playerOrder.map(uid => newState.players[uid]).filter(p => !p.folded);
       const playersWithChips = activePlayersInGame.filter(p => p.chips > 0);
-
-      // 判定条件: 
-      // 1. 游戏里至少有2个人 (activePlayersInGame.length >= 2)
-      // 2. 拥有筹码的人数 <= 1 (意味着其他人全押了，或者所有人全押了)
-      // 这种情况在单挑时: A(5, All-in), B(10) -> B有筹码, A无 -> count=1 -> 触发
       if (activePlayersInGame.length >= 2 && playersWithChips.length <= 1) {
-        newState.logs.push("--- 盲注导致全押，自动进入摊牌 ---");
-
-        // 关键: 直接调用自动摊牌函数
-        // runAutoShowdown 会自动:
-        // 1. 调用 returnExcessBets 退还 B 多下的盲注 (10 - 5 = 5)
-        // 2. 发完剩下的公共牌
-        // 3. 进入结算
+        newState.logs.push("--- Auto All-in (Blinds) ---");
         return runAutoShowdown(newState);
       }
-      // *** 新增结束 ***
 
-      newState.logs.push("--- 新回合开始 ---");
+      newState.logs.push("--- New Round ---");
       return newState;
     }
 
-    // --- UI 渲染和音效 (客户端) ---
+    // --- UI MANAGER ---
     class GameUIManager {
       constructor() {
         this.sound = new SoundManager();
         this.dragSystem = new TableDragSystem();
         this.occlusionManager = new OcclusionManager();
-        this.lastState = null; // 用于比较状态
+        this.lastState = null; 
         this.localPlayerId = null;
         this.lastActivePlayerId = null;
         this.highlightCards = new Set();
-        this.bankruptcyScreenShown = false; // *** 新增: 破产界面显示标志 ***
-        this.lastAllInPlayerTriggered = null; // *** 修复: 移到构造函数 ***
+        this.bankruptcyScreenShown = false; 
+        this.lastAllInPlayerTriggered = null; 
 
-        // 绑定加注滑块
         document.getElementById("raise-slider").oninput = () => {
           const slider = document.getElementById("raise-slider");
           const btnRaise = document.getElementById("btn-raise");
           const valDisplay = document.getElementById("raise-val-display");
-
           if (slider && btnRaise && valDisplay && !slider.disabled) {
             const raiseVal = parseInt(slider.value);
             const maxVal = parseInt(slider.max);
-
             valDisplay.innerText = `$${raiseVal}`;
-            btnRaise.innerText =
-              raiseVal === maxVal ? "全押" : `加注 $${raiseVal}`;
+            btnRaise.innerText = raiseVal === maxVal ? t("allInBtn") : `${t("raiseBtn")} $${raiseVal}`;
           }
         };
       }
 
       initSound() {
         this.sound.init();
-        sound = this.sound; // 赋值给全局音效
+        sound = this.sound; 
       }
 
-      // --- 移除: showDialogue 函数 ---
-
-      // --- 移除: speak 函数 ---
-
-      // --- 核心渲染函数 ---
       renderGameState(state, localId) {
-        if (!state) {
-          console.log("Render: state 为空");
-          return;
-        }
-
-        // *** 新增: 确保音效被激活 (请求 #1) ***
+        if (!state) return;
         this.initSound();
 
-        // *** 新增: 客户端音效 (基于日志) (请求 #1) ***
-        // *** 修复: 解决日志满20条后音效失效的Bug ***
         const lastLog = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
         const prevLog = (this.lastState && this.lastState.logs.length > 0) ? this.lastState.logs[this.lastState.logs.length - 1] : "";
 
-        // 判断条件：长度增加 或者 (长度没变但最后一条内容变了)
-        const hasNewLog = this.lastState && (
-          state.logs.length > this.lastState.logs.length ||
-          (state.logs.length > 0 && lastLog !== prevLog)
-        );
-
+        const hasNewLog = this.lastState && (state.logs.length > this.lastState.logs.length || (state.logs.length > 0 && lastLog !== prevLog));
         if (hasNewLog) {
-          const newLog = lastLog; // 使用获取到的最新日志
-
-          if (newLog.includes("弃牌")) {
-            this.sound.playFold();
-          } else if (newLog.includes("过牌")) {
-            this.sound.playCheck();
-          } else if (newLog.includes("跟注")) {
-            this.sound.playChip();
-          } else if (newLog.includes("加注")) {
-            this.sound.playRaise();
-          }
-          // All-in sound is handled by showAllInEffect
-
-          // 牌局音效
-          if (
-            newLog.includes("--- 翻牌 ---") ||
-            newLog.includes("--- 转牌 ---") ||
-            newLog.includes("--- 河牌 ---")
-          ) {
-            this.sound.playCard();
-          }
+          const newLog = lastLog;
+          if (newLog.includes("Fold")) this.sound.playFold();
+          else if (newLog.includes("Check")) this.sound.playCheck();
+          else if (newLog.includes("Call")) this.sound.playChip();
+          else if (newLog.includes("Rais")) this.sound.playRaise();
+          if (newLog.includes("---")) this.sound.playCard();
         }
-        // *** 结束新增 ***
 
-        // *** 修复: 将高光列表的更新移至最前方 ***
         this.highlightCards = new Set(state.highlightCards || []);
-        // *** 结束修复 ***
-
-        // --- 恢复的逻辑: 更新玩家计数 ---
-        // *** 修改: (请求 #1) 计数器现在应该计算 players, 而不是 playerOrder, 因为 playerOrder 在等待时是完整的 ***
         const playerCount = state.playerOrder ? state.playerOrder.length : 0;
         const countEl = document.getElementById("active-players-count");
         if (countEl) countEl.innerText = playerCount;
-        // --- 结束 ---
 
-        // --- 修复: 比较 All-in 特效 ---
-        // 必须在 this.lastState 被覆盖之前进行比较
-        // 修正了之前 (state.lastAllInPlayer !== this.lastState.lastAllInPlayer) 永远为 false 的 bug
-        if (
-          state.lastAllInPlayer &&
-          (!this.lastState ||
-            state.lastAllInPlayer !== this.lastState.lastAllInPlayer)
-        ) {
-          // 确保我们只在 lastAllInPlayer *改变* 时触发
+        if (state.lastAllInPlayer && (!this.lastState || state.lastAllInPlayer !== this.lastState.lastAllInPlayer)) {
           if (state.lastAllInPlayer !== this.lastAllInPlayerTriggered) {
             this.showAllInEffect(state.lastAllInPlayer);
-            this.lastAllInPlayerTriggered = state.lastAllInPlayer; // 标记已触发
+            this.lastAllInPlayerTriggered = state.lastAllInPlayer; 
           }
         }
-        // 回合结束时清除标记
-        if (state.phase === "showdown") {
-          this.lastAllInPlayerTriggered = null;
-        }
-        // --- 修复结束 ---
+        if (state.phase === "showdown") this.lastAllInPlayerTriggered = null;
 
-        this.lastState = state; // 现在才更新 lastState
+        this.lastState = state; 
         this.localPlayerId = localId;
         const localPlayer = state.players[localId];
 
-        // 1. 更新顶部信息
         document.getElementById("pot-display").innerText = state.pot;
-        document.getElementById("phase-display").innerText =
-          PHASE_NAME_MAP[state.phase] || "未知";
+        
+        // TRANSLATED PHASE
+        const phaseKey = PHASE_KEY_MAP[state.phase] || state.phase;
+        document.getElementById("phase-display").innerText = t(phaseKey);
 
         if (state.config) {
           const blindsEl = document.getElementById("blinds-display");
-          if (blindsEl) {
-            blindsEl.innerText = `盲注 $${state.config.smallBlind}/$${state.config.bigBlind}`;
-          }
+          if (blindsEl) blindsEl.innerText = `Blinds $${state.config.smallBlind}/$${state.config.bigBlind}`;
         }
 
-        // 2. 渲染牌桌
         this.renderTableLayout(state, localId);
 
-        // 3. 渲染公共牌 (修复版: 固定位置 + 实时更新高亮)
         for (let i = 0; i < 5; i++) {
           const slot = document.getElementById(`comm-slot-${i}`);
           if (!slot) continue;
-
           const cardData = state.communityCards[i];
-
           if (cardData) {
-            // 获取槽位里现有的卡牌元素
             let cardEl = slot.firstElementChild;
-
-            // A. 如果槽位是空的，创建新牌放进去
             if (!cardEl) {
               cardEl = this.createCardEl(cardData);
               slot.appendChild(cardEl);
             }
-
-            // B. *** 核心修复: 强制更新高亮状态 ***
-            // 无论牌是刚创建的还是本来就在那的，都要检查它是否属于“获胜牌”
             if (this.highlightCards.has(cardData.id)) {
-              if (!cardEl.classList.contains("winning-card")) {
-                cardEl.classList.add("winning-card");
-              }
+              if (!cardEl.classList.contains("winning-card")) cardEl.classList.add("winning-card");
             } else {
-              // 如果新的一局开始，或者它不是获胜牌，要移除高亮
-              if (cardEl.classList.contains("winning-card")) {
-                cardEl.classList.remove("winning-card");
-              }
+              if (cardEl.classList.contains("winning-card")) cardEl.classList.remove("winning-card");
             }
-
           } else {
-            // 如果这个位置没牌，清空（显示虚线框）
             slot.innerHTML = "";
           }
         }
 
-        // 4. 更新日志
         const logDiv = document.getElementById("game-log");
-        logDiv.innerHTML = state.logs
-          .map((msg) => `<div>> ${msg}</div>`)
-          .join("");
+        logDiv.innerHTML = state.logs.map((msg) => `<div>> ${msg}</div>`).join("");
         logDiv.scrollTop = logDiv.scrollHeight;
 
-        // 5. 更新玩家座位信息 (已在 renderTableLayout 中处理)
-
-        // 6. 更新控制按钮
         this.updateControls(state);
 
-        // *** 修复: 移除了旧的房主控制逻辑 (Section 7) ***
-
-        // 8. All-in 特效 (逻辑已移到本函数开头)
-
-        // 9. 游戏结束处理 (修改版：无全屏遮罩，仅弹窗提示)
         if (localPlayer) {
-          const isEliminated = localPlayer.status === "淘汰" && localPlayer.chips === 0;
-
-          // 检查是否是冠军 (游戏在 waiting 状态结束)
-          const isChampion =
-            state.status === "waiting" &&
-            state.highlightWinner === localId &&
-            state.logs.length > 0 &&
-            state.logs[state.logs.length - 2].includes("游戏结束");
-
-          // 情况 A: 我是冠军
+          const isEliminated = localPlayer.status === "status_eliminated" && localPlayer.chips === 0;
+          const isChampion = state.status === "waiting" && state.highlightWinner === localId && state.logs.length > 0 && state.logs[state.logs.length - 2].includes("Game Over");
           if (isChampion) {
-            // 只在第一次检测到时触发音效和提示
             if (!this.bankruptcyScreenShown) {
               this.sound.playWin();
-              this.showMessage("恭喜！你是冠军！游戏即将重置...");
-              this.bankruptcyScreenShown = true; // 防止重复播放
+              this.showMessage(t("msg_winner"));
+              this.bankruptcyScreenShown = true; 
             }
           }
-          // 情况 B: 我刚破产 (游戏中)
           else if (isEliminated && state.status === "playing") {
             if (!this.bankruptcyScreenShown) {
               this.sound.playLose();
-              this.showMessage("你已破产，进入观战模式");
+              this.showMessage(t("msg_bankruptcy"));
               this.bankruptcyScreenShown = true;
             }
           }
-          // 情况 C: 游戏重置了 (回到 waiting)，重置标志位
           else if (state.status === "waiting" && !isChampion) {
             this.bankruptcyScreenShown = false;
           }
         }
-        // 10. *** 新增: 等待室 UI ***
+
         const waitOverlay = document.getElementById("waiting-room-overlay");
         if (state.status === "waiting") {
           waitOverlay.classList.remove("hidden");
-          network.updateWaitingRoomUI(state, localId); // *** 修复: 改为调用 network.updateWaitingRoomUI ***
+          network.updateWaitingRoomUI(state, localId); 
         } else {
           waitOverlay.classList.add("hidden");
         }
       }
 
-      // --- 渲染牌桌布局 (根据状态) ---
       renderTableLayout(state, localId) {
         const container = document.getElementById("seats-container");
-        container.innerHTML = ""; // 清空
+        container.innerHTML = ""; 
 
-        // *** 修改: (请求 #1) 在 'waiting' 状态, playerOrder 包含所有人 ***
-        // *** 我们只渲染 'playing' 状态下的 playerOrder ***
-        const playerIdsToRender =
-          state.phase === "waiting" || state.status === "waiting"
-            ? state.playerOrder // 在等待时，渲染所有人
-            : state.playerOrder; // 在游戏中，playerOrder 已经是 activePlayers
-
+        const playerIdsToRender = state.phase === "waiting" || state.status === "waiting" ? state.playerOrder : state.playerOrder;
         const num = playerIdsToRender.length;
         if (num === 0) return;
 
@@ -1688,24 +1402,11 @@
         const cx = w / 2;
         const cy = h / 2;
         const localIndex = playerIdsToRender.indexOf(localId);
-
-        // 如果找不到本地玩家 (例如观战), 默认 localIndex 为 0
         const renderIndex = localIndex === -1 ? 0 : localIndex;
 
-        // 动态调整半径和缩放
-        let scale = 1;
-        let radiusX = 0.38;
-        let radiusY = 0.38;
-        if (num > 6) {
-          scale = 0.85;
-          radiusX = 0.42;
-          radiusY = 0.42;
-        }
-        if (num >= 9) {
-          scale = 0.75;
-          radiusX = 0.44;
-          radiusY = 0.44;
-        }
+        let scale = 1, radiusX = 0.38, radiusY = 0.38;
+        if (num > 6) { scale = 0.85; radiusX = 0.42; radiusY = 0.42; }
+        if (num >= 9) { scale = 0.75; radiusX = 0.44; radiusY = 0.44; }
         if (w < 768) {
           if (num > 5) scale = 0.75;
           if (num > 8) scale = 0.65;
@@ -1716,127 +1417,87 @@
 
         playerIdsToRender.forEach((uid, i) => {
           const p = state.players[uid];
-          if (!p) return; // 玩家可能已离开
+          if (!p) return; 
 
-          // 计算位置，确保本地玩家总在最下方
           const offsetIndex = (i - renderIndex + num) % num;
           const angle = Math.PI / 2 + (offsetIndex * (2 * Math.PI)) / num;
           const x = cx + rx * Math.cos(angle);
           const y = cy + ry * Math.sin(angle);
 
           const div = document.createElement("div");
-          div.id = `seat-${p.uid}`; // *** 修改: ID 匹配 ***
+          div.id = `seat-${p.uid}`; 
           div.className = "player-seat";
           div.style.left = `${x - 60}px`;
           div.style.top = `${y - 55}px`;
           div.style.transform = `scale(${scale})`;
 
-          // --- 渲染手牌 ---
           let cardsHTML = "";
           if (!p.folded && p.holeCards && p.holeCards.length > 0) {
-
-            // *** 修复: 计算当前存活(未弃牌)的玩家数量 ***
             const activePlayersCount = Object.values(state.players).filter(player => !player.folded).length;
-
-            // *** 修复: 只有是自己，或者 (是摊牌阶段 且 存活玩家大于1人) 时才显示正面 ***
-            // 这样如果是唯一赢家(其他人全弃牌)，activePlayersCount 为 1，别人就看不到赢家的牌了
             if (p.uid === localId || (state.phase === "showdown" && activePlayersCount > 1)) {
-              cardsHTML = p.holeCards
-                .map((c) => this.createCardEl(c).outerHTML)
-                .join("");
+              cardsHTML = p.holeCards.map((c) => this.createCardEl(c).outerHTML).join("");
             } else {
-              cardsHTML =
-                this.createBackEl().outerHTML + this.createBackEl().outerHTML;
+              cardsHTML = this.createBackEl().outerHTML + this.createBackEl().outerHTML;
             }
           }
 
-          // --- 渲染座位 ---
+          // TRANSLATE STATUS & HAND NAME
+          let statusText = "";
+          if (p.currentBet > 0) {
+            statusText = `${t("bet_prefix")} $${p.currentBet}`;
+          } else if (p.status) {
+            // Check if it is a translation key
+            statusText = t(p.status);
+            // Special check for hands (if status was set to hand name in showdown)
+            if (p.status.startsWith("hand_")) statusText = t(p.status);
+          }
+
           div.innerHTML = `
-                        <div id="cards-${p.uid
-            }" class="absolute flex space-x-1 z-10 transition-all" style="top:-50px;">
-                            ${cardsHTML}
-                        </div>
-                        
-                        <div class="player-info-box relative z-20">
-                            <div id="dealer-${p.uid}" class="dealer-btn ${i === state.dealerIndex ? "" : "hidden"
-            }">D</div>
-                            <div class="font-bold text-yellow-400 truncate text-sm tracking-wide">${p.name
-            }</div>
-                            <div class="text-white text-xs font-mono">$<span id="chips-${p.uid
-            }">${p.chips}</span></div>
-                            <div id="status-${p.uid
-            }" class="text-gray-400 text-[10px] h-4 truncate font-bold uppercase mt-1">
-                                ${p.currentBet > 0
-              ? `下注 $${p.currentBet}`
-              : p.status || ""
-            }
-                            </div>
-                        </div>`;
+            <div id="cards-${p.uid}" class="absolute flex space-x-1 z-10 transition-all" style="top:-50px;">
+                ${cardsHTML}
+            </div>
+            <div class="player-info-box relative z-20">
+                <div id="dealer-${p.uid}" class="dealer-btn ${i === state.dealerIndex ? "" : "hidden"}">D</div>
+                <div class="font-bold text-yellow-400 truncate text-sm tracking-wide">${p.name}</div>
+                <div class="text-white text-xs font-mono">$<span id="chips-${p.uid}">${p.chips}</span></div>
+                <div id="status-${p.uid}" class="text-gray-400 text-[10px] h-4 truncate font-bold uppercase mt-1">
+                    ${statusText}
+                </div>
+            </div>`;
           container.appendChild(div);
 
-          // --- 应用高亮 ---
           const seat = document.getElementById(`seat-${p.uid}`);
-          if (
-            state.playerOrder[state.currentPlayerIndex] === p.uid &&
-            state.phase !== "showdown"
-          ) {
+          if (state.playerOrder[state.currentPlayerIndex] === p.uid && state.phase !== "showdown") {
             seat.classList.add("active-player");
           } else {
             seat.classList.remove("active-player");
           }
-
-          if (state.highlightWinner === p.uid) {
-            seat.classList.add("winner-highlight");
-          } else {
-            seat.classList.remove("winner-highlight");
-          }
-
+          if (state.highlightWinner === p.uid) seat.classList.add("winner-highlight");
+          else seat.classList.remove("winner-highlight");
           seat.style.opacity = p.folded ? 0.4 : 1;
         });
       }
 
-      // --- 更新控制按钮 & 智能提示 ---
       updateControls(state) {
-        // 基础检查
         if (!state || !state.players || !this.localPlayerId) return;
-
         const localPlayer = state.players[this.localPlayerId];
-        // 当前轮到谁？
         const currentTurnPlayerId = state.playerOrder[state.currentPlayerIndex];
         const currentTurnPlayer = state.players[currentTurnPlayerId];
 
-        // ============================================================
-        // *** 核心逻辑: 只有当行动者改变时，才弹窗 ***
-        // ============================================================
-
-        // 仅在游戏进行中，且不是摊牌/等待阶段才显示提示
         if (state.status === "playing" && state.phase !== "showdown" && state.phase !== "waiting") {
-
-          // 只有当“现在的行动者” 不等于 “上一次记录的行动者” 时，才视为新回合开始
           if (this.lastActivePlayerId !== currentTurnPlayerId) {
-
-            // 更新记录，防止下一帧重复进入这个 if
             this.lastActivePlayerId = currentTurnPlayerId;
-
             if (currentTurnPlayerId === this.localPlayerId) {
-              // 如果变成了我 -> 提示“你的回合”
-              this.showMessage("你的回合");
-              // 可以在这里加音效: this.sound.playTone(440, "sine", 0.1);
+              this.showMessage(t("msg_your_turn"));
             } else {
-              // 如果变成了别人 -> 提示“某某 思考中”
-              const name = currentTurnPlayer ? currentTurnPlayer.name : "玩家";
-              this.showMessage(`${name} 思考中`);
+              const name = currentTurnPlayer ? currentTurnPlayer.name : "Player";
+              this.showMessage(`${name} ${t("msg_thinking")}`);
             }
           }
         } else {
-          // 如果不在游戏行动阶段（比如摊牌了，或者游戏结束了），重置记录
-          // 这样下一局开始时，哪怕第一个行动的人和上一局最后一个人一样，也能正常触发提示
           this.lastActivePlayerId = null;
         }
-        // ============================================================
 
-
-        // --- 下面是原有的按钮控制逻辑 (保持不变) ---
         const controls = document.getElementById("player-controls");
         const isMyTurn = currentTurnPlayerId === this.localPlayerId;
         const canAct = isMyTurn && !localPlayer.folded && localPlayer.chips > 0 && state.phase !== "showdown";
@@ -1845,10 +1506,8 @@
           controls.classList.add("opacity-50", "pointer-events-none", "translate-y-2");
           return;
         }
-
         controls.classList.remove("opacity-50", "pointer-events-none", "translate-y-2");
 
-        // 按钮显示逻辑
         const diff = state.currentMaxBet - localPlayer.currentBet;
         const btnCheck = document.getElementById("btn-check");
         const btnCall = document.getElementById("btn-call");
@@ -1856,17 +1515,22 @@
         const slider = document.getElementById("raise-slider");
         const valDisplay = document.getElementById("raise-val-display");
 
+        // Update text content with translations
+        btnCheck.innerText = t("checkBtn");
+        btnCall.innerText = t("callBtn");
+        btnRaise.innerText = t("raiseBtn");
+        document.querySelector('[data-i18n="foldBtn"]').innerText = t("foldBtn");
+
         if (diff === 0) {
           btnCheck.classList.remove("hidden");
           btnCall.classList.add("hidden");
         } else {
           btnCheck.classList.add("hidden");
           btnCall.classList.remove("hidden");
-          if (localPlayer.chips <= diff) btnCall.innerText = "全押";
-          else btnCall.innerText = `跟注 $${diff}`;
+          if (localPlayer.chips <= diff) btnCall.innerText = t("allInBtn");
+          else btnCall.innerText = `${t("callBtn")} $${diff}`;
         }
 
-        // 加注滑块逻辑
         const minRaiseAmount = state.lastRaiseAmount;
         const minPossibleActionRaise = diff + minRaiseAmount;
         const maxPossibleActionRaise = localPlayer.chips;
@@ -1876,7 +1540,7 @@
           document.getElementById("raise-slider-container").classList.add("hidden");
         } else if (maxPossibleActionRaise < minPossibleActionRaise) {
           btnRaise.classList.remove("hidden");
-          btnRaise.innerText = "全押";
+          btnRaise.innerText = t("allInBtn");
           document.getElementById("raise-slider-container").classList.remove("hidden");
           slider.min = maxPossibleActionRaise;
           slider.max = maxPossibleActionRaise;
@@ -1889,60 +1553,46 @@
           slider.min = minPossibleActionRaise;
           slider.max = maxPossibleActionRaise;
           slider.step = 1;
-
-          // 修复滑块卡顿: 只有在刚轮到我的时候才重置滑块位置，之后不重置
           if (slider.value < minPossibleActionRaise) slider.value = minPossibleActionRaise;
-
           slider.disabled = false;
           const updateBtnText = () => {
             const raiseVal = parseInt(slider.value);
             valDisplay.innerText = `$${raiseVal}`;
-            if (raiseVal === maxPossibleActionRaise) btnRaise.innerText = "全押";
-            else btnRaise.innerText = `加注 $${raiseVal}`;
+            if (raiseVal === maxPossibleActionRaise) btnRaise.innerText = t("allInBtn");
+            else btnRaise.innerText = `${t("raiseBtn")} $${raiseVal}`;
           };
           updateBtnText();
         }
       }
 
-      // --- 调整加注滑块 ---
       adjustRaise(direction) {
         const slider = document.getElementById("raise-slider");
         if (!slider || slider.disabled) return;
         const currentVal = parseInt(slider.value);
-        // *** 修复: 步进改为 1 (匹配原版 读博.html) ***
         const step = 1;
-        // *** 结束修复 ***
         const min = parseInt(slider.min);
         const max = parseInt(slider.max);
         let newVal = currentVal + direction * step;
         if (newVal < min) newVal = min;
         if (newVal > max) newVal = max;
         slider.value = newVal;
-        // 手动触发 input 事件来更新显示
         slider.dispatchEvent(new Event("input"));
       }
 
-      // --- 显示消息 (标准版) ---
       showMessage(msg) {
         const el = document.getElementById("game-message");
         if (!el) return;
-
         el.innerText = msg;
         el.style.opacity = 1;
-
-        // 1. 如果有正在进行的倒计时，先清除它，防止它把新消息提前关掉
         if (this.msgTimeout) {
           clearTimeout(this.msgTimeout);
           this.msgTimeout = null;
         }
-
-        // 2. 设置新的 3秒 倒计时
         this.msgTimeout = setTimeout(() => {
           el.style.opacity = 0;
         }, 3000);
       }
 
-      // --- All-in 特效 ---
       showAllInEffect(playerName) {
         return new Promise((resolve) => {
           const overlay = document.createElement("div");
@@ -1951,14 +1601,11 @@
           bar.className = "all-in-bar";
           const text = document.createElement("div");
           text.className = "all-in-text";
-
           text.innerText = `ALL-IN`;
           bar.appendChild(text);
           overlay.appendChild(bar);
           document.body.appendChild(overlay);
-
           this.sound.playAllIn();
-
           setTimeout(() => {
             overlay.style.transition = "opacity 0.3s";
             overlay.style.opacity = "0";
@@ -1970,7 +1617,6 @@
         });
       }
 
-      // --- 创建卡牌元素 ---
       createCardEl(c) {
         const d = document.createElement("div");
         d.className = `card ${c.color}`;
@@ -1985,473 +1631,326 @@
       }
     }
 
-    // --- 网络和 Firebase 交互 ---
     class NetworkManager {
       constructor(gameUI) {
         this.gameUI = gameUI;
-        this.db = null;
-        this.auth = null;
+        this.db = null; 
+        this.auth = null; 
         this.appId = appId;
-        this.localUserId = null;
-        this.currentRoomId = null;
+        this.localUserId = null; 
+        this.currentRoomId = null; 
         this.unsubscribeRoom = null;
-        this.nextRoundTimeout = null;
-        this.nextPhaseTimeout = null;
+        this.nextRoundTimeout = null; 
+        this.nextPhaseTimeout = null; 
         this.heartbeatInterval = null;
       }
 
       async init() {
         try {
-          setLogLevel("Debug"); // 开启 Firebase 调试日志
+          setLogLevel("Debug");
           this.app = initializeApp(firebaseConfig);
           this.db = getFirestore(this.app);
           this.auth = getAuth(this.app);
-
-          console.log("Firebase 初始化... AppID:", this.appId);
-
           onAuthStateChanged(this.auth, async (user) => {
             if (user) {
               this.localUserId = user.uid;
-              console.log("Firebase 已认证:", this.localUserId);
-              document.getElementById("user-id-display").innerText =
-                this.localUserId;
-              document
-                .getElementById("firebase-loader")
-                .classList.add("hidden");
-              document
-                .getElementById("room-screen")
-                .classList.remove("hidden");
+              document.getElementById("user-id-display").innerText = this.localUserId;
+              document.getElementById("firebase-loader").classList.add("hidden");
+              document.getElementById("room-screen").classList.remove("hidden");
             } else {
-              console.log("用户未登录，尝试登录...");
               await this.signIn();
             }
           });
         } catch (error) {
-          console.error("Firebase 初始化失败:", error);
-          document.getElementById("firebase-loader").innerText =
-            "连接失败，请刷新。";
+          document.getElementById("firebase-loader").innerText = "Failed. Refresh.";
         }
       }
 
-      // --- 修复: UI上移 + 输入框严格纯数字校验 ---
       updateWaitingRoomUI(state, localId) {
         const hostControls = document.getElementById("wait-host-controls");
         const btnContainer = document.getElementById("host-start-btn-container");
-
+        
         if (state.hostId === localId) {
-          // --- 我是房主 ---
           hostControls.classList.remove("hidden");
-
           const bbInput = document.getElementById("setting-big-blind");
-          const chipsInput = document.getElementById("setting-initial-chips"); // 获取筹码输入框
+          const chipsInput = document.getElementById("setting-initial-chips"); 
           const sbDisplay = document.getElementById("setting-sb-display");
 
-          // *** 修改 1: 绑定筹码输入框的净化逻辑 (防粘贴) ***
           if (chipsInput && !chipsInput.oninput) {
-            chipsInput.oninput = () => {
-              // 强制替换非数字字符
-              chipsInput.value = chipsInput.value.replace(/[^\d]/g, '');
+            chipsInput.oninput = () => { 
+              chipsInput.value = chipsInput.value.replace(/[^\d]/g, ''); 
             };
           }
-
-          // *** 修改 2: 绑定大盲注输入框的净化逻辑 + 联动 ***
           if (bbInput && !bbInput.oninput) {
             bbInput.oninput = () => {
-              // 强制替换非数字字符
-              bbInput.value = bbInput.value.replace(/[^\d]/g, '');
-
-              const val = parseInt(bbInput.value) || 0;
-              if (sbDisplay) sbDisplay.innerText = Math.floor(val / 2);
+             bbInput.value = bbInput.value.replace(/[^\d]/g, '');
+             const val = parseInt(bbInput.value) || 0;
+             if (sbDisplay) sbDisplay.innerText = Math.floor(val / 2);
             };
           }
 
-          // 房主不需要文本提示，直接隐藏
           const waitMessage = document.getElementById("wait-message");
           if (waitMessage) waitMessage.classList.add("hidden");
-
           const playerCount = state.playerOrder.length;
 
           if (playerCount < 2) {
-            // --- 人数不足 ---
             if (btnContainer) {
               btnContainer.innerHTML = `
                   <button disabled class="bg-gray-500 text-gray-300 font-black text-2xl py-4 px-12 rounded-full shadow-none border-b-4 border-gray-700 cursor-not-allowed opacity-50">
-                    等待玩家 (${playerCount}/10)
-                  </button>
-                `;
+                    ${t("waitPlayerBtn")} (${playerCount}/10)
+                  </button>`;
             }
           } else {
-            // --- 人数足够 ---
             if (btnContainer) {
               btnContainer.innerHTML = `
-                  <button 
-                    id="btn-start-game"
-                    onclick="network.startGame()" 
+                  <button id="btn-start-game" onclick="network.startGame()" 
                     class="bg-red-600 hover:bg-red-500 text-white font-black text-2xl py-4 px-12 rounded-full shadow-xl border-b-4 border-red-800 active:border-b-0 active:translate-y-1 transition-all">
-                    开始游戏 (${playerCount}/10)
-                  </button>
-                `;
+                    ${t("startGameBtn")} (${playerCount}/10)
+                  </button>`;
             }
           }
         } else {
-          // --- 我是普通玩家 ---
           hostControls.classList.add("hidden");
           if (btnContainer) btnContainer.innerHTML = "";
-
           const hostPlayer = state.players[state.hostId];
-          const hostName = hostPlayer ? hostPlayer.name : "房主";
-
+          const hostName = hostPlayer ? hostPlayer.name : "Host";
           const waitMessage = document.getElementById("wait-message");
           if (waitMessage) {
             waitMessage.classList.remove("hidden");
-            waitMessage.innerText = `等待 ${hostName} 开始游戏...`;
+            waitMessage.innerText = `${t("waitForHost")} (${hostName})`;
           }
         }
       }
 
       async signIn() {
         try {
-          // 优先使用 Canvas 提供的令牌
-          if (initialAuthToken) {
-            console.log("使用 __initial_auth_token 登录...");
-            await signInWithCustomToken(this.auth, initialAuthToken);
-          } else {
-            // 否则，匿名登录
-            console.log("使用匿名登录...");
-            await signInAnonymously(this.auth);
-          }
-        } catch (error) {
-          console.error("Firebase 登录失败:", error);
-        }
+          if (initialAuthToken) await signInWithCustomToken(this.auth, initialAuthToken);
+          else await signInAnonymously(this.auth);
+        } catch (error) { console.error(error); }
       }
 
-      getRoomRef(roomId) {
-        return doc(
-          this.db,
-          "artifacts",
-          this.appId,
-          "public/data/poker-rooms",
-          roomId
-        );
+      getRoomRef(roomId) { 
+        return doc(this.db, "artifacts", this.appId, "public/data/poker-rooms", roomId); 
       }
 
       validateInputs() {
-        const name = document
-          .getElementById("player-name-input")
-          .value.trim();
+        const name = document.getElementById("player-name-input").value.trim();
         const room = document.getElementById("room-id-input").value.trim();
         const errEl = document.getElementById("room-error");
-
         if (name.length < 2 || name.length > 10) {
-          errEl.innerText = "昵称必须在 2-10 个字符之间";
+          errEl.innerText = t("error_nickname");
           return null;
         }
         if (room.length < 1 || room.length > 20) {
-          errEl.innerText = "房间 ID 不能为空";
+          errEl.innerText = t("error_room_id");
           return null;
         }
-
-        localPlayerName = name; // 存储昵称
+        localPlayerName = name; 
         errEl.innerText = "";
         return room;
       }
 
-      // --- 创建房间 (已添加: 僵尸房间自动清理) ---
       async createRoom() {
         const roomId = this.validateInputs();
         if (!roomId) return;
-
         this.disableRoomButtons(true);
         const roomRef = this.getRoomRef(roomId);
-
         try {
-          // *** 新增: 检查是否是僵尸房间 ***
           const docSnap = await getDoc(roomRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            const now = Date.now();
-            // 如果房间超过 30秒 没有心跳，视为僵尸房间，强制删除
-            if (data.lastActive && now - data.lastActive > 30000) {
-              console.log("检测到僵尸房间，正在清理...");
-              await deleteDoc(roomRef);
+            if (data.lastActive && Date.now() - data.lastActive > 30000) {
+               await deleteDoc(roomRef);
             } else {
-              document.getElementById("room-error").innerText = "房间已存在且正在游戏中";
+              document.getElementById("room-error").innerText = t("error_game_started");
               this.disableRoomButtons(false);
               return;
             }
           }
-
-          // 创建新玩家
-          const newPlayer = {
-            uid: this.localUserId,
-            id: 0,
-            name: localPlayerName,
-            chips: 2000,
-            holeCards: [],
-            folded: false,
-            currentBet: 0,
-            accumulatedBet: 0,
-            status: "等待中",
+          const newPlayer = { 
+            uid: this.localUserId, 
+            id: 0, 
+            name: localPlayerName, 
+            chips: 2000, 
+            holeCards: [], 
+            folded: false, 
+            currentBet: 0, 
+            accumulatedBet: 0, 
+            status: "waiting" 
           };
-
-          // 创建新房间状态
           const initialState = {
-            status: "waiting",
-            hostId: this.localUserId,
-            lastActive: Date.now(), // *** 新增: 初始心跳时间 ***
-            config: {
-              initialChips: 2000,
-              smallBlind: 10,
-              bigBlind: 20
-            },
-            players: {
-              [this.localUserId]: newPlayer,
-            },
+            status: "waiting", 
+            hostId: this.localUserId, 
+            lastActive: Date.now(),
+            config: { initialChips: 2000, smallBlind: 10, bigBlind: 20 },
+            players: { [this.localUserId]: newPlayer }, 
             playerOrder: [this.localUserId],
-            communityCards: [],
-            pot: 0,
-            dealerIndex: 0,
-            currentPlayerIndex: -1,
+            communityCards: [], 
+            pot: 0, 
+            dealerIndex: 0, 
+            currentPlayerIndex: -1, 
             currentMaxBet: 0,
-            phase: "waiting",
-            lastRaiseAmount: 20,
-            deck: [],
-            logs: [`${localPlayerName} 创建了房间.`],
-            highlightWinner: null,
-            highlightCards: [],
-            nextRoundTimer: 0,
+            phase: "waiting", 
+            lastRaiseAmount: 20, 
+            deck: [], 
+            logs: [`${localPlayerName} created room.`],
+            highlightWinner: null, 
+            highlightCards: [], 
+            nextRoundTimer: 0, 
             nextPhaseTimer: 0,
           };
-
           await setDoc(roomRef, initialState);
-          console.log("房间创建成功:", roomId);
           this.subscribeToRoom(roomId);
         } catch (error) {
-          console.error("创建房间失败:", error);
-          document.getElementById("room-error").innerText = "创建房间失败";
+          document.getElementById("room-error").innerText = "Create failed";
           this.disableRoomButtons(false);
         }
       }
 
-      // --- 加入房间 ---
       async joinRoom() {
         const roomId = this.validateInputs();
         if (!roomId) return;
-
         this.disableRoomButtons(true);
         const roomRef = this.getRoomRef(roomId);
-
         try {
           await runTransaction(this.db, async (transaction) => {
             const roomDoc = await transaction.get(roomRef);
-            if (!roomDoc.exists()) {
-              throw new Error("房间不存在");
-            }
-
+            if (!roomDoc.exists()) throw new Error("Room not found");
             let state = roomDoc.data();
-
-            const now = Date.now();
-            if (state.lastActive && now - state.lastActive > 30000) {
-              // 如果在事务中直接 delete 可能会复杂，这里抛出特定错误，让外层处理
-              throw new Error("ROOM_IS_DEAD");
-            }
-
-            // 检查是否已在房间内
+            if (state.lastActive && Date.now() - state.lastActive > 30000) throw new Error("ROOM_IS_DEAD");
             if (state.players[this.localUserId]) {
-              console.log("已在房间内，重新加入...");
-              // *** 修改: (请求 #1) 如果玩家已存在, 确保他们重置 ***
-              if (state.status === "waiting") {
-                state.players[this.localUserId].chips = 2000;
-                state.players[this.localUserId].status = "等待中";
-              }
-              // *** 结束修改 ***
-              transaction.set(roomRef, state); // 确保更新状态
-              return; // 直接加入
+               if (state.status === "waiting") { 
+                 state.players[this.localUserId].chips = 2000; 
+                 state.players[this.localUserId].status = "waiting"; 
+               }
+               transaction.set(roomRef, state); 
+               return;
             }
-
-            // 检查房间状态
-            if (state.status !== "waiting") {
-              throw new Error("游戏已开始，无法加入");
-            }
-
-            // 检查人数
-            if (Object.keys(state.players).length >= 10) {
-              throw new Error("房间已满");
-            }
-
-            // 加入新玩家
-            const newPlayerId = Object.keys(state.players).length;
-            const newPlayer = {
-              uid: this.localUserId,
-              id: newPlayerId,
-              name: localPlayerName,
-              chips: 2000,
-              holeCards: [],
-              folded: false,
-              currentBet: 0,
-              accumulatedBet: 0,
-              status: "等待中",
+            if (state.status !== "waiting") throw new Error(t("error_game_started"));
+            if (Object.keys(state.players).length >= 10) throw new Error(t("error_room_full"));
+            const newPlayer = { 
+              uid: this.localUserId, 
+              id: Object.keys(state.players).length, 
+              name: localPlayerName, 
+              chips: 2000, 
+              holeCards: [], 
+              folded: false, 
+              currentBet: 0, 
+              accumulatedBet: 0, 
+              status: "waiting" 
             };
-
             state.players[this.localUserId] = newPlayer;
             state.playerOrder.push(this.localUserId);
-            state.logs.push(`${localPlayerName} 加入了房间.`);
-
+            state.logs.push(`${localPlayerName} joined.`);
             transaction.set(roomRef, state);
           });
-
-          console.log("加入房间成功:", roomId);
           this.subscribeToRoom(roomId);
         } catch (error) {
-          // *** 新增: 处理僵尸房间错误 ***
-          if (error.message === "ROOM_IS_DEAD" || error.message.includes("ROOM_IS_DEAD")) {
-            console.log("房间已失效，正在清理...");
-            await deleteDoc(roomRef); // 只有在事务失败后才执行删除
-            document.getElementById("room-error").innerText = "房间已失效(房主掉线)，已自动清理，请重新创建";
+          if (error.message.includes("ROOM_IS_DEAD")) {
+            await deleteDoc(roomRef);
+            document.getElementById("room-error").innerText = t("error_room_dead");
           } else {
-            console.error("加入房间失败:", error);
-            document.getElementById("room-error").innerText = error.message || "加入房间失败";
+            document.getElementById("room-error").innerText = error.message || t("error_join_fail");
           }
           this.disableRoomButtons(false);
         }
       }
 
-      // --- 退出房间 (已修改: 增加人数不足自动结束逻辑) ---
       async leaveRoom() {
         this.stopHeartbeat();
-        if (this.unsubscribeRoom) {
-          this.unsubscribeRoom(); // 停止监听
-          this.unsubscribeRoom = null;
+        if (this.unsubscribeRoom) { 
+          this.unsubscribeRoom(); 
+          this.unsubscribeRoom = null; 
         }
-
-        const roomId = this.currentRoomId;
+        const roomId = this.currentRoomId; 
         const userId = this.localUserId;
-
+        
         if (roomId && userId) {
           const roomRef = this.getRoomRef(roomId);
           try {
-            // 尝试从房间中移除自己
             await runTransaction(this.db, async (transaction) => {
               const roomDoc = await transaction.get(roomRef);
               if (!roomDoc.exists()) return;
-
               let state = roomDoc.data();
-
-              // 1. 从 players 和 playerOrder 移除
+              
               if (state.players[userId]) {
                 const playerName = state.players[userId].name;
                 delete state.players[userId];
-                state.playerOrder = state.playerOrder.filter(
-                  (uid) => uid !== userId
-                );
-                state.logs.push(`${playerName} 离开了房间.`);
+                state.playerOrder = state.playerOrder.filter((uid) => uid !== userId);
+                state.logs.push(`${playerName} left.`);
               }
-
-              // 2. 检查是否需要删除房间
-              if (state.playerOrder.length === 0) {
-                transaction.delete(roomRef);
-                console.log("房间空了，自动删除");
-                return; // 直接结束事务
+              
+              if (state.playerOrder.length === 0) { 
+                transaction.delete(roomRef); 
+                return; 
               }
-
-              // *** 新增: 如果游戏中人数不足2人，强制结束游戏并重置 ***
+              
               if (state.status === 'playing' && state.playerOrder.length < 2) {
-                state.status = 'waiting'; // 回到等待状态
-                state.phase = 'waiting';
-                state.pot = 0;
+                state.status = 'waiting'; 
+                state.phase = 'waiting'; 
+                state.pot = 0; 
                 state.communityCards = [];
-                state.currentMaxBet = 0;
-                state.currentPlayerIndex = -1;
+                state.currentMaxBet = 0; 
+                state.currentPlayerIndex = -1; 
                 state.dealerIndex = 0;
-                state.logs.push("--- 玩家人数不足，游戏强制结束，返回大厅 ---");
-                state.highlightWinner = null;
-                state.highlightCards = [];
-                state.nextRoundTimer = 0;
+                state.logs.push("--- Game End (Not enough players) ---");
+                state.highlightWinner = null; 
+                state.highlightCards = []; 
+                state.nextRoundTimer = 0; 
                 state.nextPhaseTimer = 0;
-
-                // 重置剩余玩家的状态 (恢复初始筹码)
+                
                 state.playerOrder.forEach(uid => {
                   if (state.players[uid]) {
-                    state.players[uid].chips = 2000; // 重置为初始筹码
-                    state.players[uid].holeCards = [];
+                    state.players[uid].chips = 2000; 
+                    state.players[uid].holeCards = []; 
                     state.players[uid].folded = false;
-                    state.players[uid].currentBet = 0;
-                    state.players[uid].accumulatedBet = 0;
-                    state.players[uid].status = "等待中";
+                    state.players[uid].currentBet = 0; 
+                    state.players[uid].accumulatedBet = 0; 
+                    state.players[uid].status = "waiting"; 
                     state.players[uid].bestHand = null;
                   }
                 });
               }
-
-              // 3. 检查房主是否离开
+              
               if (state.hostId === userId) {
-                // 移交房主给下一个人
                 state.hostId = state.playerOrder[0];
-                state.logs.push(
-                  `房主移交给 ${state.players[state.hostId].name}.`
-                );
+                state.logs.push(`Host is now ${state.players[state.hostId].name}.`);
               }
-
-              // 4. 保存状态
               transaction.set(roomRef, state);
             });
-          } catch (error) {
-            console.error("离开房间时出错:", error);
-          }
+          } catch (e) { console.error(e); }
         }
-
-        // 重置 UI
+        
         this.currentRoomId = null;
         if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
         if (this.nextPhaseTimeout) clearTimeout(this.nextPhaseTimeout);
-
-        // 重置破产标志
         this.gameUI.bankruptcyScreenShown = false;
-
         document.getElementById("game-area").classList.add("hidden");
         document.getElementById("room-screen").classList.remove("hidden");
         this.disableRoomButtons(false);
       }
 
-      // --- 心跳系统 ---
       startHeartbeat(roomId) {
-        this.stopHeartbeat(); // 防止重复
-
-        // 每 5 秒执行一次
+        this.stopHeartbeat();
         this.heartbeatInterval = setInterval(async () => {
           if (!this.currentRoomId || !this.localUserId) return;
-
-          // 只有房主才更新数据库
-          // 注意：我们不使用 this.gameUI.lastState，因为它可能不是最新的
-          // 我们做一个轻量级的 updateDoc 操作
-
-          // 为了避免每次都读取数据库判断房主，我们依赖 lastState
-          // 这在房主突然掉线时是安全的（因为心跳也会停止）
           const state = this.gameUI.lastState;
           if (state && state.hostId === this.localUserId) {
             const roomRef = this.getRoomRef(roomId);
-            try {
-              // 只更新 lastActive 字段，不读取整个文档，节省流量
-              // 使用 updateDoc 而不是 setDoc
-              // 需导入 updateDoc (见步骤 4)
-              await window.firestoreUpdateDoc(roomRef, {
-                lastActive: Date.now()
-              });
-            } catch (e) {
-              console.warn("心跳更新失败:", e);
-            }
+            try { 
+              await window.firestoreUpdateDoc(roomRef, { lastActive: Date.now() }); 
+            } catch (e) {}
           }
         }, 5000);
       }
-
-      stopHeartbeat() {
-        if (this.heartbeatInterval) {
-          clearInterval(this.heartbeatInterval);
-          this.heartbeatInterval = null;
-        }
+      
+      stopHeartbeat() { 
+        if (this.heartbeatInterval) { 
+          clearInterval(this.heartbeatInterval); 
+          this.heartbeatInterval = null; 
+        } 
       }
 
-      // --- 订阅房间更新 ---
       subscribeToRoom(roomId) {
         this.currentRoomId = roomId;
         document.getElementById("display-room-id").innerText = roomId;
@@ -2459,801 +1958,603 @@
         document.getElementById("game-area").classList.remove("hidden");
         this.gameUI.initSound();
         this.gameUI.occlusionManager.start();
-
-        const roomRef = this.getRoomRef(roomId);
-
-        // *** 新增: 启动心跳循环 ***
         this.startHeartbeat(roomId);
-
-        this.unsubscribeRoom = onSnapshot(
-          roomRef,
-          (doc) => {
-            if (!doc.exists()) {
-              // 房间被删除了
-              console.log("房间不存在或已被删除。");
-              this.gameUI.showMessage("房主已解散房间");
-              setTimeout(() => this.leaveRoom(), 2000);
-              return;
-            }
-
-            const state = doc.data();
-
-            // --- 核心：渲染状态 ---
-            this.gameUI.renderGameState(state, this.localUserId);
-
-            // --- 修改: 运行房主控制逻辑 (仅限计时器) ---
-            this.runHostTimerController(state);
-          },
-          (error) => {
-            console.error("监听房间失败:", error);
-            this.leaveRoom();
+        
+        this.unsubscribeRoom = onSnapshot(this.getRoomRef(roomId), (doc) => {
+          if (!doc.exists()) { 
+            this.gameUI.showMessage("Room closed"); 
+            setTimeout(() => this.leaveRoom(), 2000); 
+            return; 
           }
-        );
+          const state = doc.data();
+          this.gameUI.renderGameState(state, this.localUserId);
+          this.runHostTimerController(state);
+        }, () => { this.leaveRoom(); });
       }
 
-      // --- 修改: 房主计时器控制逻辑 (移除了 AI) ---
       runHostTimerController(state) {
-        // 1. 检查是否轮到房主自动推进 All-in 阶段
         if (state.nextPhaseTimer > 0 && state.hostId === this.localUserId) {
           if (!this.nextPhaseTimeout) {
-            // 防止重复设置
             this.nextPhaseTimeout = setTimeout(async () => {
-              console.log("房主：自动推进All-in阶段");
               this.nextPhaseTimeout = null;
               const roomRef = this.getRoomRef(this.currentRoomId);
               try {
-                let currentState = (await getDoc(roomRef)).data();
-                // 确保计时器仍然有效
-                if (currentState.nextPhaseTimer > 0) {
-                  currentState.nextPhaseTimer = 0; // 清除计时器
-                  // 再次调用 runAutoShowdown, 它会自动处理下一阶段 (turn -> river -> showdown)
-                  const nextState = runAutoShowdown(currentState);
-                  await setDoc(roomRef, nextState);
+                let cur = (await getDoc(roomRef)).data();
+                if (cur.nextPhaseTimer > 0) {
+                  cur.nextPhaseTimer = 0;
+                  const next = runAutoShowdown(cur);
+                  await setDoc(roomRef, next);
                 }
-              } catch (error) {
-                console.error("推进All-in阶段失败:", error);
-              }
+              } catch (e) {}
             }, state.nextPhaseTimer);
           }
         } else if (state.nextPhaseTimer === 0 && this.nextPhaseTimeout) {
-          // 状态已被其他人清除, 取消本地计时器
-          clearTimeout(this.nextPhaseTimeout);
+          clearTimeout(this.nextPhaseTimeout); 
           this.nextPhaseTimeout = null;
         }
-
-        // 2. 检查是否轮到房主自动开始新回合
+        
         if (state.phase === "showdown" && state.hostId === this.localUserId) {
           if (state.nextRoundTimer > 0 && !this.nextRoundTimeout) {
             this.nextRoundTimeout = setTimeout(async () => {
-              console.log("房主：自动开始新回合");
               this.nextRoundTimeout = null;
               const roomRef = this.getRoomRef(this.currentRoomId);
               try {
-                // 获取最新状态
-                const currentState = (await getDoc(roomRef)).data();
-                // 确保仍然是摊牌阶段
-                if (currentState.phase === "showdown") {
-                  const nextState = startNewRound(currentState);
-                  await setDoc(roomRef, nextState);
+                const cur = (await getDoc(roomRef)).data();
+                if (cur.phase === "showdown") {
+                  const next = startNewRound(cur);
+                  await setDoc(roomRef, next);
                 }
-              } catch (error) {
-                console.error("开始新回合失败:", error);
-              }
+              } catch (e) {}
             }, state.nextRoundTimer);
           }
         }
-
-        // 3. 移除了 AI 行动检查
       }
 
-      // --- 房主开始游戏 (已修复: 错误提示在标题右侧) ---
       async startGame() {
         if (!this.currentRoomId || !this.gameUI.lastState) return;
         if (this.localUserId !== this.gameUI.lastState.hostId) return;
-
-        // 1. 获取行内错误元素
-        const errChipsEl = document.getElementById("error-chips-inline");
-        const errBlindEl = document.getElementById("error-blind-inline");
-
-        // 2. 清空旧错误
-        if (errChipsEl) errChipsEl.innerText = "";
-        if (errBlindEl) errBlindEl.innerText = "";
-
+        
         const chipsInput = document.getElementById("setting-initial-chips");
         const blindInput = document.getElementById("setting-big-blind");
-
         let newInitChips = chipsInput ? parseInt(chipsInput.value) : 2000;
         let newBigBlind = blindInput ? parseInt(blindInput.value) : 20;
-
-        newInitChips = Math.floor(newInitChips);
+        
+        newInitChips = Math.floor(newInitChips); 
         newBigBlind = Math.floor(newBigBlind);
-
-        // *** 修改: 验证逻辑，定向输出错误 ***
-        let hasError = false;
-
-        // 验证大盲注
-        if (newBigBlind < 2 || newBigBlind % 2 !== 0) {
-          if (errBlindEl) errBlindEl.innerText = "必须是大于1的偶数！";
-          hasError = true;
-        }
-
-        // 验证初始筹码
-        if (newInitChips <= newBigBlind) {
-          if (errChipsEl) errChipsEl.innerText = "必须大于大盲注！";
-          hasError = true;
-        }
-
-        if (hasError) {
-          // 震动反馈
-          if (navigator.vibrate) navigator.vibrate(200);
-          return;
-        }
-        // *** 结束修改 ***
+        
+        if (newBigBlind < 2 || newBigBlind % 2 !== 0) return;
+        if (newInitChips <= newBigBlind) return;
 
         const btn = document.getElementById("btn-start-game");
-        if (!btn || this.gameUI.lastState.playerOrder.length < 2) {
-          return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "启动中...";
-
+        if (!btn || this.gameUI.lastState.playerOrder.length < 2) return;
+        
+        btn.disabled = true; 
         const roomRef = this.getRoomRef(this.currentRoomId);
         try {
           const currentState = this.gameUI.lastState;
           if (currentState.status !== "waiting") return;
-
-          // 写入配置
-          currentState.config = {
-            initialChips: newInitChips,
-            bigBlind: newBigBlind,
-            smallBlind: Math.floor(newBigBlind / 2)
+          
+          currentState.config = { 
+            initialChips: newInitChips, 
+            bigBlind: newBigBlind, 
+            smallBlind: Math.floor(newBigBlind / 2) 
           };
-
-          // 覆盖所有人的筹码
-          Object.keys(currentState.players).forEach(uid => {
-            currentState.players[uid].chips = newInitChips;
-            currentState.players[uid].currentBet = 0;
+          
+          Object.keys(currentState.players).forEach(uid => { 
+            currentState.players[uid].chips = newInitChips; 
+            currentState.players[uid].currentBet = 0; 
           });
-
+          
           currentState.status = "playing";
           const nextState = startNewRound(currentState);
-
           await setDoc(roomRef, nextState);
-          console.log("游戏启动指令已发送");
-        } catch (error) {
-          console.error("开始游戏失败:", error);
-          btn.disabled = false;
-          btn.innerText = "开始游戏";
-          this.gameUI.showMessage("启动失败，请重试");
+        } catch (error) { 
+          btn.disabled = false; 
+          this.gameUI.showMessage("Start failed"); 
         }
       }
 
-      // --- 玩家提交动作 (修复版) ---
       async handleHumanAction(action) {
         const state = this.gameUI.lastState;
-        if (
-          !state ||
-          state.playerOrder[state.currentPlayerIndex] !== this.localUserId
-        ) {
-          return; // 不是你的回合
-        }
-
-        // 1. 立即锁定 UI，防止重复点击
+        if (!state || state.playerOrder[state.currentPlayerIndex] !== this.localUserId) return;
+        
         this.gameUI.updateControls({ ...state, currentPlayerIndex: -1 });
-
         let actionAmount = 0;
         if (action === "raise") {
-          // 获取加注金额
           const slider = document.getElementById("raise-slider");
           if (slider) actionAmount = parseInt(slider.value);
         }
-
+        
         const roomRef = this.getRoomRef(this.currentRoomId);
-
         try {
-          // 使用事务来处理动作，防止冲突
           await runTransaction(this.db, async (transaction) => {
             const roomDoc = await transaction.get(roomRef);
-            if (!roomDoc.exists()) throw new Error("房间不存在");
-
+            if (!roomDoc.exists()) throw new Error("Room missing");
+            
             const currentState = roomDoc.data();
-
-            // 再次验证是否是该玩家的回合
-            if (
-              currentState.playerOrder[currentState.currentPlayerIndex] !==
-              this.localUserId
-            ) {
-              console.warn("动作提交时已不是你的回合");
-              return;
-            }
-
+            if (currentState.playerOrder[currentState.currentPlayerIndex] !== this.localUserId) return;
+            
             let totalAmount = 0;
             const player = currentState.players[this.localUserId];
-
-            if (action === "raise") {
-              // 这里的逻辑取决于你之前的 processAction 实现
-              totalAmount = player.currentBet + actionAmount;
-              // 注意：请确保这里计算的 totalAmount 符合你 processAction 的要求
-              // 如果 actionAmount 已经是总额（slider.value），则直接 totalAmount = actionAmount;
-              // 根据之前的上下文，slider.value 似乎是“本次行动的金额”，所以 totalAmount = player.currentBet + actionAmount 是合理的
-              // 但如果是 No-Limit 模式，slider 通常直接代表 Total Bet。请根据实际情况微调。
-              // 建议保留你原本逻辑中的计算方式。
-              totalAmount = player.currentBet + actionAmount;
-            }
-
-            // 调用纯函数计算下一个状态
-            const nextState = processAction(
-              currentState,
-              this.localUserId,
-              action,
-              totalAmount
-            );
-
-            // 写入新状态
+            if (action === "raise") totalAmount = player.currentBet + actionAmount; 
+            
+            const nextState = processAction(currentState, this.localUserId, action, totalAmount);
             transaction.set(roomRef, nextState);
           });
         } catch (error) {
-          console.error("处理动作失败:", error);
-
-          // ============================================================
-          // *** 核心修复：操作失败时，必须恢复按钮状态！ ***
-          // ============================================================
-          this.gameUI.showMessage("网络繁忙，请重试");
-
-          // 强制使用“上一次的已知状态”重新渲染控制栏，从而重新激活按钮
+          this.gameUI.showMessage("Action failed");
           if (this.gameUI.lastState && this.localUserId) {
-            // 恢复 currentPlayerIndex，让 updateControls 认为还是你的回合
             this.gameUI.updateControls(this.gameUI.lastState);
           }
         }
       }
 
-      // --- 移除: submitBotAction 函数 ---
-
-      // --- 移除: addAiPlayer 函数 ---
-
-      // --- 移除: removePlayer 函数 ---
-
-      // --- 移除: getAiAction 函数 ---
-
       disableRoomButtons(disabled) {
         document.getElementById("btn-join-room").disabled = disabled;
         document.getElementById("btn-create-room").disabled = disabled;
-        if (disabled) {
-          document
-            .getElementById("btn-join-room")
-            .classList.add("btn-disabled");
-          document
-            .getElementById("btn-create-room")
-            .classList.add("btn-disabled");
-        } else {
-          document
-            .getElementById("btn-join-room")
-            .classList.remove("btn-disabled");
-          document
-            .getElementById("btn-create-room")
-            .classList.remove("btn-disabled");
-        }
+        const method = disabled ? "add" : "remove";
+        document.getElementById("btn-join-room").classList[method]("btn-disabled");
+        document.getElementById("btn-create-room").classList[method]("btn-disabled");
       }
     }
 
-    // --- (从单机版复制的辅助类) ---
     class SoundManager {
-      constructor() {
-        this.ctx = null;
-        this.enabled = false;
+      constructor() { 
+        this.ctx = null; 
+        this.enabled = false; 
       }
+      
       init() {
         if (!this.ctx) {
           this.ctx = new (window.AudioContext || window.webkitAudioContext)();
           this.enabled = true;
-
-          // *** 修复: 添加一个全局监听器 ***
-          // 确保任何点击都可以唤醒被浏览器暂停的音频
-          const resumeAudio = () => {
+          const resumeAudio = () => { 
             if (this.ctx && this.ctx.state === "suspended") {
-              this.ctx.resume();
+              this.ctx.resume(); 
             }
           };
-          // 同时监听鼠标点击和触摸
-          document.addEventListener("click", resumeAudio);
+          document.addEventListener("click", resumeAudio); 
           document.addEventListener("touchstart", resumeAudio);
-          // *** 修复结束 ***
         }
-
-        // 保持原有的检查 (用于处理初始加载)
         if (this.ctx.state === "suspended") {
           this.ctx.resume();
         }
       }
+      
       playTone(freq, type, duration, vol = 0.1, when = 0) {
         if (!this.enabled) return;
-        const osc = this.ctx.createOscillator();
+        const osc = this.ctx.createOscillator(); 
         const gain = this.ctx.createGain();
-        osc.type = type;
+        
+        osc.type = type; 
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime + when);
+        
         gain.gain.setValueAtTime(vol, this.ctx.currentTime + when);
-        gain.gain.exponentialRampToValueAtTime(
-          0.001,
-          this.ctx.currentTime + when + duration
-        );
-        osc.connect(gain);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + when + duration);
+        
+        osc.connect(gain); 
         gain.connect(this.ctx.destination);
-        osc.start(this.ctx.currentTime + when);
+        
+        osc.start(this.ctx.currentTime + when); 
         osc.stop(this.ctx.currentTime + when + duration);
       }
-      playChip() {
-        this.playTone(2000, "square", 0.05, 0.03);
+      
+      playChip() { 
+        this.playTone(2000, "square", 0.05, 0.03); 
       }
-      playCard() {
-        this.playTone(800, "sine", 0.1, 0.02);
+      
+      playCard() { 
+        this.playTone(800, "sine", 0.1, 0.02); 
       }
-      playCheck() {
-        this.playTone(300, "sine", 0.05, 0.1);
-        this.playTone(300, "sine", 0.05, 0.1, 0.1);
+      
+      playCheck() { 
+        this.playTone(300, "sine", 0.05, 0.1); 
+        this.playTone(300, "sine", 0.05, 0.1, 0.1); 
       }
-      playFold() {
-        this.playTone(150, "triangle", 0.3, 0.1);
+      
+      playFold() { 
+        this.playTone(150, "triangle", 0.3, 0.1); 
       }
+      
       playAllIn() {
         if (!this.enabled) return;
         const t = this.ctx.currentTime;
-        this.playTone(100, "sawtooth", 0.4, 0.4, 0);
+        this.playTone(100, "sawtooth", 0.4, 0.4, 0); 
         this.playTone(50, "square", 1.0, 0.5, 0.1);
-        const osc = this.ctx.createOscillator();
+        
+        const osc = this.ctx.createOscillator(); 
         const gain = this.ctx.createGain();
-        osc.type = "triangle";
+        osc.type = "triangle"; 
         osc.frequency.setValueAtTime(800, t);
         osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
-        gain.gain.setValueAtTime(0.1, t);
+        
+        gain.gain.setValueAtTime(0.1, t); 
         gain.gain.linearRampToValueAtTime(0, t + 0.3);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
+        
+        osc.connect(gain); 
+        gain.connect(this.ctx.destination); 
+        osc.start(); 
         osc.stop(t + 0.3);
       }
-      playRaise() {
-        this.playTone(1500, "square", 0.08, 0.04);
-        this.playTone(1000, "square", 0.08, 0.04, 0.05);
+      
+      playRaise() { 
+        this.playTone(1500, "square", 0.08, 0.04); 
+        this.playTone(1000, "square", 0.08, 0.04, 0.05); 
       }
-
-      // --- 恢复的逻辑: 局结束音效 (来自 读博.html) ---
-      playHandEnd() {
-        this.playTone(440, "sine", 0.2, 0.1);
+      
+      playHandEnd() { 
+        this.playTone(440, "sine", 0.2, 0.1); 
       }
-      // --- 结束 ---
-
-      playWin() {
-        [523, 659, 784, 1046].forEach((f, i) =>
-          this.playTone(f, "triangle", 0.4, 0.15, i * 0.15)
-        );
+      
+      playWin() { 
+        [523, 659, 784, 1046].forEach((f, i) => this.playTone(f, "triangle", 0.4, 0.15, i * 0.15)); 
       }
-      playLose() {
-        this.playTone(100, "sawtooth", 1.0, 0.2);
-        this.playTone(80, "sawtooth", 1.0, 0.2, 0.3);
+      
+      playLose() { 
+        this.playTone(100, "sawtooth", 1.0, 0.2); 
+        this.playTone(80, "sawtooth", 1.0, 0.2, 0.3); 
       }
     }
+
     class OcclusionManager {
       constructor() {
         this.communityArea = document.getElementById("community-area");
         this.gameMessage = document.getElementById("game-message");
-        this.isRunning = false;
+        this.isRunning = false; 
         this.checkLoop = null;
       }
-      start() {
-        if (this.isRunning) return;
-        this.isRunning = true;
-        this.checkLoop = setInterval(() => this.check(), 100);
+      
+      start() { 
+        if (this.isRunning) return; 
+        this.isRunning = true; 
+        this.checkLoop = setInterval(() => this.check(), 100); 
       }
-      stop() {
-        this.isRunning = false;
-        clearInterval(this.checkLoop);
+      
+      stop() { 
+        this.isRunning = false; 
+        clearInterval(this.checkLoop); 
       }
+      
       getOverlapRatio(r1, r2) {
         if (!r1 || !r2) return 0;
-        const overlapLeft = Math.max(r1.left, r2.left);
+        const overlapLeft = Math.max(r1.left, r2.left); 
         const overlapRight = Math.min(r1.right, r2.right);
-        const overlapTop = Math.max(r1.top, r2.top);
+        const overlapTop = Math.max(r1.top, r2.top); 
         const overlapBottom = Math.min(r1.bottom, r2.bottom);
-        if (overlapLeft >= overlapRight || overlapTop >= overlapBottom)
-          return 0;
-        const overlapArea =
-          (overlapRight - overlapLeft) * (overlapBottom - overlapTop);
-        const area1 = r1.width * r1.height;
+        
+        if (overlapLeft >= overlapRight || overlapTop >= overlapBottom) return 0;
+        
+        const overlapArea = (overlapRight - overlapLeft) * (overlapBottom - overlapTop);
+        const area1 = r1.width * r1.height; 
         const area2 = r2.width * r2.height;
         return overlapArea / Math.min(area1, area2);
       }
+      
       check() {
         const seats = document.querySelectorAll(".player-seat");
         if (seats.length === 0) return;
+        
         const cardTargets = [];
         seats.forEach((seat) => {
           const cardsDiv = seat.querySelector('div[id^="cards-"]');
-          if (cardsDiv && cardsDiv.children.length > 0)
+          if (cardsDiv && cardsDiv.children.length > 0) {
             cardTargets.push(cardsDiv.getBoundingClientRect());
+          }
         });
+        
         const commRect = this.communityArea.getBoundingClientRect();
         if (commRect.width > 10 && commRect.height > 10) {
           let commObstructed = false;
-          for (const targetRect of cardTargets) {
-            if (this.getOverlapRatio(targetRect, commRect) > 0.2) {
-              commObstructed = true;
-              break;
-            }
+          for (const targetRect of cardTargets) { 
+            if (this.getOverlapRatio(targetRect, commRect) > 0.2) { 
+              commObstructed = true; 
+              break; 
+            } 
           }
           if (!commObstructed) {
             seats.forEach((seat) => {
               const infoBox = seat.querySelector(".player-info-box");
-              if (infoBox) {
-                if (
-                  this.getOverlapRatio(
-                    infoBox.getBoundingClientRect(),
-                    commRect
-                  ) > 0.2
-                )
-                  commObstructed = true;
+              if (infoBox) { 
+                if (this.getOverlapRatio(infoBox.getBoundingClientRect(), commRect) > 0.2) {
+                  commObstructed = true; 
+                }
               }
             });
           }
           this.applyTransparency(this.communityArea, commObstructed);
-        } else {
-          this.applyTransparency(this.communityArea, false);
+        } else { 
+          this.applyTransparency(this.communityArea, false); 
         }
+        
         if (this.gameMessage && this.gameMessage.style.opacity !== "0") {
-          let msgObstructed = false;
+          let msgObstructed = false; 
           const msgRect = this.gameMessage.getBoundingClientRect();
-          if (commRect.width > 10 && commRect.height > 10) {
-            if (this.getOverlapRatio(msgRect, commRect) > 0.2)
-              msgObstructed = true;
+          if (commRect.width > 10 && commRect.height > 10) { 
+            if (this.getOverlapRatio(msgRect, commRect) > 0.2) msgObstructed = true; 
           }
-          if (!msgObstructed) {
-            for (const targetRect of cardTargets) {
-              if (this.getOverlapRatio(msgRect, targetRect) > 0.2) {
-                msgObstructed = true;
-                break;
-              }
-            }
+          if (!msgObstructed) { 
+            for (const targetRect of cardTargets) { 
+              if (this.getOverlapRatio(msgRect, targetRect) > 0.2) { 
+                msgObstructed = true; 
+                break; 
+              } 
+            } 
           }
           this.applyTransparency(this.gameMessage, msgObstructed);
         }
       }
+      
       applyTransparency(el, shouldBeTransparent) {
-        if (shouldBeTransparent) {
-          if (!el.classList.contains("smart-transparent"))
-            el.classList.add("smart-transparent");
-        } else {
-          if (el.classList.contains("smart-transparent"))
-            el.classList.remove("smart-transparent");
+        if (shouldBeTransparent) { 
+          if (!el.classList.contains("smart-transparent")) el.classList.add("smart-transparent"); 
+        } else { 
+          if (el.classList.contains("smart-transparent")) el.classList.remove("smart-transparent"); 
         }
       }
     }
+
     class TableDragSystem {
       constructor() {
-        this.container = document.getElementById("table-area");
+        this.container = document.getElementById("table-area"); 
         this.table = document.getElementById("table");
-        this.isDragging = false;
-        this.startY = 0;
-        this.currentY = 30;
+        this.isDragging = false; 
+        this.startY = 0; 
+        this.currentY = 30; 
         this.initialDragY = 0;
         this.init();
       }
+      
       init() {
-        this.container.addEventListener("mousedown", this.onStart.bind(this));
-        window.addEventListener("mousemove", this.onMove.bind(this));
+        this.container.addEventListener("mousedown", this.onStart.bind(this)); 
+        window.addEventListener("mousemove", this.onMove.bind(this)); 
         window.addEventListener("mouseup", this.onEnd.bind(this));
-        this.container.addEventListener(
-          "touchstart",
-          this.onStart.bind(this),
-          { passive: false }
-        );
-        window.addEventListener("touchmove", this.onMove.bind(this), {
-          passive: false,
-        });
+        
+        this.container.addEventListener("touchstart", this.onStart.bind(this), { passive: false }); 
+        window.addEventListener("touchmove", this.onMove.bind(this), { passive: false }); 
         window.addEventListener("touchend", this.onEnd.bind(this));
+        
         this.updateTransform();
       }
+      
       onStart(e) {
         if (e.target.closest("button") || e.target.closest("input")) return;
-        this.isDragging = true;
-        this.startY = this.getY(e);
+        this.isDragging = true; 
+        this.startY = this.getY(e); 
         this.initialDragY = this.currentY;
-        this.table.classList.remove("duration-500");
+        
+        this.table.classList.remove("duration-500"); 
         this.table.classList.add("duration-0");
-        this.container.classList.add("cursor-grabbing");
+        this.container.classList.add("cursor-grabbing"); 
         this.container.classList.remove("cursor-grab");
       }
+      
       onMove(e) {
-        if (!this.isDragging) return;
+        if (!this.isDragging) return; 
         e.preventDefault();
-        const y = this.getY(e);
-        const diff = y - this.startY;
+        const y = this.getY(e); 
+        const diff = y - this.startY; 
         this.currentY = this.initialDragY + diff;
-        if (this.currentY > 180) this.currentY = 180;
+        
+        if (this.currentY > 180) this.currentY = 180; 
         if (this.currentY < -120) this.currentY = -120;
-        this.updateTransform();
+        
+        this.updateTransform(); 
         if (window.occlusionManager) window.occlusionManager.check();
       }
+      
       onEnd() {
         if (!this.isDragging) return;
-        this.isDragging = false;
-        this.table.classList.remove("duration-0");
+        this.isDragging = false; 
+        this.table.classList.remove("duration-0"); 
         this.table.classList.add("duration-500");
-        this.container.classList.remove("cursor-grabbing");
+        this.container.classList.remove("cursor-grabbing"); 
         this.container.classList.add("cursor-grab");
       }
-      getY(e) {
-        return e.touches ? e.touches[0].clientY : e.clientY;
+      
+      getY(e) { 
+        return e.touches ? e.touches[0].clientY : e.clientY; 
       }
-      updateTransform() {
-        this.table.style.transform = `translateY(${this.currentY}px)`;
+      
+      updateTransform() { 
+        this.table.style.transform = `translateY(${this.currentY}px)`; 
       }
     }
 
-    // *** 修复: 替换整个 HandEvaluator 类 ***
     class HandEvaluator {
       static evaluate(holeCards, communityCards) {
-        if (!holeCards || holeCards.length === 0)
-          return { score: 0, name: "无", bestCards: [] };
-
-        // *** 修正: 标记手牌并优先排序 ***
-        // 1. 合并所有牌，并标记来源 (isHole)
+        if (!holeCards || holeCards.length === 0) {
+          return { score: 0, name: "hand_high_card", bestCards: [] };
+        }
+        
         const all = [
-          ...holeCards.map((c) => ({ ...c, isHole: true })),
-          ...communityCards.map((c) => ({ ...c, isHole: false })),
+          ...holeCards.map((c) => ({ ...c, isHole: true })), 
+          ...communityCards.map((c) => ({ ...c, isHole: false }))
         ];
-
-        // 2. 排序: 优先按点数，点数相同，手牌(true=1)优先于公共牌(false=0)
-        all.sort((a, b) => {
-          if (b.value !== a.value) return b.value - a.value;
-          return b.isHole - a.isHole;
+        
+        all.sort((a, b) => { 
+          if (b.value !== a.value) return b.value - a.value; 
+          return b.isHole - a.isHole; 
         });
-        // *** 结束修正 ***
 
-        // getKickers 会自动从排好序的 'all' 数组中取牌
         const getKickers = (excludeCards, count) => {
-          const kickers = [];
+          const kickers = []; 
           const excludeIds = new Set(excludeCards.map((c) => c.id));
-          for (const c of all) {
-            // 'all' 已经排好序
-            if (!excludeIds.has(c.id)) {
-              kickers.push(c);
-              if (kickers.length === count) break;
-            }
+          for (const c of all) { 
+            if (!excludeIds.has(c.id)) { 
+              kickers.push(c); 
+              if (kickers.length === count) break; 
+            } 
           }
           return kickers;
         };
-
-        // calcScore 仅用于计算分数，不影响 'bestCards'
+        
         const calcScore = (rankVal, mainCards, kickers) => {
           let s = rankVal * Math.pow(100, 5);
-          mainCards.forEach((c, i) => {
-            s += c.value * Math.pow(100, 4 - i);
-          });
-          kickers.forEach((c, i) => {
-            s += c.value * Math.pow(100, 4 - mainCards.length - i);
-          });
+          mainCards.forEach((c, i) => { s += c.value * Math.pow(100, 4 - i); });
+          kickers.forEach((c, i) => { s += c.value * Math.pow(100, 4 - mainCards.length - i); });
           return s;
         };
-
-        // 寻找同花 (flushCards 也会保持 'all' 的排序)
-        const suits = {};
-        all.forEach((c) => {
-          if (!suits[c.suit]) suits[c.suit] = [];
-          suits[c.suit].push(c);
+        
+        const suits = {}; 
+        all.forEach((c) => { 
+          if (!suits[c.suit]) suits[c.suit] = []; 
+          suits[c.suit].push(c); 
         });
-        let flushCards = null;
-        for (let s in suits) {
-          if (suits[s].length >= 5) {
-            flushCards = suits[s].slice(0, 5); // .slice(0,5) 保留了排序
-            break;
-          }
+        
+        let flushCards = null; 
+        for (let s in suits) { 
+          if (suits[s].length >= 5) { 
+            flushCards = suits[s].slice(0, 5); 
+            break; 
+          } 
         }
 
-        // 寻找顺子 (cardsToCheck 也会保持 'all' 的排序)
         const getStraightCards = (cardsToCheck) => {
-          // .map 再 new Set 会丢失 isHole 排序, 但没关系
-          const uniqueVals = [
-            ...new Set(cardsToCheck.map((c) => c.value)),
-          ].sort((a, b) => b - a);
-
-          // A-5 顺子 (特殊处理)
-          if (
-            uniqueVals.includes(14) &&
-            uniqueVals.includes(5) &&
-            uniqueVals.includes(4) &&
-            uniqueVals.includes(3) &&
-            uniqueVals.includes(2)
-          ) {
-            const straightVals = [5, 4, 3, 2, 14];
-            const best5 = [];
+          const uniqueVals = [...new Set(cardsToCheck.map((c) => c.value))].sort((a, b) => b - a);
+          
+          // A-5 Straight
+          if (uniqueVals.includes(14) && uniqueVals.includes(5) && uniqueVals.includes(4) && uniqueVals.includes(3) && uniqueVals.includes(2)) {
+            const straightVals = [5, 4, 3, 2, 14]; 
+            const best5 = []; 
             const usedIds = new Set();
-            straightVals.forEach((v) => {
-              // .find() 会找到 'cardsToCheck' (已排序) 中的第一张
-              const card = cardsToCheck.find(
-                (c) => c.value === v && !usedIds.has(c.id)
-              );
-              if (card) {
-                // 确保卡片被找到
-                best5.push(card);
-
-                // *** 修复 1: 这里原来是 c.id，必须改为 card.id ***
-                usedIds.add(card.id);
-                // *** 修复结束 ***
-              }
+            
+            straightVals.forEach((v) => { 
+              const card = cardsToCheck.find((c) => c.value === v && !usedIds.has(c.id)); 
+              if (card) { 
+                best5.push(card); 
+                usedIds.add(card.id); 
+              } 
             });
-            // 必须确保找到了5张牌
             if (best5.length === 5) return { cards: best5, high: 5 };
           }
-
-          // K-Q-J-10-9 普通顺子
+          
+          // Normal Straight
           for (let i = 0; i <= uniqueVals.length - 5; i++) {
             if (uniqueVals[i] - uniqueVals[i + 4] === 4) {
-              const straightVals = uniqueVals.slice(i, i + 5);
-              const best5 = [];
+              const straightVals = uniqueVals.slice(i, i + 5); 
+              const best5 = []; 
               const usedIds = new Set();
-              straightVals.forEach((v) => {
-                // .find() 会找到 'cardsToCheck' (已排序) 中的第一张
-                const card = cardsToCheck.find(
-                  (c) => c.value === v && !usedIds.has(c.id)
-                );
-                if (card) {
-                  // 确保卡片被找到
-                  best5.push(card);
-
-                  // *** 修复 2: 这里原来是 c.id，必须改为 card.id ***
-                  usedIds.add(card.id);
-                  // *** 修复结束 ***
-                }
+              
+              straightVals.forEach((v) => { 
+                const card = cardsToCheck.find((c) => c.value === v && !usedIds.has(c.id)); 
+                if (card) { 
+                  best5.push(card); 
+                  usedIds.add(card.id); 
+                } 
               });
-              // 必须确保找到了5张牌
-              if (best5.length === 5)
-                return { cards: best5, high: uniqueVals[i] };
+              if (best5.length === 5) return { cards: best5, high: uniqueVals[i] };
             }
           }
           return null;
         };
 
-        // 1. 同花顺
         if (flushCards) {
-          const sf = getStraightCards(flushCards); // flushCards 保持了 'isHole' 排序
-          if (sf)
-            return {
-              score: calcScore(9, [sf.cards[0]], []),
-              name: "同花顺",
-              bestCards: sf.cards,
+          const sf = getStraightCards(flushCards);
+          if (sf) {
+            return { 
+              score: calcScore(9, [sf.cards[0]], []), 
+              name: "hand_straight_flush", 
+              bestCards: sf.cards 
             };
+          }
         }
-
-        // 2. 四条
-        const counts = {};
+        
+        const counts = {}; 
         all.forEach((c) => (counts[c.value] = (counts[c.value] || 0) + 1));
-        const fours = Object.keys(counts)
-          .filter((v) => counts[v] === 4)
-          .map(Number)
-          .sort((a, b) => b - a);
-        const threes = Object.keys(counts)
-          .filter((v) => counts[v] === 3)
-          .map(Number)
-          .sort((a, b) => b - a);
-        const pairs = Object.keys(counts)
-          .filter((v) => counts[v] === 2)
-          .map(Number)
-          .sort((a, b) => b - a);
+        
+        const fours = Object.keys(counts).filter((v) => counts[v] === 4).map(Number).sort((a, b) => b - a);
+        const threes = Object.keys(counts).filter((v) => counts[v] === 3).map(Number).sort((a, b) => b - a);
+        const pairs = Object.keys(counts).filter((v) => counts[v] === 2).map(Number).sort((a, b) => b - a);
+
         if (fours.length > 0) {
-          const fourVal = fours[0];
-          const quadCards = all.filter((c) => c.value === fourVal); // .filter() 保持了 'isHole' 排序
-          const kicker = getKickers(quadCards, 1); // getKickers 保持了 'isHole' 排序
-          return {
-            score: calcScore(8, [quadCards[0]], kicker),
-            name: "四条",
-            bestCards: [...quadCards, ...kicker],
+          const fourVal = fours[0]; 
+          const quadCards = all.filter((c) => c.value === fourVal); 
+          const kicker = getKickers(quadCards, 1);
+          return { 
+            score: calcScore(8, [quadCards[0]], kicker), 
+            name: "hand_four_of_a_kind", 
+            bestCards: [...quadCards, ...kicker] 
           };
         }
-
-        // 3. 葫芦
+        
         if (threes.length > 0 && (threes.length > 1 || pairs.length > 0)) {
-          const threeVal = threes[0];
+          const threeVal = threes[0]; 
           const pairVal = threes.length > 1 ? threes[1] : pairs[0];
-          const threeCards = all
-            .filter((c) => c.value === threeVal)
-            .slice(0, 3); // .filter().slice() 保持了 'isHole' 排序
-          const pairCards = all
-            .filter((c) => c.value === pairVal)
-            .slice(0, 2); // .filter().slice() 保持了 'isHole' 排序
-          return {
-            score: calcScore(7, [threeCards[0], pairCards[0]], []),
-            name: "葫芦",
-            bestCards: [...threeCards, ...pairCards],
+          const threeCards = all.filter((c) => c.value === threeVal).slice(0, 3); 
+          const pairCards = all.filter((c) => c.value === pairVal).slice(0, 2);
+          return { 
+            score: calcScore(7, [threeCards[0], pairCards[0]], []), 
+            name: "hand_full_house", 
+            bestCards: [...threeCards, ...pairCards] 
           };
         }
-
-        // 4. 同花
+        
         if (flushCards) {
-          return {
-            score: calcScore(6, flushCards, []),
-            name: "同花",
-            bestCards: flushCards,
-          }; // flushCards 保持了 'isHole' 排序
+          return { 
+            score: calcScore(6, flushCards, []), 
+            name: "hand_flush", 
+            bestCards: flushCards 
+          };
         }
-
-        // 5. 顺子
-        const straight = getStraightCards(all); // 'all' 保持了 'isHole' 排序
+        
+        const straight = getStraightCards(all);
         if (straight) {
-          return {
-            score: calcScore(5, [straight.cards[0]], []),
-            name: "顺子",
-            bestCards: straight.cards,
+          return { 
+            score: calcScore(5, [straight.cards[0]], []), 
+            name: "hand_straight", 
+            bestCards: straight.cards 
           };
         }
-
-        // 6. 三条
+        
         if (threes.length > 0) {
-          const threeVal = threes[0];
-          const threeCards = all
-            .filter((c) => c.value === threeVal)
-            .slice(0, 3); // .filter().slice() 保持了 'isHole' 排序
-          const kickers = getKickers(threeCards, 2); // getKickers 保持了 'isHole' 排序
-          return {
-            score: calcScore(4, [threeCards[0]], kickers),
-            name: "三条",
-            bestCards: [...threeCards, ...kickers],
+          const threeVal = threes[0]; 
+          const threeCards = all.filter((c) => c.value === threeVal).slice(0, 3); 
+          const kickers = getKickers(threeCards, 2);
+          return { 
+            score: calcScore(4, [threeCards[0]], kickers), 
+            name: "hand_three_of_a_kind", 
+            bestCards: [...threeCards, ...kickers] 
           };
         }
-
-        // 7. 两对
+        
         if (pairs.length >= 2) {
-          const p1 = pairs[0];
+          const p1 = pairs[0]; 
           const p2 = pairs[1];
-          const pair1Cards = all.filter((c) => c.value === p1).slice(0, 2); // .filter().slice() 保持了 'isHole' 排序
-          const pair2Cards = all.filter((c) => c.value === p2).slice(0, 2); // .filter().slice() 保持了 'isHole' 排序
-          const kicker = getKickers([...pair1Cards, ...pair2Cards], 1); // getKickers 保持了 'isHole' 排序
-          return {
-            score: calcScore(3, [pair1Cards[0], pair2Cards[0]], kicker),
-            name: "两对",
-            bestCards: [...pair1Cards, ...pair2Cards, ...kicker],
+          const pair1Cards = all.filter((c) => c.value === p1).slice(0, 2); 
+          const pair2Cards = all.filter((c) => c.value === p2).slice(0, 2); 
+          const kicker = getKickers([...pair1Cards, ...pair2Cards], 1);
+          return { 
+            score: calcScore(3, [pair1Cards[0], pair2Cards[0]], kicker), 
+            name: "hand_two_pairs", 
+            bestCards: [...pair1Cards, ...pair2Cards, ...kicker] 
           };
         }
-
-        // 8. 一对
+        
         if (pairs.length === 1) {
-          const p1 = pairs[0];
-          const pairCards = all.filter((c) => c.value === p1).slice(0, 2); // .filter().slice() 保持了 'isHole' 排序
-          const kickers = getKickers(pairCards, 3); // getKickers 保持了 'isHole' 排序
-          return {
-            score: calcScore(2, [pairCards[0]], kickers),
-            name: "一对",
-            bestCards: [...pairCards, ...kickers],
+          const p1 = pairs[0]; 
+          const pairCards = all.filter((c) => c.value === p1).slice(0, 2); 
+          const kickers = getKickers(pairCards, 3);
+          return { 
+            score: calcScore(2, [pairCards[0]], kickers), 
+            name: "hand_pair", 
+            bestCards: [...pairCards, ...kickers] 
           };
         }
-
-        // 9. 高牌
-        const highCards = all.slice(0, 5); // .slice() 保持了 'isHole' 排序
-        return {
-          score: calcScore(1, highCards, []),
-          name: "高牌",
-          bestCards: highCards,
+        
+        const highCards = all.slice(0, 5);
+        return { 
+          score: calcScore(1, highCards, []), 
+          name: "hand_high_card", 
+          bestCards: highCards 
         };
       }
     }
 
-    // --- 游戏启动 ---
-
-    // 将关键实例暴露给 window，以便 HTML onclick 事件可以调用
     const gameUI = new GameUIManager();
     const network = new NetworkManager(gameUI);
-
-    window.network = network; // 暴露 network.createRoom, .joinRoom 等
-    window.gameUI = gameUI; // 暴露 gameUI.adjustRaise
-
-    // 启动 Firebase
+    window.network = network; 
+    window.gameUI = gameUI;
     network.init();
-
-    // 移除旧的单机版逻辑
-    // (旧的 game = new PokerGame() 和 restartGame() 已被 network.leaveRoom 替代)
   </script>
-
-  <!-- 移除旧的 <script> ... </script> 块 -->
 </body>
-
 </html>
