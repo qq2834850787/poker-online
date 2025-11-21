@@ -22,50 +22,8 @@
         touch-action: none;
         user-select: none;
       }
-      
+
       /* --- 卡牌样式 --- */
-      /* --- 3D 翻牌特效 (替换旧的动画样式) --- */
-      
-      /* 1. 定义翻转动画：从 180度(背面) -> 0度(正面) */
-      @keyframes flipReal3D {
-        0% {
-          transform: perspective(800px) rotateY(180deg); /* 开始时：背对屏幕 */
-        }
-        100% {
-          transform: perspective(800px) rotateY(0deg);   /* 结束时：正对屏幕 */
-        }
-      }
-
-      /* 2. 动画类配置 */
-      .card-flip-enter {
-        /* 0.6s 是翻转速度，配合之前的延迟效果很好 */
-        animation: flipReal3D 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
-        transform-style: preserve-3d; /* 开启 3D 空间 */
-        backface-visibility: hidden;  /* 隐藏正面的背面 */
-      }
-
-      /* 3. 伪元素制作“牌背” (这是实现翻转的关键) */
-      .card-flip-enter::after {
-        content: "";
-        position: absolute;
-        inset: -1px; /* 覆盖整个卡牌 */
-        z-index: -1; 
-        border-radius: inherit;
-        
-        /* 你的蓝色牌背样式 */
-        background: repeating-linear-gradient(
-          45deg,
-          #1e3a8a,
-          #1e3a8a 10px,
-          #172554 10px,
-          #172554 20px
-        );
-        border: 2px solid #e2e8f0;
-
-        /* 关键：预先旋转180度，这样卡牌背对观众时，这个伪元素正好正对观众 */
-        transform: rotateY(180deg);
-        backface-visibility: hidden;
-      }
       .card {
         width: 42px;
         height: 60px;
@@ -1537,7 +1495,6 @@
           this.highlightCards = new Set();
           this.bankruptcyScreenShown = false; // *** 新增: 破产界面显示标志 ***
           this.lastAllInPlayerTriggered = null; // *** 修复: 移到构造函数 ***
-          this.shownCardIds = new Set();
 
           // 绑定加注滑块
           document.getElementById("raise-slider").oninput = () => {
@@ -1572,18 +1529,6 @@
             return;
           }
 
-          // *** 新增: 如果是新的一局（翻牌前且桌上无公共牌），重置动画记录 ***
-          if (state.phase === 'preflop' && state.communityCards.length === 0) {
-             // 只保留玩家自己的手牌记录，或者干脆全部清空让手牌也重新发一次
-             // 这里我们选择全部清空，这样新回合发手牌时也会有动画
-             if (this.lastState && this.lastState.phase !== 'preflop') {
-                 this.shownCardIds.clear();
-             }
-          }
-          // 如果刚刚从 waiting 进入 playing，也要清空
-          if (this.lastState && this.lastState.status === 'waiting' && state.status === 'playing') {
-             this.shownCardIds.clear();
-          }
           // *** 新增: 确保音效被激活 (请求 #1) ***
           this.initSound();
 
@@ -1673,70 +1618,23 @@
           // 2. 渲染牌桌
           this.renderTableLayout(state, localId);
 
-          // ... 在 renderGameState 方法内部 ...
-
-          // 3. 渲染公共牌 (包含 FLIP 挤压动画逻辑)
+          // 3. 渲染公共牌
           const commDiv = document.getElementById("community-cards");
-          
-          // [A] 记录旧位置：在清空 HTML 之前，记下每张老牌现在的坐标
-          const oldPositions = new Map();
-          // 查找 commDiv 里的所有卡牌 (包括嵌套在 row1/row2 里的)
-          commDiv.querySelectorAll('.card').forEach(card => {
-            if (card.dataset.id) {
-                oldPositions.set(card.dataset.id, card.getBoundingClientRect());
-            }
-          });
-
-          // [B] 正常的渲染逻辑 (你原本的代码)
           commDiv.innerHTML = "";
           const row1 = document.createElement("div");
           row1.className = "flex space-x-2";
           const row2 = document.createElement("div");
           row2.className = "flex space-x-2";
 
+          // *** 修复: 移除了 this.highlightCards 的重复设置 ***
+
           state.communityCards.forEach((c, i) => {
-            const cardEl = this.createCardEl(c, i);
+            const cardEl = this.createCardEl(c);
             if (i < 3) row1.appendChild(cardEl);
             else row2.appendChild(cardEl);
           });
           commDiv.appendChild(row1);
           if (state.communityCards.length > 3) commDiv.appendChild(row2);
-
-          // [C] 应用移动动画：在浏览器绘制下一帧前执行
-          requestAnimationFrame(() => {
-            // 再次查找所有刚刚生成的新卡牌
-            const newCards = commDiv.querySelectorAll('.card');
-            
-            newCards.forEach(newCard => {
-                const id = newCard.dataset.id;
-                const oldRect = oldPositions.get(id);
-
-                // 如果这张牌以前就存在 (说明它是老牌，需要让位)
-                if (oldRect) {
-                    const newRect = newCard.getBoundingClientRect();
-                    
-                    // 计算 X 轴和 Y 轴的位移差
-                    const dx = oldRect.left - newRect.left;
-                    const dy = oldRect.top - newRect.top;
-
-                    // 只有当位置真的变了才移动
-                    if (dx !== 0 || dy !== 0) {
-                        // 1. 【Invert】瞬间把新牌“推”回老位置 (骗过眼睛)
-                        newCard.style.transition = 'none';
-                        newCard.style.transform = `translate(${dx}px, ${dy}px)`;
-
-                        // 2. 强制浏览器读取布局 (Trigger Reflow)，否则浏览器会忽略上面的瞬间变换
-                        // 这一行看起来没用，但必须写，这是黑魔法
-                        newCard.getBoundingClientRect(); 
-
-                        // 3. 【Play】开启过渡，移除变换，让它滑向 0,0 (新位置)
-                        // 使用 cubic-bezier 让移动有一种“物理惯性”的感觉
-                        newCard.style.transition = 'transform 0.5s cubic-bezier(0.2, 0, 0.2, 1)';
-                        newCard.style.transform = '';
-                    }
-                }
-            });
-          });
 
           // 4. 更新日志
           const logDiv = document.getElementById("game-log");
@@ -2222,23 +2120,9 @@
         }
 
         // --- 创建卡牌元素 ---
-        createCardEl(c, index = 0) {
+        createCardEl(c) {
           const d = document.createElement("div");
-          d.dataset.id = c.id;
           d.className = `card ${c.color}`;
-          
-          // 检查是否是新牌
-          if (!this.shownCardIds.has(c.id)) {
-            d.classList.add("card-flip-enter"); // 添加CSS类，触发上面的动画
-            
-            // 保留延迟逻辑，让翻牌更有节奏感
-            if (index < 3) {
-                d.style.animationDelay = `${index * 0.25}s`; // 推荐 0.25s 间隔
-            }
-
-            this.shownCardIds.add(c.id);
-          }
-
           if (this.highlightCards.has(c.id)) d.classList.add("winning-card");
           d.innerHTML = `<span class="absolute top-0 left-1 text-xs">${c.rank}</span><span class="text-2xl">${c.suit}</span>`;
           return d;
@@ -2248,7 +2132,6 @@
           d.className = "card card-back";
           return d;
         }
-
       }
 
       // --- 网络和 Firebase 交互 ---
@@ -3461,11 +3344,3 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
-
-
-
-
-
-
-
-
