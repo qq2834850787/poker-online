@@ -386,104 +386,6 @@
     #bottom-bar {
       padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
     }
-
-    /* --- 3D 动画核心样式 --- */
-    .scene-3d {
-      perspective: 1000px;
-      /* 开启3D透视 */
-    }
-
-    /* 卡牌内部容器：负责翻转 */
-    .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      text-align: center;
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-      /* 保持子元素3D */
-    }
-
-    /* 卡牌的两个面 */
-    .card-front,
-    .card-back-face {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      /* 背对屏幕时不可见 */
-      border-radius: inherit;
-      top: 0;
-      left: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* 正面 (默认0度) */
-    .card-front {
-      background-color: white;
-      transform: rotateY(0deg);
-    }
-
-    /* 背面 (默认180度) */
-    .card-back-face {
-      background: repeating-linear-gradient(45deg, #1e3a8a, #1e3a8a 10px, #172554 10px, #172554 20px);
-      border: 2px solid #e2e8f0;
-      transform: rotateY(180deg);
-    }
-
-    /* 翻转动作类 */
-    .do-flip {
-      transform: rotateY(0deg) !important;
-      /* 强制转到正面 */
-    }
-
-    .force-back {
-      transform: rotateY(-180deg);
-      /* 强制背面朝上 */
-    }
-
-    /* 飞行中的幽灵卡牌 */
-    .flying-card {
-      position: fixed;
-      z-index: 9999;
-      /* 尺寸需与 .card 一致 */
-      width: 42px;
-      height: 60px;
-      pointer-events: none;
-      border-radius: 4px;
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
-      /* 飞行卡也需要是背面 */
-      background: repeating-linear-gradient(45deg, #1e3a8a, #1e3a8a 10px, #172554 10px, #172554 20px);
-      border: 2px solid #e2e8f0;
-      transition: transform 0.5s ease-in-out, top 0.5s ease-in-out, left 0.5s ease-in-out;
-    }
-
-    @media (min-width: 768px) {
-      .flying-card {
-        width: 56px;
-        height: 78px;
-        border-radius: 6px;
-      }
-    }
-
-    /* 弃牌下沉动画 */
-    @keyframes foldDown {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-
-      100% {
-        transform: translateY(60px) scale(0.8);
-        opacity: 0;
-      }
-    }
-
-    .anim-fold {
-      animation: foldDown 0.5s ease-in forwards;
-    }
   </style>
 </head>
 
@@ -1345,45 +1247,41 @@
     }
 
     // --- 游戏逻辑：房主开始新回合 ---
-    // --- 游戏逻辑：房主开始新回合 (修复版) ---
     function startNewRound(currentState) {
       let newState = JSON.parse(JSON.stringify(currentState));
 
+      // *** 修改 1: 获取配置 (如果有)，否则使用默认值 ***
       const config = newState.config || {
         initialChips: 2000,
         smallBlind: 10,
         bigBlind: 20
       };
+      // *** 结束修改 ***
 
-      // 1. 筛选活跃玩家
+      // 1. 淘汰筹码为 0 的玩家
       let activePlayerIds = [];
-      const allPlayerIds = Object.keys(newState.players);
+      const allPlayerIds = Object.keys(newState.players); // 获取所有玩家ID
 
       allPlayerIds.forEach((uid) => {
-        // *** 关键修复: 防止 chips 为 NaN 或 undefined ***
-        if (typeof newState.players[uid].chips !== 'number' || isNaN(newState.players[uid].chips)) {
-          newState.players[uid].chips = 0;
-        }
-
         if (newState.players[uid].chips > 0) {
           activePlayerIds.push(uid);
         } else {
-          newState.players[uid].folded = true;
+          newState.players[uid].folded = true; // 标记为旁观
           newState.players[uid].status = "淘汰";
         }
       });
 
-      // 2. 检查游戏是否结束
+      // 2. 检查游戏是否结束 (只剩1人或0人)
       if (activePlayerIds.length < 2) {
         const winnerId = activePlayerIds.length > 0 ? activePlayerIds[0] : null;
         const winnerName = winnerId ? newState.players[winnerId].name : "无人";
 
         let newLogs = [...newState.logs];
         newLogs.push(`--- 游戏结束! ${winnerName} 获胜! ---`);
-        newLogs.push("--- 房间已重置 ---");
+        newLogs.push("--- 房间已重置, 等待房主重新开始 ---");
         if (newLogs.length > 20) newLogs = newLogs.slice(newLogs.length - 20);
 
-        // 重置筹码以便开始新游戏
+        // *** 修改 2: 游戏结束后，重置筹码为配置的初始值 ***
         const resetPlayers = {};
         allPlayerIds.forEach((uid) => {
           const p = newState.players[uid];
@@ -1402,9 +1300,9 @@
         });
 
         return {
-          status: "waiting",
+          status: "waiting", // 回到等待状态
           hostId: newState.hostId,
-          config: config,
+          config: config, // <--- 确保保留配置
           players: resetPlayers,
           playerOrder: allPlayerIds,
           communityCards: [],
@@ -1413,7 +1311,7 @@
           currentPlayerIndex: -1,
           currentMaxBet: 0,
           phase: "waiting",
-          lastRaiseAmount: config.bigBlind,
+          lastRaiseAmount: config.bigBlind, // <--- 使用配置值 (原为 BIG_BLIND)
           deck: [],
           logs: newLogs,
           highlightWinner: winnerId,
@@ -1421,14 +1319,21 @@
           nextRoundTimer: 0,
           nextPhaseTimer: 0,
         };
+        // *** 结束修改 ***
       }
 
-      // 游戏继续
+      // 如果游戏未结束, 使用活跃玩家列表
       newState.playerOrder = activePlayerIds;
+
+      // 3. 重置状态
       newState.communityCards = [];
       newState.pot = 0;
       newState.currentMaxBet = 0;
-      newState.lastRaiseAmount = config.bigBlind;
+
+      // *** 修改 3: 重置最小加注额为大盲注配置 ***
+      newState.lastRaiseAmount = config.bigBlind; // <--- 使用配置值
+      // *** 结束修改 ***
+
       newState.phase = "preflop";
       newState.playersActed = [];
       newState.highlightWinner = null;
@@ -1436,7 +1341,7 @@
       newState.nextRoundTimer = 0;
       newState.nextPhaseTimer = 0;
 
-      // 重置玩家本局状态
+      // 4. 重置玩家
       newState.playerOrder.forEach((uid) => {
         const p = newState.players[uid];
         p.holeCards = [];
@@ -1447,12 +1352,13 @@
         p.bestHand = null;
       });
 
-      // 洗牌
+      // 5. 洗牌
       let deck = [];
       for (let suit of SUITS) {
         for (let rank of RANKS) {
           deck.push({
-            suit, rank,
+            suit,
+            rank,
             value: RANK_VALUES[rank],
             color: suit === "♥" || suit === "♦" ? "red" : "black",
             id: Math.random().toString(36).substr(2, 9),
@@ -1465,56 +1371,86 @@
       }
       newState.deck = deck;
 
-      // 移动庄家
-      newState.dealerIndex = (newState.dealerIndex + 1) % newState.playerOrder.length;
+      // 6. 移动庄家
+      newState.dealerIndex =
+        (newState.dealerIndex + 1) % newState.playerOrder.length;
       const numPlayers = newState.playerOrder.length;
 
-      // 盲注
+      // 7. 放置盲注
       const sbIndex = (newState.dealerIndex + 1) % numPlayers;
       const bbIndex = (newState.dealerIndex + 2) % numPlayers;
 
-      const sbPlayer = newState.players[newState.playerOrder[sbIndex]];
-      const bbPlayer = newState.players[newState.playerOrder[bbIndex]];
+      const sbPlayerId = newState.playerOrder[sbIndex];
+      const bbPlayerId = newState.playerOrder[bbIndex];
 
+      // --- 修改开始: 小盲注全押检测 ---
+      const sbPlayer = newState.players[sbPlayerId];
       const sbAmount = Math.min(config.smallBlind, sbPlayer.chips);
       sbPlayer.chips -= sbAmount;
       sbPlayer.currentBet = sbAmount;
+      // 如果扣完钱筹码为0，状态必须是 "全押"，否则是 "小盲"
       sbPlayer.status = sbPlayer.chips === 0 ? "全押" : "小盲";
+      // --- 修改结束 ---
 
+      // --- 修改开始: 大盲注全押检测 ---
+      const bbPlayer = newState.players[bbPlayerId];
       const bbAmount = Math.min(config.bigBlind, bbPlayer.chips);
       bbPlayer.chips -= bbAmount;
       bbPlayer.currentBet = bbAmount;
+      // 如果扣完钱筹码为0，状态必须是 "全押"，否则是 "大盲"
       bbPlayer.status = bbPlayer.chips === 0 ? "全押" : "大盲";
+      // --- 修改结束 ---
 
       newState.pot = sbAmount + bbAmount;
       newState.currentMaxBet = config.bigBlind;
 
-      // 发牌
+      // 8. 发手牌
       for (let i = 0; i < 2; i++) {
         for (let uid of newState.playerOrder) {
           newState.players[uid].holeCards.push(newState.deck.pop());
         }
       }
 
-      // 设置行动者
+      // 9. 设置第一个行动者 (从大盲注左侧开始找)
+      // (保留你刚才修好的跳过全押玩家的逻辑)
       let nextIdx = (bbIndex + 1) % numPlayers;
       let loopCount = 0;
+
       while (loopCount < numPlayers) {
-        const p = newState.players[newState.playerOrder[nextIdx]];
-        if (p.chips > 0) break;
+        const pId = newState.playerOrder[nextIdx];
+        const p = newState.players[pId];
+        if (p.chips > 0) {
+          break;
+        }
         nextIdx = (nextIdx + 1) % numPlayers;
         loopCount++;
       }
       newState.currentPlayerIndex = nextIdx;
 
-      // 检查是否需要自动摊牌 (盲注导致全押)
-      const activePlayersInGame = newState.playerOrder.map(uid => newState.players[uid]).filter(p => !p.folded);
+      // *** 新增: 检查盲注阶段是否直接形成 All-in 局面 ***
+      // 获取所有正在玩且未弃牌的人
+      const activePlayersInGame = newState.playerOrder
+        .map(uid => newState.players[uid])
+        .filter(p => !p.folded);
+
+      // 获取还有筹码的人
       const playersWithChips = activePlayersInGame.filter(p => p.chips > 0);
 
+      // 判定条件: 
+      // 1. 游戏里至少有2个人 (activePlayersInGame.length >= 2)
+      // 2. 拥有筹码的人数 <= 1 (意味着其他人全押了，或者所有人全押了)
+      // 这种情况在单挑时: A(5, All-in), B(10) -> B有筹码, A无 -> count=1 -> 触发
       if (activePlayersInGame.length >= 2 && playersWithChips.length <= 1) {
         newState.logs.push("--- 盲注导致全押，自动进入摊牌 ---");
+
+        // 关键: 直接调用自动摊牌函数
+        // runAutoShowdown 会自动:
+        // 1. 调用 returnExcessBets 退还 B 多下的盲注 (10 - 5 = 5)
+        // 2. 发完剩下的公共牌
+        // 3. 进入结算
         return runAutoShowdown(newState);
       }
+      // *** 新增结束 ***
 
       newState.logs.push("--- 新回合开始 ---");
       return newState;
@@ -1531,12 +1467,6 @@
         this.highlightCards = new Set();
         this.bankruptcyScreenShown = false; // *** 新增: 破产界面显示标志 ***
         this.lastAllInPlayerTriggered = null; // *** 修复: 移到构造函数 ***
-        this.hasDealtPreflop = false;
-        this.hasDealtFlop = false;
-        this.hasDealtTurn = false;
-        this.hasDealtRiver = false;
-        this.animating = false; // 全局动画锁，锁住时停止常规渲染
-        this.playerFoldStatus = {}; // 记录谁弃牌了
 
         // 绑定加注滑块
         document.getElementById("raise-slider").oninput = () => {
@@ -1560,392 +1490,107 @@
         sound = this.sound; // 赋值给全局音效
       }
 
-      // --- 核心渲染入口 ---
-      async renderGameState(state, localId) {
-        if (!state) return;
-        this.localPlayerId = localId;
+      // --- 移除: showDialogue 函数 ---
 
-        // *** 修复 1: 无论什么状态，确保 game-area 是显示的 ***
-        // 因为等待室也在 game-area 里面
-        document.getElementById("game-area").classList.remove("hidden");
+      // --- 移除: speak 函数 ---
 
-        // 1. 处理【等待状态】 (重置所有动画锁)
-        if (state.phase === 'waiting') {
-          this.hasDealtPreflop = false;
-          this.hasDealtFlop = false;
-          this.hasDealtTurn = false;
-          this.hasDealtRiver = false;
-          this.hasShownDown = false; // 重置摊牌锁
-          this.playerFoldStatus = {};
-          this.highlightCards.clear();
-          this.animating = false;
-
-          // 显示等待室
-          document.getElementById("waiting-room-overlay").classList.remove("hidden");
-
-          // *** 关键删除: 不要在这里 add("hidden") 给 game-area ***
-
-          network.updateWaitingRoomUI(state, localId);
-
-          // 就算在等待室，也渲染一下空的座位表
-          this.renderTableLayout(state, localId);
+      // --- 核心渲染函数 ---
+      renderGameState(state, localId) {
+        if (!state) {
+          console.log("Render: state 为空");
           return;
-        } else {
-          document.getElementById("waiting-room-overlay").classList.add("hidden");
         }
 
-        // 2. 【动画锁】如果正在播放动画，直接丢弃这次更新
-        if (this.animating) return;
+        // *** 新增: 确保音效被激活 (请求 #1) ***
+        this.initSound();
 
-        // 3. 更新基础 UI
-        this.updateBasicUI(state);
+        // *** 新增: 客户端音效 (基于日志) (请求 #1) ***
+        // *** 修复: 解决日志满20条后音效失效的Bug ***
+        const lastLog = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
+        const prevLog = (this.lastState && this.lastState.logs.length > 0) ? this.lastState.logs[this.lastState.logs.length - 1] : "";
 
-        // 4. 同步高光数据
+        // 判断条件：长度增加 或者 (长度没变但最后一条内容变了)
+        const hasNewLog = this.lastState && (
+          state.logs.length > this.lastState.logs.length ||
+          (state.logs.length > 0 && lastLog !== prevLog)
+        );
+
+        if (hasNewLog) {
+          const newLog = lastLog; // 使用获取到的最新日志
+
+          if (newLog.includes("弃牌")) {
+            this.sound.playFold();
+          } else if (newLog.includes("过牌")) {
+            this.sound.playCheck();
+          } else if (newLog.includes("跟注")) {
+            this.sound.playChip();
+          } else if (newLog.includes("加注")) {
+            this.sound.playRaise();
+          }
+          // All-in sound is handled by showAllInEffect
+
+          // 牌局音效
+          if (
+            newLog.includes("--- 翻牌 ---") ||
+            newLog.includes("--- 转牌 ---") ||
+            newLog.includes("--- 河牌 ---")
+          ) {
+            this.sound.playCard();
+          }
+        }
+        // *** 结束新增 ***
+
+        // *** 修复: 将高光列表的更新移至最前方 ***
         this.highlightCards = new Set(state.highlightCards || []);
+        // *** 结束修复 ***
 
-        if (state.lastAllInPlayer && state.lastAllInPlayer !== this.lastAllInPlayerTriggered) {
-          this.showAllInEffect(state.lastAllInPlayer);
-          this.lastAllInPlayerTriggered = state.lastAllInPlayer;
-        }
+        // --- 恢复的逻辑: 更新玩家计数 ---
+        // *** 修改: (请求 #1) 计数器现在应该计算 players, 而不是 playerOrder, 因为 playerOrder 在等待时是完整的 ***
+        const playerCount = state.playerOrder ? state.playerOrder.length : 0;
+        const countEl = document.getElementById("active-players-count");
+        if (countEl) countEl.innerText = playerCount;
+        // --- 结束 ---
 
-        // 5. 处理弃牌检测
-        this.handleFoldAnimations(state);
-
-        // ================== 核心状态机动画控制 ==================
-
-        // A. 【发底牌】 (Preflop)
-        if (state.phase === 'preflop' && !this.hasDealtPreflop) {
-          this.animating = true;
-          this.renderTableLayout(state, localId, true); // 强制背面
-          await this.animatePreflop(state, localId);
-          this.hasDealtPreflop = true;
-          this.animating = false;
-          this.renderTableLayout(state, localId);
-        }
-
-        // B. 【翻牌圈】 (Flop)
-        else if (state.phase === 'flop' && !this.hasDealtFlop) {
-          this.animating = true;
-          this.renderCommunityCards(state, true); // 强制背面
-          await this.animateFlop(state);
-          this.hasDealtFlop = true;
-          this.animating = false;
-          this.renderCommunityCards(state);
-        }
-
-        // C. 【转牌圈】 (Turn)
-        else if (state.phase === 'turn' && !this.hasDealtTurn) {
-          this.animating = true;
-          this.renderCommunityCards(state, true);
-          await this.animateSingleComm(3);
-          this.hasDealtTurn = true;
-          this.animating = false;
-          this.renderCommunityCards(state);
-        }
-
-        // D. 【河牌圈】 (River)
-        else if (state.phase === 'river' && !this.hasDealtRiver) {
-          this.animating = true;
-          this.renderCommunityCards(state, true);
-          await this.animateSingleComm(4);
-          this.hasDealtRiver = true;
-          this.animating = false;
-          this.renderCommunityCards(state);
-        }
-
-        // E. 【摊牌与比大小】 (Showdown)
-        else if (state.phase === 'showdown') {
-          if (!this.hasShownDown) {
-            // --- 第一次进入摊牌 ---
-            this.animating = true;
-
-            // 渲染牌桌。注意：此时 hasShownDown 是 false，
-            // 所以 renderTableLayout 会把对手的牌渲染成背面，方便后面做翻牌动画
-            this.renderTableLayout(state, localId);
-            this.renderCommunityCards(state);
-
-            // 1. 执行翻牌动画
-            await this.animateShowdown(state, localId);
-
-            // 2. 标记完成
-            this.hasShownDown = true;
-            this.animating = false;
-
-            // 3. 动画结束后，显示高光和弹窗
-            this.renderTableLayout(state, localId);
-            this.handleHighlights(state, localId);
-          } else {
-            // --- 已经播过动画 ---
-            this.renderTableLayout(state, localId);
-            this.renderCommunityCards(state);
-            this.handleHighlights(state, localId);
+        // --- 修复: 比较 All-in 特效 ---
+        // 必须在 this.lastState 被覆盖之前进行比较
+        // 修正了之前 (state.lastAllInPlayer !== this.lastState.lastAllInPlayer) 永远为 false 的 bug
+        if (
+          state.lastAllInPlayer &&
+          (!this.lastState ||
+            state.lastAllInPlayer !== this.lastState.lastAllInPlayer)
+        ) {
+          // 确保我们只在 lastAllInPlayer *改变* 时触发
+          if (state.lastAllInPlayer !== this.lastAllInPlayerTriggered) {
+            this.showAllInEffect(state.lastAllInPlayer);
+            this.lastAllInPlayerTriggered = state.lastAllInPlayer; // 标记已触发
           }
         }
-
-        // F. 【中途加入/刷新】
-        else {
-          this.renderTableLayout(state, localId);
-          this.renderCommunityCards(state);
-          if (state.phase !== 'showdown') {
-            this.handleHighlights(state, localId);
-          }
+        // 回合结束时清除标记
+        if (state.phase === "showdown") {
+          this.lastAllInPlayerTriggered = null;
         }
+        // --- 修复结束 ---
 
-        this.lastState = state;
-      }
-
-      // --- 辅助方法 1: 更新基础 UI (拆分出来更清晰) ---
-      updateBasicUI(state) {
-        document.getElementById("pot-display").innerText = state.pot;
-        document.getElementById("phase-display").innerText = PHASE_NAME_MAP[state.phase] || "未知";
-
-        // 盲注显示
-        if (state.config) {
-          const blindsEl = document.getElementById("blinds-display");
-          if (blindsEl) blindsEl.innerText = `盲注 $${state.config.smallBlind}/$${state.config.bigBlind}`;
-        }
-
-        // 玩家人数
-        document.getElementById("active-players-count").innerText = state.playerOrder.length;
-
-        // 日志更新 (简单的去重逻辑)
-        const logDiv = document.getElementById("game-log");
-        if (state.logs.length > 0) {
-          const lastLogMsg = state.logs[state.logs.length - 1];
-          // 只有当最后一条日志变了才更新DOM，防止滚动条鬼畜
-          if (!logDiv.lastElementChild || !logDiv.lastElementChild.innerText.includes(lastLogMsg)) {
-            logDiv.innerHTML = state.logs.map(msg => `<div>> ${msg}</div>`).join("");
-            logDiv.scrollTop = logDiv.scrollHeight;
-          }
-        }
-
-        // 更新底部按钮状态
-        this.updateControls(state);
-      }
-
-      // --- 辅助方法 2: 处理高光和游戏结束弹窗 ---
-      handleHighlights(state, localId) {
-        // 1. 清除旧的高光
-        document.querySelectorAll('.player-seat').forEach(el => {
-          el.classList.remove('winner-highlight', 'active-player');
-        });
-
-        // 2. 赢家座位高光
-        if (state.highlightWinner) {
-          const w = document.getElementById(`seat-${state.highlightWinner}`);
-          if (w) w.classList.add('winner-highlight');
-        }
-
-        // 3. 当前行动玩家高光 (非摊牌阶段)
-        if (state.phase !== 'showdown' && state.currentPlayerIndex !== -1) {
-          const currId = state.playerOrder[state.currentPlayerIndex];
-          const curr = document.getElementById(`seat-${currId}`);
-          if (curr) curr.classList.add('active-player');
-        }
-
-        // 4. 游戏结束/破产弹窗逻辑
-        const screen = document.getElementById("game-over-screen");
+        this.lastState = state; // 现在才更新 lastState
+        this.localPlayerId = localId;
         const localPlayer = state.players[localId];
 
-        if (localPlayer) {
-          // A. 破产判定 (只显示一次)
-          if (localPlayer.status === "淘汰" && localPlayer.chips === 0 && !this.bankruptcyScreenShown) {
-            this.showGameOver(false, false, localPlayer);
-            this.bankruptcyScreenShown = true;
-          }
+        // 1. 更新顶部信息
+        document.getElementById("pot-display").innerText = state.pot;
+        document.getElementById("phase-display").innerText =
+          PHASE_NAME_MAP[state.phase] || "未知";
 
-          // B. 冠军/赢家判定
-          // 必须是 Waiting 状态(一局彻底结束) 且 我是赢家
-          if (state.status === "waiting" && state.highlightWinner === localId) {
-            // 防止重复弹窗 (如果标题已经是冠军了就不弹)
-            if (document.getElementById('game-over-title').innerText !== "冠军") {
-              this.showGameOver(true, true, localPlayer);
-            }
+        if (state.config) {
+          const blindsEl = document.getElementById("blinds-display");
+          if (blindsEl) {
+            blindsEl.innerText = `盲注 $${state.config.smallBlind}/$${state.config.bigBlind}`;
           }
         }
 
-        // 5. 自动隐藏弹窗 (当房间重置时)
-        if (state.status === "waiting" && state.logs.length > 0) {
-          if (state.logs[state.logs.length - 1].includes("房间已重置")) {
-            setTimeout(() => {
-              if (!screen.classList.contains('hidden')) {
-                screen.classList.add('hidden');
-                this.showMessage("准备下一局...");
-              }
-            }, 4000);
-          }
-        }
-      }
+        // 2. 渲染牌桌
+        this.renderTableLayout(state, localId);
 
-      // --- 辅助：获取发牌起点 (庄家位置) ---
-      getDealerPos() {
-        const dealerBtn = document.querySelector('.dealer-btn:not(.hidden)');
-        if (dealerBtn) return dealerBtn.getBoundingClientRect();
-        // 没庄家就从屏幕中心发
-        return { left: window.innerWidth / 2, top: window.innerHeight / 2 };
-      }
-
-      // --- 辅助：创建飞行幽灵卡 ---
-      createFlyingCard(startRect) {
-        const flyer = document.createElement('div');
-        flyer.className = 'flying-card';
-        flyer.style.left = `${startRect.left}px`;
-        flyer.style.top = `${startRect.top}px`;
-        flyer.style.transform = 'scale(0.5)'; // 出来时小一点
-        document.body.appendChild(flyer);
-        return flyer;
-      }
-
-      // --- 核心：飞牌并翻转 ---
-      // targetEl: 目标位置的真实DOM
-      // showFrontOnArrival: 到达后是否翻开正面 (底牌给自己发=true, 公共牌=false)
-      async flyCardTo(targetEl, showFrontOnArrival) {
-        if (!targetEl) return;
-
-        const endRect = targetEl.getBoundingClientRect();
-        const startRect = this.getDealerPos();
-
-        // 1. 目标先隐藏
-        targetEl.style.opacity = '0';
-
-        // 2. 生成飞牌
-        this.sound.playCard();
-        const flyer = this.createFlyingCard(startRect);
-
-        // 强制重绘
-        flyer.getBoundingClientRect();
-
-        // 3. 飞过去
-        flyer.style.left = `${endRect.left}px`;
-        flyer.style.top = `${endRect.top}px`;
-        flyer.style.transform = 'scale(1)';
-
-        // 4. 等待飞行结束 (0.5秒)
-        await new Promise(r => setTimeout(r, 500));
-
-        // 5. 替换：销毁飞牌，显示真牌
-        flyer.remove();
-        targetEl.style.opacity = '1';
-
-        // 6. 如果需要翻开 (玩家自己的底牌)
-        if (showFrontOnArrival) {
-          const inner = targetEl.querySelector('.card-inner');
-          if (inner) {
-            // 移除强制背面，添加翻转动画
-            inner.classList.remove('force-back');
-            inner.classList.add('do-flip');
-          }
-        }
-      }
-
-      // --- 触发翻转动画 ---
-      flipCard(cardEl) {
-        const inner = cardEl.querySelector('.card-inner');
-        if (inner && inner.classList.contains('force-back')) {
-          this.sound.playCard();
-          inner.classList.remove('force-back'); // 移除背面强制
-          inner.classList.add('do-flip'); // 添加翻转动画
-        }
-      }
-
-      // --- 重写：渲染牌桌布局 (支持动画预设 + 高光) ---
-      // --- 重写：渲染牌桌布局 ---
-      renderTableLayout(state, localId, forceAllBack = false) {
-        const container = document.getElementById("seats-container");
-        container.innerHTML = "";
-
-        const playerIdsToRender = state.playerOrder;
-        const num = playerIdsToRender.length;
-        if (num === 0) return;
-
-        const w = container.offsetWidth;
-        const h = container.offsetHeight;
-        const cx = w / 2;
-        const cy = h / 2;
-        const localIndex = playerIdsToRender.indexOf(localId);
-        const renderIndex = localIndex === -1 ? 0 : localIndex;
-
-        let scale = 1, radiusX = 0.38, radiusY = 0.38;
-        if (num > 6) { scale = 0.85; radiusX = 0.42; radiusY = 0.42; }
-        if (w < 768) { if (num > 5) scale = 0.75; radiusX = 0.4; }
-        const rx = w * radiusX;
-        const ry = h * radiusY;
-
-        playerIdsToRender.forEach((uid, i) => {
-          const p = state.players[uid];
-          if (!p) return;
-
-          const offsetIndex = (i - renderIndex + num) % num;
-          const angle = Math.PI / 2 + (offsetIndex * (2 * Math.PI)) / num;
-          const x = cx + rx * Math.cos(angle);
-          const y = cy + ry * Math.sin(angle);
-
-          const div = document.createElement("div");
-          div.id = `seat-${p.uid}`;
-          div.className = "player-seat";
-          div.style.left = `${x - 60}px`;
-          div.style.top = `${y - 55}px`;
-          div.style.transform = `scale(${scale})`;
-
-          if (p.folded && !this.playerFoldStatus[p.uid]) {
-            div.style.opacity = 0.5;
-          }
-
-          const cardDiv = document.createElement('div');
-          cardDiv.id = `cards-${p.uid}`;
-          cardDiv.className = "absolute flex space-x-1 z-10 transition-all";
-          cardDiv.style.top = "-50px";
-
-          if (!p.folded && p.holeCards.length > 0) {
-            p.holeCards.forEach(c => {
-              let isBack = false;
-
-              if (forceAllBack) {
-                isBack = true;
-              }
-              // *** 修复: 如果是摊牌阶段，但动画还没播完 (!this.hasShownDown)，
-              // 必须强制对手的牌是背面，这样 animateShowdown 才能把它翻过来！***
-              else if (state.phase === 'showdown') {
-                if (!this.hasShownDown && p.uid !== localId) {
-                  isBack = true; // 动画播放前：对手牌是背面
-                } else {
-                  isBack = false; // 动画播放后：全是正面
-                }
-              }
-              else if (p.uid === localId) {
-                isBack = false;
-              } else {
-                isBack = true;
-              }
-
-              const cardEl = this.createCardEl(c, isBack);
-              cardDiv.appendChild(cardEl);
-            });
-          }
-          div.appendChild(cardDiv);
-
-          div.innerHTML += `
-             <div class="player-info-box relative z-20">
-               <div class="dealer-btn ${i === state.dealerIndex ? "" : "hidden"}">D</div>
-               <div class="font-bold text-yellow-400 truncate text-sm tracking-wide">${p.name}</div>
-               <div class="text-white text-xs font-mono">$${p.chips}</div>
-               <div class="text-gray-400 text-[10px] h-4 truncate font-bold uppercase mt-1">
-                  ${p.currentBet > 0 ? `$${p.currentBet}` : p.status || ""}
-               </div>
-             </div>
-          `;
-
-          if (state.highlightWinner === p.uid) div.classList.add('winner-highlight');
-          if (state.phase !== 'showdown' && state.playerOrder[state.currentPlayerIndex] === p.uid) {
-            div.classList.add('active-player');
-          }
-
-          container.appendChild(div);
-        });
-      }
-
-      // --- 重写：渲染公共牌 (支持动画预设 + 实时高光更新) ---
-      renderCommunityCards(state, forceBack = false) {
+        // 3. 渲染公共牌 (修复版: 固定位置 + 实时更新高亮)
         for (let i = 0; i < 5; i++) {
           const slot = document.getElementById(`comm-slot-${i}`);
           if (!slot) continue;
@@ -1956,37 +1601,259 @@
             // 获取槽位里现有的卡牌元素
             let cardEl = slot.firstElementChild;
 
-            // 1. 如果槽位为空，创建新牌
+            // A. 如果槽位是空的，创建新牌放进去
             if (!cardEl) {
-              // forceBack 为 true 时 (例如翻牌动画开始前)，生成背面牌
-              cardEl = this.createCardEl(cardData, forceBack);
+              cardEl = this.createCardEl(cardData);
               slot.appendChild(cardEl);
             }
 
-            // 2. *** 核心：强制更新高光状态 (winning-card) ***
-            // 无论牌是刚创建的还是原来就在的，都要检查高光
-            // createCardEl 生成的 wrapper 才有 winning-card 类
-            const wrapper = cardEl;
-
+            // B. *** 核心修复: 强制更新高亮状态 ***
+            // 无论牌是刚创建的还是本来就在那的，都要检查它是否属于“获胜牌”
             if (this.highlightCards.has(cardData.id)) {
-              if (!wrapper.classList.contains("winning-card")) {
-                wrapper.classList.add("winning-card");
+              if (!cardEl.classList.contains("winning-card")) {
+                cardEl.classList.add("winning-card");
               }
             } else {
-              if (wrapper.classList.contains("winning-card")) {
-                wrapper.classList.remove("winning-card");
+              // 如果新的一局开始，或者它不是获胜牌，要移除高亮
+              if (cardEl.classList.contains("winning-card")) {
+                cardEl.classList.remove("winning-card");
               }
             }
 
-            // 注意：我们不在这里处理翻转逻辑 (flip)，
-            // 翻转由 animateFlop / animateSingleComm 等函数通过 flipCard() 触发。
-            // 这样可以防止 render 函数在数据更新时意外重置动画。
-
           } else {
-            // 如果这个位置没牌，清空 (显示虚线框)
+            // 如果这个位置没牌，清空（显示虚线框）
             slot.innerHTML = "";
           }
         }
+
+        // 4. 更新日志
+        const logDiv = document.getElementById("game-log");
+        logDiv.innerHTML = state.logs
+          .map((msg) => `<div>> ${msg}</div>`)
+          .join("");
+        logDiv.scrollTop = logDiv.scrollHeight;
+
+        // 5. 更新玩家座位信息 (已在 renderTableLayout 中处理)
+
+        // 6. 更新控制按钮
+        this.updateControls(state);
+
+        // *** 修复: 移除了旧的房主控制逻辑 (Section 7) ***
+
+        // 8. All-in 特效 (逻辑已移到本函数开头)
+
+        // 9. 游戏结束画面
+        // *** 修复: (请求 #4) 检查逻辑 ***
+        const screen = document.getElementById("game-over-screen");
+
+        // *** 修复: (请求 #12) 使用 this.bankruptcyScreenShown 标志 ***
+        if (localPlayer) {
+          const isEliminated =
+            localPlayer.status === "淘汰" && localPlayer.chips === 0;
+
+          // 检查是否是冠军 (游戏在 waiting 状态结束)
+          const isChampion =
+            state.status === "waiting" &&
+            state.highlightWinner === localId &&
+            state.logs.length > 0 && // 确保日志存在
+            state.logs[state.logs.length - 2].includes("游戏结束");
+
+          if (isChampion) {
+            // 游戏刚结束, 我是冠军.
+            // 只有在屏幕隐藏时才显示
+            if (screen.classList.contains("hidden")) {
+              this.showGameOver(true, true, localPlayer); // (isWin, isGameFinished, player)
+            }
+            this.bankruptcyScreenShown = false; // 重置破产标志
+          }
+          // 检查是否 *刚刚* 破产 (游戏中)
+          else if (isEliminated && state.status === "playing" && !this.bankruptcyScreenShown) {
+            // 游戏正在进行, 但我刚破产了, 并且 *还未显示过* 破产界面.
+            this.showGameOver(false, false, localPlayer); // (isWin=false, isGameFinished=false, player)
+            // *** 关键: 设置标志, 防止重复触发 ***
+            this.bankruptcyScreenShown = true;
+          }
+          // 检查是否是输家 (游戏在 waiting 状态结束)
+          else if (isEliminated && state.status === "waiting") {
+            // 游戏结束了, 但我早先就输了.
+            // 只有在屏幕隐藏时才显示 (避免覆盖 "观战中" 消息)
+            if (screen.classList.contains("hidden") && this.bankruptcyScreenShown) {
+              this.showGameOver(false, true, localPlayer); // (isWin=false, isGameFinished=true, player)
+            }
+            // 游戏结束, 无论如何都要重置标志
+            this.bankruptcyScreenShown = false;
+          }
+        }
+        // *** 结束修复 ***
+
+
+        // *** (请求 #1) 如果重置了, 隐藏结束画面 ***
+        // *** 修改: 自动隐藏所有人的结束画面 (冠军/输家)，以显示等待室 ***
+        if (
+          state.status === "waiting" &&
+          !screen.classList.contains("hidden")
+        ) {
+          // 检查是否是由"游戏结束"（即有赢家高亮）触发的
+          if (state.highlightWinner) {
+            // showGameOver 刚刚被调用, 检查它是否设置了 "isGameFinished" 状态
+            // 我们可以通过检查 msg 文本来判断
+            const msg = document.getElementById("game-over-msg").innerText;
+            if (msg.includes("房间已重置")) {
+
+              // *** 新增: 重置标志 ***
+              this.bankruptcyScreenShown = false;
+
+              setTimeout(() => {
+                // 确保它仍然没有被用户手动隐藏
+                if (!screen.classList.contains("hidden")) {
+                  screen.classList.add("hidden");
+                  this.showMessage("游戏结束，等待房主重新开始...");
+                }
+              }, 4000); // 延迟4秒隐藏
+            }
+          } else {
+            // 如果不是游戏结束（例如玩家刚加入），立即隐藏
+            screen.classList.add("hidden");
+            // *** 新增: 重置标志 ***
+            this.bankruptcyScreenShown = false;
+          }
+        }
+
+        // 10. *** 新增: 等待室 UI ***
+        const waitOverlay = document.getElementById("waiting-room-overlay");
+        if (state.status === "waiting") {
+          waitOverlay.classList.remove("hidden");
+          network.updateWaitingRoomUI(state, localId); // *** 修复: 改为调用 network.updateWaitingRoomUI ***
+        } else {
+          waitOverlay.classList.add("hidden");
+        }
+      }
+
+      // --- 渲染牌桌布局 (根据状态) ---
+      renderTableLayout(state, localId) {
+        const container = document.getElementById("seats-container");
+        container.innerHTML = ""; // 清空
+
+        // *** 修改: (请求 #1) 在 'waiting' 状态, playerOrder 包含所有人 ***
+        // *** 我们只渲染 'playing' 状态下的 playerOrder ***
+        const playerIdsToRender =
+          state.phase === "waiting" || state.status === "waiting"
+            ? state.playerOrder // 在等待时，渲染所有人
+            : state.playerOrder; // 在游戏中，playerOrder 已经是 activePlayers
+
+        const num = playerIdsToRender.length;
+        if (num === 0) return;
+
+        const w = container.offsetWidth;
+        const h = container.offsetHeight;
+        const cx = w / 2;
+        const cy = h / 2;
+        const localIndex = playerIdsToRender.indexOf(localId);
+
+        // 如果找不到本地玩家 (例如观战), 默认 localIndex 为 0
+        const renderIndex = localIndex === -1 ? 0 : localIndex;
+
+        // 动态调整半径和缩放
+        let scale = 1;
+        let radiusX = 0.38;
+        let radiusY = 0.38;
+        if (num > 6) {
+          scale = 0.85;
+          radiusX = 0.42;
+          radiusY = 0.42;
+        }
+        if (num >= 9) {
+          scale = 0.75;
+          radiusX = 0.44;
+          radiusY = 0.44;
+        }
+        if (w < 768) {
+          if (num > 5) scale = 0.75;
+          if (num > 8) scale = 0.65;
+          radiusX = 0.4;
+        }
+        const rx = w * radiusX;
+        const ry = h * radiusY;
+
+        playerIdsToRender.forEach((uid, i) => {
+          const p = state.players[uid];
+          if (!p) return; // 玩家可能已离开
+
+          // 计算位置，确保本地玩家总在最下方
+          const offsetIndex = (i - renderIndex + num) % num;
+          const angle = Math.PI / 2 + (offsetIndex * (2 * Math.PI)) / num;
+          const x = cx + rx * Math.cos(angle);
+          const y = cy + ry * Math.sin(angle);
+
+          const div = document.createElement("div");
+          div.id = `seat-${p.uid}`; // *** 修改: ID 匹配 ***
+          div.className = "player-seat";
+          div.style.left = `${x - 60}px`;
+          div.style.top = `${y - 55}px`;
+          div.style.transform = `scale(${scale})`;
+
+          // --- 渲染手牌 ---
+          let cardsHTML = "";
+          if (!p.folded && p.holeCards && p.holeCards.length > 0) {
+
+            // *** 修复: 计算当前存活(未弃牌)的玩家数量 ***
+            const activePlayersCount = Object.values(state.players).filter(player => !player.folded).length;
+
+            // *** 修复: 只有是自己，或者 (是摊牌阶段 且 存活玩家大于1人) 时才显示正面 ***
+            // 这样如果是唯一赢家(其他人全弃牌)，activePlayersCount 为 1，别人就看不到赢家的牌了
+            if (p.uid === localId || (state.phase === "showdown" && activePlayersCount > 1)) {
+              cardsHTML = p.holeCards
+                .map((c) => this.createCardEl(c).outerHTML)
+                .join("");
+            } else {
+              cardsHTML =
+                this.createBackEl().outerHTML + this.createBackEl().outerHTML;
+            }
+          }
+
+          // --- 渲染座位 ---
+          div.innerHTML = `
+                        <div id="cards-${p.uid
+            }" class="absolute flex space-x-1 z-10 transition-all" style="top:-50px;">
+                            ${cardsHTML}
+                        </div>
+                        
+                        <div class="player-info-box relative z-20">
+                            <div id="dealer-${p.uid}" class="dealer-btn ${i === state.dealerIndex ? "" : "hidden"
+            }">D</div>
+                            <div class="font-bold text-yellow-400 truncate text-sm tracking-wide">${p.name
+            }</div>
+                            <div class="text-white text-xs font-mono">$<span id="chips-${p.uid
+            }">${p.chips}</span></div>
+                            <div id="status-${p.uid
+            }" class="text-gray-400 text-[10px] h-4 truncate font-bold uppercase mt-1">
+                                ${p.currentBet > 0
+              ? `下注 $${p.currentBet}`
+              : p.status || ""
+            }
+                            </div>
+                        </div>`;
+          container.appendChild(div);
+
+          // --- 应用高亮 ---
+          const seat = document.getElementById(`seat-${p.uid}`);
+          if (
+            state.playerOrder[state.currentPlayerIndex] === p.uid &&
+            state.phase !== "showdown"
+          ) {
+            seat.classList.add("active-player");
+          } else {
+            seat.classList.remove("active-player");
+          }
+
+          if (state.highlightWinner === p.uid) {
+            seat.classList.add("winner-highlight");
+          } else {
+            seat.classList.remove("winner-highlight");
+          }
+
+          seat.style.opacity = p.folded ? 0.4 : 1;
+        });
       }
 
       // --- 更新控制按钮 (客户端) ---
@@ -2237,148 +2104,17 @@
       }
 
       // --- 创建卡牌元素 ---
-      // --- 重写：创建 3D 卡牌结构 ---
-      createCardEl(c, forceBack = false) {
-        // 1. 外层容器 (负责位置、高光、透视)
-        const wrapper = document.createElement("div");
-        wrapper.className = `card ${c.color} scene-3d`; // 加入 scene-3d
-        wrapper.id = `card-${c.id}`; // 方便查找
-
-        // *** 保留高光逻辑 ***
-        // 这里的 winning-card 加在外层，用来显示金边框
-        if (this.highlightCards.has(c.id)) {
-          wrapper.classList.add("winning-card");
-        }
-
-        // 2. 内部翻转层 (负责旋转)
-        const inner = document.createElement('div');
-        inner.className = 'card-inner';
-
-        // 根据参数决定初始是正面还是背面
-        if (forceBack) {
-          inner.classList.add('force-back'); // 初始背面
-        }
-
-        // 3. 正面 (数字面)
-        const front = document.createElement('div');
-        front.className = 'card-front';
-        front.innerHTML = `<span class="absolute top-0 left-1 text-xs">${c.rank}</span><span class="text-2xl">${c.suit}</span>`;
-
-        // 4. 背面 (花纹面)
-        const back = document.createElement('div');
-        back.className = 'card-back-face';
-
-        // 组装
-        inner.appendChild(front);
-        inner.appendChild(back);
-        wrapper.appendChild(inner);
-
-        return wrapper;
+      createCardEl(c) {
+        const d = document.createElement("div");
+        d.className = `card ${c.color}`;
+        if (this.highlightCards.has(c.id)) d.classList.add("winning-card");
+        d.innerHTML = `<span class="absolute top-0 left-1 text-xs">${c.rank}</span><span class="text-2xl">${c.suit}</span>`;
+        return d;
       }
       createBackEl() {
         const d = document.createElement("div");
         d.className = "card card-back";
         return d;
-      }
-
-      // --- 1. 底牌动画逻辑 ---
-      async animatePreflop(state, localId) {
-        const activePlayers = state.playerOrder.map(uid => state.players[uid]).filter(p => !p.folded);
-        // 人越多发得越快: 总时间固定 1000ms
-        const delayPerCard = 1000 / (activePlayers.length * 2);
-
-        for (let round = 0; round < 2; round++) {
-          for (const p of activePlayers) {
-            const seatDiv = document.getElementById(`cards-${p.uid}`);
-            if (seatDiv && seatDiv.children[round]) {
-              const cardEl = seatDiv.children[round];
-              // 只有自己的牌，到达后翻开；别人的保持背面
-              const shouldFlip = (p.uid === localId);
-              this.flyCardTo(cardEl, shouldFlip);
-              await sleep(delayPerCard);
-            }
-          }
-        }
-        await sleep(500);
-      }
-
-      // --- 2. 翻牌动画 (3张连发，然后一起翻) ---
-      async animateFlop(state) {
-        const slots = [0, 1, 2].map(i => document.getElementById(`comm-slot-${i}`).firstElementChild);
-
-        // 连发三张背面 (targetEl, showFront=false)
-        for (const cardEl of slots) {
-          if (cardEl) {
-            this.flyCardTo(cardEl, false);
-            await sleep(150);
-          }
-        }
-        await sleep(300); // 等一会
-
-        // 一起翻开
-        for (const cardEl of slots) {
-          if (cardEl) this.flipCard(cardEl);
-        }
-        await sleep(800);
-      }
-
-      // --- 3. 单张公共牌动画 ---
-      async animateSingleComm(index) {
-        const slot = document.getElementById(`comm-slot-${index}`);
-        if (slot && slot.firstElementChild) {
-          const cardEl = slot.firstElementChild;
-          // 飞过去，到达后不翻开 (先背面)
-          await this.flyCardTo(cardEl, false);
-          await sleep(200);
-          // 然后翻开
-          this.flipCard(cardEl);
-          await sleep(800);
-        }
-      }
-
-      // --- 4. 摊牌动画：先翻牌，再比大小 ---
-      async animateShowdown(state, localId) {
-        // 1. 遍历所有存活玩家
-        for (const uid of state.playerOrder) {
-          const p = state.players[uid];
-          if (p.folded) continue;
-
-          // 找到这个人的两张牌
-          const seatDiv = document.getElementById(`cards-${uid}`);
-          if (seatDiv) {
-            Array.from(seatDiv.children).forEach(cardEl => {
-              // 如果牌现在是背面 (force-back)，把它翻过来
-              // 注意：自己已经看过自己的牌了，但也可能需要强制刷新一下状态
-              const inner = cardEl.querySelector('.card-inner');
-              if (inner && inner.classList.contains('force-back')) {
-                this.flipCard(cardEl);
-              }
-            });
-          }
-        }
-
-        // 2. 等待所有牌翻完，制造悬念
-        await sleep(1500);
-
-        // 3. 此时动画结束，主循环会调用 handleHighlights
-        // 从而给获胜者添加高光、弹窗
-      }
-
-      // --- 5. 弃牌动画 ---
-      handleFoldAnimations(state) {
-        if (!this.lastState) return;
-        state.playerOrder.forEach(uid => {
-          const p = state.players[uid];
-          // 状态突变：以前没弃，现在弃了
-          if (p.folded && !this.playerFoldStatus[uid]) {
-            this.playerFoldStatus[uid] = true;
-            const cardContainer = document.getElementById(`cards-${uid}`);
-            if (cardContainer) {
-              cardContainer.classList.add('anim-fold'); // CSS下沉动画
-            }
-          }
-          if (!p.folded) this.playerFoldStatus[uid] = false;
-        });
       }
     }
 
@@ -2945,7 +2681,6 @@
       }
 
       // --- 房主开始游戏 (已修复: 错误提示在标题右侧) ---
-      // --- 房主开始游戏 (修复版: 防止 NaN 导致游戏闪退) ---
       async startGame() {
         if (!this.currentRoomId || !this.gameUI.lastState) return;
         if (this.localUserId !== this.gameUI.lastState.hostId) return;
@@ -2953,42 +2688,47 @@
         // 1. 获取行内错误元素
         const errChipsEl = document.getElementById("error-chips-inline");
         const errBlindEl = document.getElementById("error-blind-inline");
+
+        // 2. 清空旧错误
         if (errChipsEl) errChipsEl.innerText = "";
         if (errBlindEl) errBlindEl.innerText = "";
 
         const chipsInput = document.getElementById("setting-initial-chips");
         const blindInput = document.getElementById("setting-big-blind");
 
-        // 2. 读取数值 (增加 NaN 兜底检查)
         let newInitChips = chipsInput ? parseInt(chipsInput.value) : 2000;
         let newBigBlind = blindInput ? parseInt(blindInput.value) : 20;
 
-        // *** 关键修复: 如果输入无效，强制使用默认值 ***
-        if (isNaN(newInitChips) || newInitChips <= 0) newInitChips = 2000;
-        if (isNaN(newBigBlind) || newBigBlind <= 0) newBigBlind = 20;
+        newInitChips = Math.floor(newInitChips);
+        newBigBlind = Math.floor(newBigBlind);
 
-        // 确保大盲注是偶数
-        if (newBigBlind % 2 !== 0) newBigBlind += 1;
-
-        // 3. 验证逻辑
+        // *** 修改: 验证逻辑，定向输出错误 ***
         let hasError = false;
+
+        // 验证大盲注
+        if (newBigBlind < 2 || newBigBlind % 2 !== 0) {
+          if (errBlindEl) errBlindEl.innerText = "必须是大于1的偶数！";
+          hasError = true;
+        }
+
+        // 验证初始筹码
         if (newInitChips <= newBigBlind) {
-          if (errChipsEl) errChipsEl.innerText = "筹码过少！";
+          if (errChipsEl) errChipsEl.innerText = "必须大于大盲注！";
           hasError = true;
         }
 
         if (hasError) {
+          // 震动反馈
           if (navigator.vibrate) navigator.vibrate(200);
           return;
         }
+        // *** 结束修改 ***
 
         const btn = document.getElementById("btn-start-game");
-        // 只有玩家数 >= 2 才能开始
         if (!btn || this.gameUI.lastState.playerOrder.length < 2) {
           return;
         }
 
-        // 4. 锁定按钮
         btn.disabled = true;
         btn.innerText = "启动中...";
 
@@ -3008,9 +2748,6 @@
           Object.keys(currentState.players).forEach(uid => {
             currentState.players[uid].chips = newInitChips;
             currentState.players[uid].currentBet = 0;
-            // 确保状态重置
-            currentState.players[uid].folded = false;
-            currentState.players[uid].status = "等待中";
           });
 
           currentState.status = "playing";
@@ -3021,9 +2758,8 @@
         } catch (error) {
           console.error("开始游戏失败:", error);
           btn.disabled = false;
-          btn.innerText = "开始游戏"; // 恢复按钮文本
-          // 注意: showMessage 可能会被等待室遮挡，所以最好依赖控制台或按钮恢复
-          this.gameUI.showMessage("启动失败");
+          btn.innerText = "开始游戏";
+          this.gameUI.showMessage("启动失败，请重试");
         }
       }
 
