@@ -1673,23 +1673,70 @@
           // 2. 渲染牌桌
           this.renderTableLayout(state, localId);
 
-          // 3. 渲染公共牌
+          // ... 在 renderGameState 方法内部 ...
+
+          // 3. 渲染公共牌 (包含 FLIP 挤压动画逻辑)
           const commDiv = document.getElementById("community-cards");
+          
+          // [A] 记录旧位置：在清空 HTML 之前，记下每张老牌现在的坐标
+          const oldPositions = new Map();
+          // 查找 commDiv 里的所有卡牌 (包括嵌套在 row1/row2 里的)
+          commDiv.querySelectorAll('.card').forEach(card => {
+            if (card.dataset.id) {
+                oldPositions.set(card.dataset.id, card.getBoundingClientRect());
+            }
+          });
+
+          // [B] 正常的渲染逻辑 (你原本的代码)
           commDiv.innerHTML = "";
           const row1 = document.createElement("div");
           row1.className = "flex space-x-2";
           const row2 = document.createElement("div");
           row2.className = "flex space-x-2";
 
-          // *** 修复: 移除了 this.highlightCards 的重复设置 ***
-
           state.communityCards.forEach((c, i) => {
-            const cardEl = this.createCardEl(c);
+            const cardEl = this.createCardEl(c, i);
             if (i < 3) row1.appendChild(cardEl);
             else row2.appendChild(cardEl);
           });
           commDiv.appendChild(row1);
           if (state.communityCards.length > 3) commDiv.appendChild(row2);
+
+          // [C] 应用移动动画：在浏览器绘制下一帧前执行
+          requestAnimationFrame(() => {
+            // 再次查找所有刚刚生成的新卡牌
+            const newCards = commDiv.querySelectorAll('.card');
+            
+            newCards.forEach(newCard => {
+                const id = newCard.dataset.id;
+                const oldRect = oldPositions.get(id);
+
+                // 如果这张牌以前就存在 (说明它是老牌，需要让位)
+                if (oldRect) {
+                    const newRect = newCard.getBoundingClientRect();
+                    
+                    // 计算 X 轴和 Y 轴的位移差
+                    const dx = oldRect.left - newRect.left;
+                    const dy = oldRect.top - newRect.top;
+
+                    // 只有当位置真的变了才移动
+                    if (dx !== 0 || dy !== 0) {
+                        // 1. 【Invert】瞬间把新牌“推”回老位置 (骗过眼睛)
+                        newCard.style.transition = 'none';
+                        newCard.style.transform = `translate(${dx}px, ${dy}px)`;
+
+                        // 2. 强制浏览器读取布局 (Trigger Reflow)，否则浏览器会忽略上面的瞬间变换
+                        // 这一行看起来没用，但必须写，这是黑魔法
+                        newCard.getBoundingClientRect(); 
+
+                        // 3. 【Play】开启过渡，移除变换，让它滑向 0,0 (新位置)
+                        // 使用 cubic-bezier 让移动有一种“物理惯性”的感觉
+                        newCard.style.transition = 'transform 0.5s cubic-bezier(0.2, 0, 0.2, 1)';
+                        newCard.style.transform = '';
+                    }
+                }
+            });
+          });
 
           // 4. 更新日志
           const logDiv = document.getElementById("game-log");
@@ -2177,6 +2224,7 @@
         // --- 创建卡牌元素 ---
         createCardEl(c, index = 0) {
           const d = document.createElement("div");
+          d.dataset.id = c.id;
           d.className = `card ${c.color}`;
           
           // 检查是否是新牌
@@ -3413,6 +3461,7 @@
     <!-- 移除旧的 <script> ... </script> 块 -->
   </body>
 </html>
+
 
 
 
