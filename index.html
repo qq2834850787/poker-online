@@ -1446,6 +1446,7 @@
         this.occlusionManager = new OcclusionManager();
         this.lastState = null; // 用于比较状态
         this.localPlayerId = null;
+        this.lastActivePlayerId = null;
         this.highlightCards = new Set();
         this.bankruptcyScreenShown = false; // *** 新增: 破产界面显示标志 ***
         this.lastAllInPlayerTriggered = null; // *** 修复: 移到构造函数 ***
@@ -1794,43 +1795,60 @@
         });
       }
 
-      // --- 更新控制按钮 (客户端) ---
+      // --- 更新控制按钮 & 智能提示 ---
       updateControls(state) {
-        // *** 修复: 确保在调用前 lastState 和 localPlayerId 已设置 ***
+        // 基础检查
         if (!state || !state.players || !this.localPlayerId) return;
+
         const localPlayer = state.players[this.localPlayerId];
-        if (!localPlayer) return; // 如果玩家数据不存在，则退出
-        // *** 结束修复 ***
+        // 当前轮到谁？
+        const currentTurnPlayerId = state.playerOrder[state.currentPlayerIndex];
+        const currentTurnPlayer = state.players[currentTurnPlayerId];
 
+        // ============================================================
+        // *** 核心逻辑: 只有当行动者改变时，才弹窗 ***
+        // ============================================================
+
+        // 仅在游戏进行中，且不是摊牌/等待阶段才显示提示
+        if (state.status === "playing" && state.phase !== "showdown" && state.phase !== "waiting") {
+
+          // 只有当“现在的行动者” 不等于 “上一次记录的行动者” 时，才视为新回合开始
+          if (this.lastActivePlayerId !== currentTurnPlayerId) {
+
+            // 更新记录，防止下一帧重复进入这个 if
+            this.lastActivePlayerId = currentTurnPlayerId;
+
+            if (currentTurnPlayerId === this.localPlayerId) {
+              // 如果变成了我 -> 提示“你的回合”
+              this.showMessage("你的回合");
+              // 可以在这里加音效: this.sound.playTone(440, "sine", 0.1);
+            } else {
+              // 如果变成了别人 -> 提示“某某 思考中”
+              const name = currentTurnPlayer ? currentTurnPlayer.name : "玩家";
+              this.showMessage(`${name} 思考中`);
+            }
+          }
+        } else {
+          // 如果不在游戏行动阶段（比如摊牌了，或者游戏结束了），重置记录
+          // 这样下一局开始时，哪怕第一个行动的人和上一局最后一个人一样，也能正常触发提示
+          this.lastActivePlayerId = null;
+        }
+        // ============================================================
+
+
+        // --- 下面是原有的按钮控制逻辑 (保持不变) ---
         const controls = document.getElementById("player-controls");
-
-        // 1. 检查是否轮到本地玩家
-        const isMyTurn =
-          state.playerOrder[state.currentPlayerIndex] === this.localPlayerId;
-        const canAct =
-          isMyTurn &&
-          !localPlayer.folded &&
-          localPlayer.chips > 0 &&
-          state.phase !== "showdown";
+        const isMyTurn = currentTurnPlayerId === this.localPlayerId;
+        const canAct = isMyTurn && !localPlayer.folded && localPlayer.chips > 0 && state.phase !== "showdown";
 
         if (!canAct) {
-          controls.classList.add(
-            "opacity-50",
-            "pointer-events-none",
-            "translate-y-2"
-          );
+          controls.classList.add("opacity-50", "pointer-events-none", "translate-y-2");
           return;
         }
 
-        controls.classList.remove(
-          "opacity-50",
-          "pointer-events-none",
-          "translate-y-2"
-        );
-        // this.initSound(); // *** 移除: 已移至 renderGameState (请求 #1) ***
-        gameUI.showMessage("你的回合");
+        controls.classList.remove("opacity-50", "pointer-events-none", "translate-y-2");
 
-        // 2. 计算按钮状态
+        // 按钮显示逻辑
         const diff = state.currentMaxBet - localPlayer.currentBet;
         const btnCheck = document.getElementById("btn-check");
         const btnCall = document.getElementById("btn-call");
@@ -1838,7 +1856,6 @@
         const slider = document.getElementById("raise-slider");
         const valDisplay = document.getElementById("raise-val-display");
 
-        // 3. 处理 "过牌" / "跟注"
         if (diff === 0) {
           btnCheck.classList.remove("hidden");
           btnCall.classList.add("hidden");
@@ -1849,89 +1866,42 @@
           else btnCall.innerText = `跟注 $${diff}`;
         }
 
-        // 4. 处理 "加注" (No-Limit 逻辑)
-        // *** 修复: 完全还原为 读博.html (原版) 的加注逻辑 ***
-
-        // 2. 计算最小和最大的 *行动* 加注额
-
-        // 最小 *额外* 加注额 (等于上一次的加注差额)
+        // 加注滑块逻辑
         const minRaiseAmount = state.lastRaiseAmount;
-
-        // 最小合法 *行动* 加注额 (跟注额 + 最小额外加注额)
-        // (注意: 这里的 diff 是跟注额, 所以 slider.value 是 *本次行动* 的总支付额)
         const minPossibleActionRaise = diff + minRaiseAmount;
-
-        // 玩家能下注的最大 *行动* 额 (即全押, 支付所有剩余筹码)
         const maxPossibleActionRaise = localPlayer.chips;
 
-        // 3. 根据筹码情况决定 "加注" 按钮的状态
-
-        // 场景 1: 跟注就是全押 (筹码 <= 跟注额)
         if (localPlayer.chips <= diff) {
           btnRaise.classList.add("hidden");
-          document
-            .getElementById("raise-slider-container")
-            .classList.add("hidden");
-
-          // 场景 2: 筹码不足以进行最小 *额外* 加注 (maxPossibleActionRaise < minPossibleActionRaise)
+          document.getElementById("raise-slider-container").classList.add("hidden");
         } else if (maxPossibleActionRaise < minPossibleActionRaise) {
-          // 玩家不能进行 "最小加注", 但 *可以* "全押"
           btnRaise.classList.remove("hidden");
-          btnRaise.innerText = "全押"; // 强制文本为 "全押"
-
-          document
-            .getElementById("raise-slider-container")
-            .classList.remove("hidden");
-          // 滑块现在代表 *行动* 金额.
-          // 最小值, 最大值, 和当前值都是 maxPossibleActionRaise (即玩家的全部筹码)
+          btnRaise.innerText = "全押";
+          document.getElementById("raise-slider-container").classList.remove("hidden");
           slider.min = maxPossibleActionRaise;
           slider.max = maxPossibleActionRaise;
           slider.value = maxPossibleActionRaise;
-          valDisplay.innerText = `$${maxPossibleActionRaise}`; // 显示行动的金额
-          slider.disabled = true; // 禁用滑块
-
-          // (onclick 已被 network.handleHumanAction('raise') 绑定, 无需重写)
-
-          // 场景 3: 筹码充足, 可以正常加注
+          valDisplay.innerText = `$${maxPossibleActionRaise}`;
+          slider.disabled = true;
         } else {
           btnRaise.classList.remove("hidden");
-          document
-            .getElementById("raise-slider-container")
-            .classList.remove("hidden");
-
-          // 滑块范围现在是 *行动* 的加注额
+          document.getElementById("raise-slider-container").classList.remove("hidden");
           slider.min = minPossibleActionRaise;
           slider.max = maxPossibleActionRaise;
-
-          // 步进必须为 1 (原版 读博.html 也是 1)
           slider.step = 1;
 
-          // *** 修改: (请求 #2) 始终将滑块重置为最小值 ***
-          slider.value = slider.min;
-          // *** 结束修改 (请求 #2) ***
+          // 修复滑块卡顿: 只有在刚轮到我的时候才重置滑块位置，之后不重置
+          if (slider.value < minPossibleActionRaise) slider.value = minPossibleActionRaise;
 
-          slider.disabled = false; // 确保滑块启用
-
-          // (onclick 已被 network.handleHumanAction('raise') 绑定, 无需重写)
-
+          slider.disabled = false;
           const updateBtnText = () => {
-            const raiseVal = parseInt(slider.value); // 这是 *行动* 的金额
-
-            // 显示 *行动* 的金额
+            const raiseVal = parseInt(slider.value);
             valDisplay.innerText = `$${raiseVal}`;
-
-            if (raiseVal === maxPossibleActionRaise) {
-              btnRaise.innerText = "全押";
-            } else {
-              // 按钮文本显示 "加注 X" (X=行动金额)
-              btnRaise.innerText = `加注 $${raiseVal}`;
-            }
+            if (raiseVal === maxPossibleActionRaise) btnRaise.innerText = "全押";
+            else btnRaise.innerText = `加注 $${raiseVal}`;
           };
-
-          // *** 修复: 移除 slider.oninput 的重复绑定 (已在构造函数中绑定) ***
-          updateBtnText(); // 立即执行一次
+          updateBtnText();
         }
-        // *** 修复结束 ***
       }
 
       // --- 调整加注滑块 ---
@@ -1952,13 +1922,24 @@
         slider.dispatchEvent(new Event("input"));
       }
 
-      // --- 显示消息 ---
+      // --- 显示消息 (标准版) ---
       showMessage(msg) {
         const el = document.getElementById("game-message");
+        if (!el) return;
+
         el.innerText = msg;
         el.style.opacity = 1;
-        clearTimeout(this.msgTimeout);
-        this.msgTimeout = setTimeout(() => (el.style.opacity = 0), 3000);
+
+        // 1. 如果有正在进行的倒计时，先清除它，防止它把新消息提前关掉
+        if (this.msgTimeout) {
+          clearTimeout(this.msgTimeout);
+          this.msgTimeout = null;
+        }
+
+        // 2. 设置新的 3秒 倒计时
+        this.msgTimeout = setTimeout(() => {
+          el.style.opacity = 0;
+        }, 3000);
       }
 
       // --- All-in 特效 ---
