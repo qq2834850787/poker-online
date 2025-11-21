@@ -253,6 +253,7 @@
       letter-spacing: 4px;
       background: linear-gradient(to bottom, #fef08a 0%, #eab308 45%, #a16207 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 5px 3px rgba(0, 0, 0, 0.5));
       text-shadow: 0 0 30px rgba(234, 179, 8, 0.6);
@@ -859,7 +860,7 @@
     const SUITS = ["♠", "♥", "♣", "♦"];
     const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
     const RANK_VALUES = { 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, J: 11, Q: 12, K: 13, A: 14 };
-    
+
     const PHASE_KEY_MAP = {
       waiting: "waiting",
       preflop: "phase_preflop",
@@ -876,19 +877,19 @@
     let sound;
 
     const firebaseConfig = typeof __firebase_config !== "undefined" ? JSON.parse(__firebase_config) : {
-       apiKey: "AIzaSyBX_mHFj3VHsx6U38Ib9pDJWCrnlSlR_g4",
-       authDomain: "texas-hold-em-poker-1.firebaseapp.com",
-       projectId: "texas-hold-em-poker-1",
-       storageBucket: "texas-hold-em-poker-1.firebasestorage.app",
-       messagingSenderId: "401916350194",
-       appId: "1:401916350194:web:2b38d3da714968c8cd0a6b"
+      apiKey: "AIzaSyBX_mHFj3VHsx6U38Ib9pDJWCrnlSlR_g4",
+      authDomain: "texas-hold-em-poker-1.firebaseapp.com",
+      projectId: "texas-hold-em-poker-1",
+      storageBucket: "texas-hold-em-poker-1.firebasestorage.app",
+      messagingSenderId: "401916350194",
+      appId: "1:401916350194:web:2b38d3da714968c8cd0a6b"
     };
 
     const appId = typeof __app_id !== "undefined" ? __app_id : "poker-game-test";
     const initialAuthToken = typeof __initial_auth_token !== "undefined" ? __initial_auth_token : null;
 
     // --- GAME LOGIC (PURE FUNCTIONS) ---
-    
+
     function processAction(currentState, actingUserId, action, amount = 0) {
       let newState = JSON.parse(JSON.stringify(currentState));
       const config = newState.config || { bigBlind: 20 };
@@ -908,7 +909,7 @@
 
       if (action === "fold") {
         player.folded = true;
-        player.status = "status_fold"; 
+        player.status = "status_fold";
         logJson = createLog("log_fold", { name: player.name });
       } else if (action === "check") {
         if (diff > 0) return currentState;
@@ -925,8 +926,8 @@
         logJson = createLog(logKey, { name: player.name, amount: callAmount });
         if (isAllIn) triggerAllInEffect = true;
       } else if (action === "raise") {
-        let raiseAmount = amount - player.currentBet; 
-        let actualAmount = amount; 
+        let raiseAmount = amount - player.currentBet;
+        let actualAmount = amount;
 
         if (actualAmount <= newState.currentMaxBet && actualAmount < player.chips) return currentState;
         const extraRaise = actualAmount - newState.currentMaxBet;
@@ -943,12 +944,12 @@
         player.currentBet = actualAmount;
         newState.pot += raiseAmount;
 
-        const newRaiseAmount = actualAmount - newState.currentMaxBet; 
+        const newRaiseAmount = actualAmount - newState.currentMaxBet;
         if (!isAllIn || newRaiseAmount >= newState.lastRaiseAmount) {
           newState.lastRaiseAmount = newRaiseAmount;
         }
         newState.currentMaxBet = actualAmount;
-        newState.playersActed.length = 0; 
+        newState.playersActed.length = 0;
 
         player.status = isAllIn ? "status_all_in" : "status_raise";
         const logKey = isAllIn ? "log_all_in" : "log_raise";
@@ -968,19 +969,19 @@
       const playersWithChips = activePlayers.filter(p => p.chips > 0);
 
       const isRoundComplete = activePlayers.every(p => {
-        const isAllIn = p.chips === 0 && !p.folded; 
+        const isAllIn = p.chips === 0 && !p.folded;
         const matchBet = p.currentBet === newState.currentMaxBet;
         const hasActed = newState.playersActed.includes(p.uid);
-        if (isAllIn) return true; 
+        if (isAllIn) return true;
         if (newState.phase === 'preflop' && newState.currentMaxBet === config.bigBlind) {
           const bbIndex = (newState.dealerIndex + 2) % newState.playerOrder.length;
           if (p.uid === newState.playerOrder[bbIndex] && !hasActed) return false;
         }
-        return hasActed && matchBet; 
+        return hasActed && matchBet;
       });
 
       if (activePlayers.length === 1) {
-        newState = advanceToShowdown(newState, activePlayers[0]); 
+        newState = advanceToShowdown(newState, activePlayers[0]);
       }
       else if (isRoundComplete && playersWithChips.length <= 1 && newState.phase !== "showdown") {
         newState = runAutoShowdown(newState);
@@ -995,13 +996,13 @@
           const nextPlayer = newState.players[newState.playerOrder[newState.currentPlayerIndex]];
           if (nextPlayer.folded || nextPlayer.chips === 0) {
             loops++;
-            continue; 
+            continue;
           }
-          break; 
-        } while (loops <= newState.playerOrder.length * 2); 
+          break;
+        } while (loops <= newState.playerOrder.length * 2);
       }
 
-      if (triggerAllInEffect) newState.lastAllInPlayer = player.name; 
+      if (triggerAllInEffect) newState.lastAllInPlayer = player.name;
       return newState;
     }
 
@@ -1013,12 +1014,12 @@
       newState.playerOrder.forEach(uid => {
         const p = newState.players[uid];
         p.accumulatedBet += p.currentBet;
-        p.currentBet = 0; 
-        p.status = ""; 
+        p.currentBet = 0;
+        p.status = "";
       });
 
       newState.currentMaxBet = 0;
-      newState.lastRaiseAmount = config.bigBlind; 
+      newState.lastRaiseAmount = config.bigBlind;
       newState.playersActed = [];
 
       if (newState.phase === "preflop") {
@@ -1035,14 +1036,14 @@
         newState.logs.push(createLog("log_phase_river"));
       } else if (newState.phase === "river") {
         newState = advanceToShowdown(newState);
-        return newState; 
+        return newState;
       }
 
       let nextIdx = (newState.dealerIndex + 1) % newState.playerOrder.length;
       let loops = 0;
       while (loops <= newState.playerOrder.length) {
         const p = newState.players[newState.playerOrder[nextIdx]];
-        if (!p.folded && p.chips > 0) break; 
+        if (!p.folded && p.chips > 0) break;
         nextIdx = (nextIdx + 1) % newState.playerOrder.length;
         loops++;
       }
@@ -1061,7 +1062,7 @@
         p.status = p.chips === 0 && !p.folded ? "status_all_in" : p.status;
       });
 
-      newState.currentPlayerIndex = -1; 
+      newState.currentPlayerIndex = -1;
 
       if (newState.phase === "preflop") {
         newState.phase = "flop";
@@ -1079,7 +1080,7 @@
         newState.logs.push(createLog("log_phase_river"));
         newState.nextPhaseTimer = 1500;
       } else if (newState.phase === "river") {
-        newState.nextPhaseTimer = 0; 
+        newState.nextPhaseTimer = 0;
         newState = advanceToShowdown(newState);
       }
       return newState;
@@ -1096,36 +1097,36 @@
 
       if (highest.currentBet > secondHighest.currentBet) {
         const refund = highest.currentBet - secondHighest.currentBet;
-        const playerToRefund = newState.players[highest.uid]; 
+        const playerToRefund = newState.players[highest.uid];
         playerToRefund.chips += refund;
         playerToRefund.currentBet -= refund;
         newState.pot -= refund;
-        newState.logs.push(createLog("log_refund", {amount: refund, name: playerToRefund.name}));
+        newState.logs.push(createLog("log_refund", { amount: refund, name: playerToRefund.name }));
       }
       return newState;
     }
 
     function advanceToShowdown(currentState, soleWinner = null) {
-      let newState = JSON.parse(JSON.stringify(currentState)); 
+      let newState = JSON.parse(JSON.stringify(currentState));
       newState.phase = "showdown";
-      newState.currentPlayerIndex = -1; 
+      newState.currentPlayerIndex = -1;
 
       if (soleWinner) {
         const winnerPlayer = newState.players[soleWinner.uid];
         newState.playerOrder.forEach(uid => newState.players[uid].currentBet = 0);
         winnerPlayer.chips += newState.pot;
         newState.logs.push(createLog("log_win_sole", { name: winnerPlayer.name, amount: newState.pot }));
-        newState.highlightWinner = winnerPlayer.uid; 
+        newState.highlightWinner = winnerPlayer.uid;
       }
       else {
         let finalPot = 0;
         newState.playerOrder.forEach(uid => {
           const p = newState.players[uid];
           p.accumulatedBet += p.currentBet;
-          finalPot += p.accumulatedBet; 
+          finalPot += p.accumulatedBet;
           p.currentBet = 0;
         });
-        newState.pot = finalPot; 
+        newState.pot = finalPot;
         const allPlayers = newState.playerOrder.map(uid => newState.players[uid]);
         const activePlayers = allPlayers.filter(p => !p.folded);
 
@@ -1138,7 +1139,7 @@
 
           let distinctBets = [...new Set(activePlayers.map(p => p.accumulatedBet))].filter(bet => bet > 0).sort((a, b) => a - b);
           let winnerLogs = [];
-          newState.highlightCards = new Set(); 
+          newState.highlightCards = new Set();
 
           let prevBet = 0;
           distinctBets.forEach((betLevel, index) => {
@@ -1152,7 +1153,7 @@
             if (potAmount > 0 && contributors.length > 0) {
               let bestScore = -1;
               let winners = [];
-              
+
               contributors.forEach(p => {
                 if (p.bestHand.score > bestScore) {
                   bestScore = p.bestHand.score;
@@ -1164,14 +1165,14 @@
 
               const winPer = Math.floor(potAmount / winners.length);
               let remainder = potAmount % winners.length;
-              
+
               // potName needs to be translated during render, we save a key or handle index logic in translation
               // For simplicity, we'll save a constructed string args or custom key logic
               // Better approach: Save raw info and format in render. But strict keys are better.
               // Let's use a trick: index === 0 ? t('main_pot') : t('side_pot') + index
               const potNameKey = index === 0 ? "main_pot" : "side_pot";
               let winnerNames = winners.map(w => w.name).join(", ");
-              
+
               // We'll inject the translated pot name via args in render? No, complex.
               // Let's store enough data to reconstruct:
               // { key: 'log_showdown_result', args: { potIndex: index, amount: potAmount, winners: winnerNames } }
@@ -1180,18 +1181,18 @@
               // Note: Since log arguments are strings, we can't easily inject dynamic keys unless we nest `t` calls which isn't possible in pure JSON.
               // Compromise: We will store "Main Pot" or "Side Pot 1" as an english string argument, OR we handle this specific log uniquely.
               // Let's handle uniquely in render.
-              
-              winnerLogs.push(createLog("log_showdown_result", { 
+
+              winnerLogs.push(createLog("log_showdown_result", {
                 potName: index === 0 ? "Main" : `Side ${index}`, // This is a slight compromise, but 'Main'/'Side' are common enough.
-                amount: potAmount, 
-                winners: winnerNames 
+                amount: potAmount,
+                winners: winnerNames
               }));
 
               winners.forEach(w => {
                 let winnings = winPer;
                 if (remainder > 0) { winnings++; remainder--; }
                 newState.players[w.uid].chips += winnings;
-                newState.highlightWinner = w.uid; 
+                newState.highlightWinner = w.uid;
                 if (w.bestHand.bestCards) w.bestHand.bestCards.forEach(c => newState.highlightCards.add(c.id));
               });
             }
@@ -1202,7 +1203,7 @@
           newState.logs.push(...winnerLogs);
         }
       }
-      newState.nextRoundTimer = 6000; 
+      newState.nextRoundTimer = 6000;
       sound.playHandEnd();
       return newState;
     }
@@ -1212,12 +1213,12 @@
       const config = newState.config || { initialChips: 2000, smallBlind: 10, bigBlind: 20 };
 
       let activePlayerIds = [];
-      const allPlayerIds = Object.keys(newState.players); 
+      const allPlayerIds = Object.keys(newState.players);
 
       allPlayerIds.forEach(uid => {
         if (newState.players[uid].chips > 0) activePlayerIds.push(uid);
         else {
-          newState.players[uid].folded = true; 
+          newState.players[uid].folded = true;
           newState.players[uid].status = "status_eliminated";
         }
       });
@@ -1227,7 +1228,7 @@
         const winnerName = winnerId ? newState.players[winnerId].name : "No one";
         let newLogs = [...newState.logs];
         newLogs.push(createLog("log_game_over", { name: winnerName }));
-        
+
         const resetPlayers = {};
         allPlayerIds.forEach(uid => {
           const p = newState.players[uid];
@@ -1262,7 +1263,7 @@
       newState.communityCards = [];
       newState.pot = 0;
       newState.currentMaxBet = 0;
-      newState.lastRaiseAmount = config.bigBlind; 
+      newState.lastRaiseAmount = config.bigBlind;
       newState.phase = "preflop";
       newState.playersActed = [];
       newState.highlightWinner = null;
@@ -1344,12 +1345,12 @@
         this.sound = new SoundManager();
         this.dragSystem = new TableDragSystem();
         this.occlusionManager = new OcclusionManager();
-        this.lastState = null; 
+        this.lastState = null;
         this.localPlayerId = null;
         this.lastActivePlayerId = null;
         this.highlightCards = new Set();
-        this.bankruptcyScreenShown = false; 
-        this.lastAllInPlayerTriggered = null; 
+        this.bankruptcyScreenShown = false;
+        this.lastAllInPlayerTriggered = null;
 
         document.getElementById("raise-slider").oninput = () => {
           const slider = document.getElementById("raise-slider");
@@ -1366,7 +1367,7 @@
 
       initSound() {
         this.sound.init();
-        sound = this.sound; 
+        sound = this.sound;
       }
 
       renderGameState(state, localId) {
@@ -1378,13 +1379,13 @@
 
         // Check for new log
         const hasNewLog = this.lastState && (state.logs.length > this.lastState.logs.length || (state.logs.length > 0 && lastLogStr !== prevLogStr));
-        
+
         if (hasNewLog) {
           let logKey = "";
           try {
             const logObj = JSON.parse(lastLogStr);
             logKey = logObj.key;
-          } catch(e) {
+          } catch (e) {
             logKey = lastLogStr; // Fallback for legacy strings
           }
 
@@ -1405,17 +1406,17 @@
         if (state.lastAllInPlayer && (!this.lastState || state.lastAllInPlayer !== this.lastState.lastAllInPlayer)) {
           if (state.lastAllInPlayer !== this.lastAllInPlayerTriggered) {
             this.showAllInEffect(state.lastAllInPlayer);
-            this.lastAllInPlayerTriggered = state.lastAllInPlayer; 
+            this.lastAllInPlayerTriggered = state.lastAllInPlayer;
           }
         }
         if (state.phase === "showdown") this.lastAllInPlayerTriggered = null;
 
-        this.lastState = state; 
+        this.lastState = state;
         this.localPlayerId = localId;
         const localPlayer = state.players[localId];
 
         document.getElementById("pot-display").innerText = state.pot;
-        
+
         const phaseKey = PHASE_KEY_MAP[state.phase] || state.phase;
         document.getElementById("phase-display").innerText = t(phaseKey);
 
@@ -1456,12 +1457,12 @@
               displayMsg = t(logObj.key, logObj.args);
               // Hack for Pot Names if they were "Main" or "Side X" in English
               if (logObj.key === "log_showdown_result") {
-                 const potNameRaw = logObj.args.potName; // "Main" or "Side 1"
-                 let translatedPot = potNameRaw;
-                 if (potNameRaw === "Main") translatedPot = t("main_pot");
-                 else if (potNameRaw && potNameRaw.startsWith("Side")) translatedPot = t("side_pot") + " " + potNameRaw.split(" ")[1];
-                 // Re-interpolate because potName was already in args
-                 displayMsg = displayMsg.replace(potNameRaw, translatedPot);
+                const potNameRaw = logObj.args.potName; // "Main" or "Side 1"
+                let translatedPot = potNameRaw;
+                if (potNameRaw === "Main") translatedPot = t("main_pot");
+                else if (potNameRaw && potNameRaw.startsWith("Side")) translatedPot = t("side_pot") + " " + potNameRaw.split(" ")[1];
+                // Re-interpolate because potName was already in args
+                displayMsg = displayMsg.replace(potNameRaw, translatedPot);
               }
             }
           } catch (e) {
@@ -1478,14 +1479,14 @@
           // This is slightly fragile checking array content, but works for sound trigger logic previously
           const lastLog = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
           const isChampion = state.status === "waiting" && state.highlightWinner === localId && lastLog.includes("log_game_over");
-          
+
           const isEliminated = localPlayer.status === "status_eliminated" && localPlayer.chips === 0;
-          
+
           if (isChampion) {
             if (!this.bankruptcyScreenShown) {
               this.sound.playWin();
               this.showMessage(t("msg_winner"));
-              this.bankruptcyScreenShown = true; 
+              this.bankruptcyScreenShown = true;
             }
           }
           else if (isEliminated && state.status === "playing") {
@@ -1503,7 +1504,7 @@
         const waitOverlay = document.getElementById("waiting-room-overlay");
         if (state.status === "waiting") {
           waitOverlay.classList.remove("hidden");
-          network.updateWaitingRoomUI(state, localId); 
+          network.updateWaitingRoomUI(state, localId);
         } else {
           waitOverlay.classList.add("hidden");
         }
@@ -1511,7 +1512,7 @@
 
       renderTableLayout(state, localId) {
         const container = document.getElementById("seats-container");
-        container.innerHTML = ""; 
+        container.innerHTML = "";
 
         const playerIdsToRender = state.phase === "waiting" || state.status === "waiting" ? state.playerOrder : state.playerOrder;
         const num = playerIdsToRender.length;
@@ -1537,7 +1538,7 @@
 
         playerIdsToRender.forEach((uid, i) => {
           const p = state.players[uid];
-          if (!p) return; 
+          if (!p) return;
 
           const offsetIndex = (i - renderIndex + num) % num;
           const angle = Math.PI / 2 + (offsetIndex * (2 * Math.PI)) / num;
@@ -1545,7 +1546,7 @@
           const y = cy + ry * Math.sin(angle);
 
           const div = document.createElement("div");
-          div.id = `seat-${p.uid}`; 
+          div.id = `seat-${p.uid}`;
           div.className = "player-seat";
           div.style.left = `${x - 60}px`;
           div.style.top = `${y - 55}px`;
@@ -1669,7 +1670,7 @@
           slider.min = minPossibleActionRaise;
           slider.max = maxPossibleActionRaise;
           slider.step = 1;
-          if (slider.value < minPossibleActionRaise) slider.value = minPossibleActionRaise;
+          slider.value = slider.min;
           slider.disabled = false;
           const updateBtnText = () => {
             const raiseVal = parseInt(slider.value);
@@ -1750,14 +1751,14 @@
     class NetworkManager {
       constructor(gameUI) {
         this.gameUI = gameUI;
-        this.db = null; 
-        this.auth = null; 
+        this.db = null;
+        this.auth = null;
         this.appId = appId;
-        this.localUserId = null; 
-        this.currentRoomId = null; 
+        this.localUserId = null;
+        this.currentRoomId = null;
         this.unsubscribeRoom = null;
-        this.nextRoundTimeout = null; 
-        this.nextPhaseTimeout = null; 
+        this.nextRoundTimeout = null;
+        this.nextPhaseTimeout = null;
         this.heartbeatInterval = null;
       }
 
@@ -1785,23 +1786,23 @@
       updateWaitingRoomUI(state, localId) {
         const hostControls = document.getElementById("wait-host-controls");
         const btnContainer = document.getElementById("host-start-btn-container");
-        
+
         if (state.hostId === localId) {
           hostControls.classList.remove("hidden");
           const bbInput = document.getElementById("setting-big-blind");
-          const chipsInput = document.getElementById("setting-initial-chips"); 
+          const chipsInput = document.getElementById("setting-initial-chips");
           const sbDisplay = document.getElementById("setting-sb-display");
 
           if (chipsInput && !chipsInput.oninput) {
-            chipsInput.oninput = () => { 
-              chipsInput.value = chipsInput.value.replace(/[^\d]/g, ''); 
+            chipsInput.oninput = () => {
+              chipsInput.value = chipsInput.value.replace(/[^\d]/g, '');
             };
           }
           if (bbInput && !bbInput.oninput) {
             bbInput.oninput = () => {
-             bbInput.value = bbInput.value.replace(/[^\d]/g, '');
-             const val = parseInt(bbInput.value) || 0;
-             if (sbDisplay) sbDisplay.innerText = Math.floor(val / 2);
+              bbInput.value = bbInput.value.replace(/[^\d]/g, '');
+              const val = parseInt(bbInput.value) || 0;
+              if (sbDisplay) sbDisplay.innerText = Math.floor(val / 2);
             };
           }
 
@@ -1845,8 +1846,8 @@
         } catch (error) { console.error(error); }
       }
 
-      getRoomRef(roomId) { 
-        return doc(this.db, "artifacts", this.appId, "public/data/poker-rooms", roomId); 
+      getRoomRef(roomId) {
+        return doc(this.db, "artifacts", this.appId, "public/data/poker-rooms", roomId);
       }
 
       validateInputs() {
@@ -1861,7 +1862,7 @@
           errEl.innerText = t("error_room_id");
           return null;
         }
-        localPlayerName = name; 
+        localPlayerName = name;
         errEl.innerText = "";
         return room;
       }
@@ -1876,44 +1877,44 @@
           if (docSnap.exists()) {
             const data = docSnap.data();
             if (data.lastActive && Date.now() - data.lastActive > 30000) {
-               await deleteDoc(roomRef);
+              await deleteDoc(roomRef);
             } else {
               document.getElementById("room-error").innerText = t("error_game_started");
               this.disableRoomButtons(false);
               return;
             }
           }
-          const newPlayer = { 
-            uid: this.localUserId, 
-            id: 0, 
-            name: localPlayerName, 
-            chips: 2000, 
-            holeCards: [], 
-            folded: false, 
-            currentBet: 0, 
-            accumulatedBet: 0, 
-            status: "waiting" 
+          const newPlayer = {
+            uid: this.localUserId,
+            id: 0,
+            name: localPlayerName,
+            chips: 2000,
+            holeCards: [],
+            folded: false,
+            currentBet: 0,
+            accumulatedBet: 0,
+            status: "waiting"
           };
           const initialState = {
-            status: "waiting", 
-            hostId: this.localUserId, 
+            status: "waiting",
+            hostId: this.localUserId,
             lastActive: Date.now(),
             config: { initialChips: 2000, smallBlind: 10, bigBlind: 20 },
-            players: { [this.localUserId]: newPlayer }, 
+            players: { [this.localUserId]: newPlayer },
             playerOrder: [this.localUserId],
-            communityCards: [], 
-            pot: 0, 
-            dealerIndex: 0, 
-            currentPlayerIndex: -1, 
+            communityCards: [],
+            pot: 0,
+            dealerIndex: 0,
+            currentPlayerIndex: -1,
             currentMaxBet: 0,
-            phase: "waiting", 
-            lastRaiseAmount: 20, 
-            deck: [], 
+            phase: "waiting",
+            lastRaiseAmount: 20,
+            deck: [],
             // Use JSON string for initial log
             logs: [createLog("log_create", { name: localPlayerName })],
-            highlightWinner: null, 
-            highlightCards: [], 
-            nextRoundTimer: 0, 
+            highlightWinner: null,
+            highlightCards: [],
+            nextRoundTimer: 0,
             nextPhaseTimer: 0,
           };
           await setDoc(roomRef, initialState);
@@ -1936,25 +1937,25 @@
             let state = roomDoc.data();
             if (state.lastActive && Date.now() - state.lastActive > 30000) throw new Error("ROOM_IS_DEAD");
             if (state.players[this.localUserId]) {
-               if (state.status === "waiting") { 
-                 state.players[this.localUserId].chips = 2000; 
-                 state.players[this.localUserId].status = "waiting"; 
-               }
-               transaction.set(roomRef, state); 
-               return;
+              if (state.status === "waiting") {
+                state.players[this.localUserId].chips = 2000;
+                state.players[this.localUserId].status = "waiting";
+              }
+              transaction.set(roomRef, state);
+              return;
             }
             if (state.status !== "waiting") throw new Error(t("error_game_started"));
             if (Object.keys(state.players).length >= 10) throw new Error(t("error_room_full"));
-            const newPlayer = { 
-              uid: this.localUserId, 
-              id: Object.keys(state.players).length, 
-              name: localPlayerName, 
-              chips: 2000, 
-              holeCards: [], 
-              folded: false, 
-              currentBet: 0, 
-              accumulatedBet: 0, 
-              status: "waiting" 
+            const newPlayer = {
+              uid: this.localUserId,
+              id: Object.keys(state.players).length,
+              name: localPlayerName,
+              chips: 2000,
+              holeCards: [],
+              folded: false,
+              currentBet: 0,
+              accumulatedBet: 0,
+              status: "waiting"
             };
             state.players[this.localUserId] = newPlayer;
             state.playerOrder.push(this.localUserId);
@@ -1975,13 +1976,13 @@
 
       async leaveRoom() {
         this.stopHeartbeat();
-        if (this.unsubscribeRoom) { 
-          this.unsubscribeRoom(); 
-          this.unsubscribeRoom = null; 
+        if (this.unsubscribeRoom) {
+          this.unsubscribeRoom();
+          this.unsubscribeRoom = null;
         }
-        const roomId = this.currentRoomId; 
+        const roomId = this.currentRoomId;
         const userId = this.localUserId;
-        
+
         if (roomId && userId) {
           const roomRef = this.getRoomRef(roomId);
           try {
@@ -1989,46 +1990,46 @@
               const roomDoc = await transaction.get(roomRef);
               if (!roomDoc.exists()) return;
               let state = roomDoc.data();
-              
+
               if (state.players[userId]) {
                 const playerName = state.players[userId].name;
                 delete state.players[userId];
                 state.playerOrder = state.playerOrder.filter((uid) => uid !== userId);
                 state.logs.push(createLog("log_leave", { name: playerName }));
               }
-              
-              if (state.playerOrder.length === 0) { 
-                transaction.delete(roomRef); 
-                return; 
+
+              if (state.playerOrder.length === 0) {
+                transaction.delete(roomRef);
+                return;
               }
-              
+
               if (state.status === 'playing' && state.playerOrder.length < 2) {
-                state.status = 'waiting'; 
-                state.phase = 'waiting'; 
-                state.pot = 0; 
+                state.status = 'waiting';
+                state.phase = 'waiting';
+                state.pot = 0;
                 state.communityCards = [];
-                state.currentMaxBet = 0; 
-                state.currentPlayerIndex = -1; 
+                state.currentMaxBet = 0;
+                state.currentPlayerIndex = -1;
                 state.dealerIndex = 0;
                 state.logs.push(createLog("log_round_end_no_winner"));
-                state.highlightWinner = null; 
-                state.highlightCards = []; 
-                state.nextRoundTimer = 0; 
+                state.highlightWinner = null;
+                state.highlightCards = [];
+                state.nextRoundTimer = 0;
                 state.nextPhaseTimer = 0;
-                
+
                 state.playerOrder.forEach(uid => {
                   if (state.players[uid]) {
-                    state.players[uid].chips = 2000; 
-                    state.players[uid].holeCards = []; 
+                    state.players[uid].chips = 2000;
+                    state.players[uid].holeCards = [];
                     state.players[uid].folded = false;
-                    state.players[uid].currentBet = 0; 
-                    state.players[uid].accumulatedBet = 0; 
-                    state.players[uid].status = "waiting"; 
+                    state.players[uid].currentBet = 0;
+                    state.players[uid].accumulatedBet = 0;
+                    state.players[uid].status = "waiting";
                     state.players[uid].bestHand = null;
                   }
                 });
               }
-              
+
               if (state.hostId === userId) {
                 state.hostId = state.playerOrder[0];
                 state.logs.push(createLog("log_host_change", { name: state.players[state.hostId].name }));
@@ -2037,7 +2038,7 @@
             });
           } catch (e) { console.error(e); }
         }
-        
+
         this.currentRoomId = null;
         if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
         if (this.nextPhaseTimeout) clearTimeout(this.nextPhaseTimeout);
@@ -2054,18 +2055,18 @@
           const state = this.gameUI.lastState;
           if (state && state.hostId === this.localUserId) {
             const roomRef = this.getRoomRef(roomId);
-            try { 
-              await window.firestoreUpdateDoc(roomRef, { lastActive: Date.now() }); 
-            } catch (e) {}
+            try {
+              await window.firestoreUpdateDoc(roomRef, { lastActive: Date.now() });
+            } catch (e) { }
           }
         }, 5000);
       }
-      
-      stopHeartbeat() { 
-        if (this.heartbeatInterval) { 
-          clearInterval(this.heartbeatInterval); 
-          this.heartbeatInterval = null; 
-        } 
+
+      stopHeartbeat() {
+        if (this.heartbeatInterval) {
+          clearInterval(this.heartbeatInterval);
+          this.heartbeatInterval = null;
+        }
       }
 
       subscribeToRoom(roomId) {
@@ -2076,12 +2077,12 @@
         this.gameUI.initSound();
         this.gameUI.occlusionManager.start();
         this.startHeartbeat(roomId);
-        
+
         this.unsubscribeRoom = onSnapshot(this.getRoomRef(roomId), (doc) => {
-          if (!doc.exists()) { 
-            this.gameUI.showMessage("Room closed"); 
-            setTimeout(() => this.leaveRoom(), 2000); 
-            return; 
+          if (!doc.exists()) {
+            this.gameUI.showMessage("Room closed");
+            setTimeout(() => this.leaveRoom(), 2000);
+            return;
           }
           const state = doc.data();
           this.gameUI.renderGameState(state, this.localUserId);
@@ -2102,14 +2103,14 @@
                   const next = runAutoShowdown(cur);
                   await setDoc(roomRef, next);
                 }
-              } catch (e) {}
+              } catch (e) { }
             }, state.nextPhaseTimer);
           }
         } else if (state.nextPhaseTimer === 0 && this.nextPhaseTimeout) {
-          clearTimeout(this.nextPhaseTimeout); 
+          clearTimeout(this.nextPhaseTimeout);
           this.nextPhaseTimeout = null;
         }
-        
+
         if (state.phase === "showdown" && state.hostId === this.localUserId) {
           if (state.nextRoundTimer > 0 && !this.nextRoundTimeout) {
             this.nextRoundTimeout = setTimeout(async () => {
@@ -2121,7 +2122,7 @@
                   const next = startNewRound(cur);
                   await setDoc(roomRef, next);
                 }
-              } catch (e) {}
+              } catch (e) { }
             }, state.nextRoundTimer);
           }
         }
@@ -2130,71 +2131,71 @@
       async startGame() {
         if (!this.currentRoomId || !this.gameUI.lastState) return;
         if (this.localUserId !== this.gameUI.lastState.hostId) return;
-        
+
         const chipsInput = document.getElementById("setting-initial-chips");
         const blindInput = document.getElementById("setting-big-blind");
         let newInitChips = chipsInput ? parseInt(chipsInput.value) : 2000;
         let newBigBlind = blindInput ? parseInt(blindInput.value) : 20;
-        
-        newInitChips = Math.floor(newInitChips); 
+
+        newInitChips = Math.floor(newInitChips);
         newBigBlind = Math.floor(newBigBlind);
-        
+
         if (newBigBlind < 2 || newBigBlind % 2 !== 0) return;
         if (newInitChips <= newBigBlind) return;
 
         const btn = document.getElementById("btn-start-game");
         if (!btn || this.gameUI.lastState.playerOrder.length < 2) return;
-        
-        btn.disabled = true; 
+
+        btn.disabled = true;
         const roomRef = this.getRoomRef(this.currentRoomId);
         try {
           const currentState = this.gameUI.lastState;
           if (currentState.status !== "waiting") return;
-          
-          currentState.config = { 
-            initialChips: newInitChips, 
-            bigBlind: newBigBlind, 
-            smallBlind: Math.floor(newBigBlind / 2) 
+
+          currentState.config = {
+            initialChips: newInitChips,
+            bigBlind: newBigBlind,
+            smallBlind: Math.floor(newBigBlind / 2)
           };
-          
-          Object.keys(currentState.players).forEach(uid => { 
-            currentState.players[uid].chips = newInitChips; 
-            currentState.players[uid].currentBet = 0; 
+
+          Object.keys(currentState.players).forEach(uid => {
+            currentState.players[uid].chips = newInitChips;
+            currentState.players[uid].currentBet = 0;
           });
-          
+
           currentState.status = "playing";
           const nextState = startNewRound(currentState);
           await setDoc(roomRef, nextState);
-        } catch (error) { 
-          btn.disabled = false; 
-          this.gameUI.showMessage("Start failed"); 
+        } catch (error) {
+          btn.disabled = false;
+          this.gameUI.showMessage("Start failed");
         }
       }
 
       async handleHumanAction(action) {
         const state = this.gameUI.lastState;
         if (!state || state.playerOrder[state.currentPlayerIndex] !== this.localUserId) return;
-        
+
         this.gameUI.updateControls({ ...state, currentPlayerIndex: -1 });
         let actionAmount = 0;
         if (action === "raise") {
           const slider = document.getElementById("raise-slider");
           if (slider) actionAmount = parseInt(slider.value);
         }
-        
+
         const roomRef = this.getRoomRef(this.currentRoomId);
         try {
           await runTransaction(this.db, async (transaction) => {
             const roomDoc = await transaction.get(roomRef);
             if (!roomDoc.exists()) throw new Error("Room missing");
-            
+
             const currentState = roomDoc.data();
             if (currentState.playerOrder[currentState.currentPlayerIndex] !== this.localUserId) return;
-            
+
             let totalAmount = 0;
             const player = currentState.players[this.localUserId];
-            if (action === "raise") totalAmount = player.currentBet + actionAmount; 
-            
+            if (action === "raise") totalAmount = player.currentBet + actionAmount;
+
             const nextState = processAction(currentState, this.localUserId, action, totalAmount);
             transaction.set(roomRef, nextState);
           });
@@ -2216,100 +2217,100 @@
     }
 
     class SoundManager {
-      constructor() { 
-        this.ctx = null; 
-        this.enabled = false; 
+      constructor() {
+        this.ctx = null;
+        this.enabled = false;
       }
-      
+
       init() {
         if (!this.ctx) {
           this.ctx = new (window.AudioContext || window.webkitAudioContext)();
           this.enabled = true;
-          const resumeAudio = () => { 
+          const resumeAudio = () => {
             if (this.ctx && this.ctx.state === "suspended") {
-              this.ctx.resume(); 
+              this.ctx.resume();
             }
           };
-          document.addEventListener("click", resumeAudio); 
+          document.addEventListener("click", resumeAudio);
           document.addEventListener("touchstart", resumeAudio);
         }
         if (this.ctx.state === "suspended") {
           this.ctx.resume();
         }
       }
-      
+
       playTone(freq, type, duration, vol = 0.1, when = 0) {
         if (!this.enabled) return;
-        const osc = this.ctx.createOscillator(); 
+        const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        
-        osc.type = type; 
+
+        osc.type = type;
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime + when);
-        
+
         gain.gain.setValueAtTime(vol, this.ctx.currentTime + when);
         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + when + duration);
-        
-        osc.connect(gain); 
+
+        osc.connect(gain);
         gain.connect(this.ctx.destination);
-        
-        osc.start(this.ctx.currentTime + when); 
+
+        osc.start(this.ctx.currentTime + when);
         osc.stop(this.ctx.currentTime + when + duration);
       }
-      
-      playChip() { 
-        this.playTone(2000, "square", 0.05, 0.03); 
+
+      playChip() {
+        this.playTone(2000, "square", 0.05, 0.03);
       }
-      
-      playCard() { 
-        this.playTone(800, "sine", 0.1, 0.02); 
+
+      playCard() {
+        this.playTone(800, "sine", 0.1, 0.02);
       }
-      
-      playCheck() { 
-        this.playTone(300, "sine", 0.05, 0.1); 
-        this.playTone(300, "sine", 0.05, 0.1, 0.1); 
+
+      playCheck() {
+        this.playTone(300, "sine", 0.05, 0.1);
+        this.playTone(300, "sine", 0.05, 0.1, 0.1);
       }
-      
-      playFold() { 
-        this.playTone(150, "triangle", 0.3, 0.1); 
+
+      playFold() {
+        this.playTone(150, "triangle", 0.3, 0.1);
       }
-      
+
       playAllIn() {
         if (!this.enabled) return;
         const t = this.ctx.currentTime;
-        this.playTone(100, "sawtooth", 0.4, 0.4, 0); 
+        this.playTone(100, "sawtooth", 0.4, 0.4, 0);
         this.playTone(50, "square", 1.0, 0.5, 0.1);
-        
-        const osc = this.ctx.createOscillator(); 
+
+        const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = "triangle"; 
+        osc.type = "triangle";
         osc.frequency.setValueAtTime(800, t);
         osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
-        
-        gain.gain.setValueAtTime(0.1, t); 
+
+        gain.gain.setValueAtTime(0.1, t);
         gain.gain.linearRampToValueAtTime(0, t + 0.3);
-        
-        osc.connect(gain); 
-        gain.connect(this.ctx.destination); 
-        osc.start(); 
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
         osc.stop(t + 0.3);
       }
-      
-      playRaise() { 
-        this.playTone(1500, "square", 0.08, 0.04); 
-        this.playTone(1000, "square", 0.08, 0.04, 0.05); 
+
+      playRaise() {
+        this.playTone(1500, "square", 0.08, 0.04);
+        this.playTone(1000, "square", 0.08, 0.04, 0.05);
       }
-      
-      playHandEnd() { 
-        this.playTone(440, "sine", 0.2, 0.1); 
+
+      playHandEnd() {
+        this.playTone(440, "sine", 0.2, 0.1);
       }
-      
-      playWin() { 
-        [523, 659, 784, 1046].forEach((f, i) => this.playTone(f, "triangle", 0.4, 0.15, i * 0.15)); 
+
+      playWin() {
+        [523, 659, 784, 1046].forEach((f, i) => this.playTone(f, "triangle", 0.4, 0.15, i * 0.15));
       }
-      
-      playLose() { 
-        this.playTone(100, "sawtooth", 1.0, 0.2); 
-        this.playTone(80, "sawtooth", 1.0, 0.2, 0.3); 
+
+      playLose() {
+        this.playTone(100, "sawtooth", 1.0, 0.2);
+        this.playTone(80, "sawtooth", 1.0, 0.2, 0.3);
       }
     }
 
@@ -2317,40 +2318,40 @@
       constructor() {
         this.communityArea = document.getElementById("community-area");
         this.gameMessage = document.getElementById("game-message");
-        this.isRunning = false; 
+        this.isRunning = false;
         this.checkLoop = null;
       }
-      
-      start() { 
-        if (this.isRunning) return; 
-        this.isRunning = true; 
-        this.checkLoop = setInterval(() => this.check(), 100); 
+
+      start() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.checkLoop = setInterval(() => this.check(), 100);
       }
-      
-      stop() { 
-        this.isRunning = false; 
-        clearInterval(this.checkLoop); 
+
+      stop() {
+        this.isRunning = false;
+        clearInterval(this.checkLoop);
       }
-      
+
       getOverlapRatio(r1, r2) {
         if (!r1 || !r2) return 0;
-        const overlapLeft = Math.max(r1.left, r2.left); 
+        const overlapLeft = Math.max(r1.left, r2.left);
         const overlapRight = Math.min(r1.right, r2.right);
-        const overlapTop = Math.max(r1.top, r2.top); 
+        const overlapTop = Math.max(r1.top, r2.top);
         const overlapBottom = Math.min(r1.bottom, r2.bottom);
-        
+
         if (overlapLeft >= overlapRight || overlapTop >= overlapBottom) return 0;
-        
+
         const overlapArea = (overlapRight - overlapLeft) * (overlapBottom - overlapTop);
-        const area1 = r1.width * r1.height; 
+        const area1 = r1.width * r1.height;
         const area2 = r2.width * r2.height;
         return overlapArea / Math.min(area1, area2);
       }
-      
+
       check() {
         const seats = document.querySelectorAll(".player-seat");
         if (seats.length === 0) return;
-        
+
         const cardTargets = [];
         seats.forEach((seat) => {
           const cardsDiv = seat.querySelector('div[id^="cards-"]');
@@ -2358,122 +2359,122 @@
             cardTargets.push(cardsDiv.getBoundingClientRect());
           }
         });
-        
+
         const commRect = this.communityArea.getBoundingClientRect();
         if (commRect.width > 10 && commRect.height > 10) {
           let commObstructed = false;
-          for (const targetRect of cardTargets) { 
-            if (this.getOverlapRatio(targetRect, commRect) > 0.2) { 
-              commObstructed = true; 
-              break; 
-            } 
+          for (const targetRect of cardTargets) {
+            if (this.getOverlapRatio(targetRect, commRect) > 0.2) {
+              commObstructed = true;
+              break;
+            }
           }
           if (!commObstructed) {
             seats.forEach((seat) => {
               const infoBox = seat.querySelector(".player-info-box");
-              if (infoBox) { 
+              if (infoBox) {
                 if (this.getOverlapRatio(infoBox.getBoundingClientRect(), commRect) > 0.2) {
-                  commObstructed = true; 
+                  commObstructed = true;
                 }
               }
             });
           }
           this.applyTransparency(this.communityArea, commObstructed);
-        } else { 
-          this.applyTransparency(this.communityArea, false); 
+        } else {
+          this.applyTransparency(this.communityArea, false);
         }
-        
+
         if (this.gameMessage && this.gameMessage.style.opacity !== "0") {
-          let msgObstructed = false; 
+          let msgObstructed = false;
           const msgRect = this.gameMessage.getBoundingClientRect();
-          if (commRect.width > 10 && commRect.height > 10) { 
-            if (this.getOverlapRatio(msgRect, commRect) > 0.2) msgObstructed = true; 
+          if (commRect.width > 10 && commRect.height > 10) {
+            if (this.getOverlapRatio(msgRect, commRect) > 0.2) msgObstructed = true;
           }
-          if (!msgObstructed) { 
-            for (const targetRect of cardTargets) { 
-              if (this.getOverlapRatio(msgRect, targetRect) > 0.2) { 
-                msgObstructed = true; 
-                break; 
-              } 
-            } 
+          if (!msgObstructed) {
+            for (const targetRect of cardTargets) {
+              if (this.getOverlapRatio(msgRect, targetRect) > 0.2) {
+                msgObstructed = true;
+                break;
+              }
+            }
           }
           this.applyTransparency(this.gameMessage, msgObstructed);
         }
       }
-      
+
       applyTransparency(el, shouldBeTransparent) {
-        if (shouldBeTransparent) { 
-          if (!el.classList.contains("smart-transparent")) el.classList.add("smart-transparent"); 
-        } else { 
-          if (el.classList.contains("smart-transparent")) el.classList.remove("smart-transparent"); 
+        if (shouldBeTransparent) {
+          if (!el.classList.contains("smart-transparent")) el.classList.add("smart-transparent");
+        } else {
+          if (el.classList.contains("smart-transparent")) el.classList.remove("smart-transparent");
         }
       }
     }
 
     class TableDragSystem {
       constructor() {
-        this.container = document.getElementById("table-area"); 
+        this.container = document.getElementById("table-area");
         this.table = document.getElementById("table");
-        this.isDragging = false; 
-        this.startY = 0; 
-        this.currentY = 30; 
+        this.isDragging = false;
+        this.startY = 0;
+        this.currentY = 30;
         this.initialDragY = 0;
         this.init();
       }
-      
+
       init() {
-        this.container.addEventListener("mousedown", this.onStart.bind(this)); 
-        window.addEventListener("mousemove", this.onMove.bind(this)); 
+        this.container.addEventListener("mousedown", this.onStart.bind(this));
+        window.addEventListener("mousemove", this.onMove.bind(this));
         window.addEventListener("mouseup", this.onEnd.bind(this));
-        
-        this.container.addEventListener("touchstart", this.onStart.bind(this), { passive: false }); 
-        window.addEventListener("touchmove", this.onMove.bind(this), { passive: false }); 
+
+        this.container.addEventListener("touchstart", this.onStart.bind(this), { passive: false });
+        window.addEventListener("touchmove", this.onMove.bind(this), { passive: false });
         window.addEventListener("touchend", this.onEnd.bind(this));
-        
+
         this.updateTransform();
       }
-      
+
       onStart(e) {
         if (e.target.closest("button") || e.target.closest("input")) return;
-        this.isDragging = true; 
-        this.startY = this.getY(e); 
+        this.isDragging = true;
+        this.startY = this.getY(e);
         this.initialDragY = this.currentY;
-        
-        this.table.classList.remove("duration-500"); 
+
+        this.table.classList.remove("duration-500");
         this.table.classList.add("duration-0");
-        this.container.classList.add("cursor-grabbing"); 
+        this.container.classList.add("cursor-grabbing");
         this.container.classList.remove("cursor-grab");
       }
-      
+
       onMove(e) {
-        if (!this.isDragging) return; 
+        if (!this.isDragging) return;
         e.preventDefault();
-        const y = this.getY(e); 
-        const diff = y - this.startY; 
+        const y = this.getY(e);
+        const diff = y - this.startY;
         this.currentY = this.initialDragY + diff;
-        
-        if (this.currentY > 180) this.currentY = 180; 
+
+        if (this.currentY > 180) this.currentY = 180;
         if (this.currentY < -120) this.currentY = -120;
-        
-        this.updateTransform(); 
+
+        this.updateTransform();
         if (window.occlusionManager) window.occlusionManager.check();
       }
-      
+
       onEnd() {
         if (!this.isDragging) return;
-        this.isDragging = false; 
-        this.table.classList.remove("duration-0"); 
+        this.isDragging = false;
+        this.table.classList.remove("duration-0");
         this.table.classList.add("duration-500");
-        this.container.classList.remove("cursor-grabbing"); 
+        this.container.classList.remove("cursor-grabbing");
         this.container.classList.add("cursor-grab");
       }
-      
-      getY(e) { 
-        return e.touches ? e.touches[0].clientY : e.clientY; 
+
+      getY(e) {
+        return e.touches ? e.touches[0].clientY : e.clientY;
       }
-      
-      updateTransform() { 
-        this.table.style.transform = `translateY(${this.currentY}px)`; 
+
+      updateTransform() {
+        this.table.style.transform = `translateY(${this.currentY}px)`;
       }
     }
 
@@ -2482,82 +2483,82 @@
         if (!holeCards || holeCards.length === 0) {
           return { score: 0, name: "hand_high_card", bestCards: [] };
         }
-        
+
         const all = [
-          ...holeCards.map((c) => ({ ...c, isHole: true })), 
+          ...holeCards.map((c) => ({ ...c, isHole: true })),
           ...communityCards.map((c) => ({ ...c, isHole: false }))
         ];
-        
-        all.sort((a, b) => { 
-          if (b.value !== a.value) return b.value - a.value; 
-          return b.isHole - a.isHole; 
+
+        all.sort((a, b) => {
+          if (b.value !== a.value) return b.value - a.value;
+          return b.isHole - a.isHole;
         });
 
         const getKickers = (excludeCards, count) => {
-          const kickers = []; 
+          const kickers = [];
           const excludeIds = new Set(excludeCards.map((c) => c.id));
-          for (const c of all) { 
-            if (!excludeIds.has(c.id)) { 
-              kickers.push(c); 
-              if (kickers.length === count) break; 
-            } 
+          for (const c of all) {
+            if (!excludeIds.has(c.id)) {
+              kickers.push(c);
+              if (kickers.length === count) break;
+            }
           }
           return kickers;
         };
-        
+
         const calcScore = (rankVal, mainCards, kickers) => {
           let s = rankVal * Math.pow(100, 5);
           mainCards.forEach((c, i) => { s += c.value * Math.pow(100, 4 - i); });
           kickers.forEach((c, i) => { s += c.value * Math.pow(100, 4 - mainCards.length - i); });
           return s;
         };
-        
-        const suits = {}; 
-        all.forEach((c) => { 
-          if (!suits[c.suit]) suits[c.suit] = []; 
-          suits[c.suit].push(c); 
+
+        const suits = {};
+        all.forEach((c) => {
+          if (!suits[c.suit]) suits[c.suit] = [];
+          suits[c.suit].push(c);
         });
-        
-        let flushCards = null; 
-        for (let s in suits) { 
-          if (suits[s].length >= 5) { 
-            flushCards = suits[s].slice(0, 5); 
-            break; 
-          } 
+
+        let flushCards = null;
+        for (let s in suits) {
+          if (suits[s].length >= 5) {
+            flushCards = suits[s].slice(0, 5);
+            break;
+          }
         }
 
         const getStraightCards = (cardsToCheck) => {
           const uniqueVals = [...new Set(cardsToCheck.map((c) => c.value))].sort((a, b) => b - a);
-          
+
           // A-5 Straight
           if (uniqueVals.includes(14) && uniqueVals.includes(5) && uniqueVals.includes(4) && uniqueVals.includes(3) && uniqueVals.includes(2)) {
-            const straightVals = [5, 4, 3, 2, 14]; 
-            const best5 = []; 
+            const straightVals = [5, 4, 3, 2, 14];
+            const best5 = [];
             const usedIds = new Set();
-            
-            straightVals.forEach((v) => { 
-              const card = cardsToCheck.find((c) => c.value === v && !usedIds.has(c.id)); 
-              if (card) { 
-                best5.push(card); 
-                usedIds.add(card.id); 
-              } 
+
+            straightVals.forEach((v) => {
+              const card = cardsToCheck.find((c) => c.value === v && !usedIds.has(c.id));
+              if (card) {
+                best5.push(card);
+                usedIds.add(card.id);
+              }
             });
             if (best5.length === 5) return { cards: best5, high: 5 };
           }
-          
+
           // Normal Straight
           for (let i = 0; i <= uniqueVals.length - 5; i++) {
             if (uniqueVals[i] - uniqueVals[i + 4] === 4) {
-              const straightVals = uniqueVals.slice(i, i + 5); 
-              const best5 = []; 
+              const straightVals = uniqueVals.slice(i, i + 5);
+              const best5 = [];
               const usedIds = new Set();
-              
-              straightVals.forEach((v) => { 
-                const card = cardsToCheck.find((c) => c.value === v && !usedIds.has(c.id)); 
-                if (card) { 
-                  best5.push(card); 
-                  usedIds.add(card.id); 
-                } 
+
+              straightVals.forEach((v) => {
+                const card = cardsToCheck.find((c) => c.value === v && !usedIds.has(c.id));
+                if (card) {
+                  best5.push(card);
+                  usedIds.add(card.id);
+                }
               });
               if (best5.length === 5) return { cards: best5, high: uniqueVals[i] };
             }
@@ -2568,110 +2569,111 @@
         if (flushCards) {
           const sf = getStraightCards(flushCards);
           if (sf) {
-            return { 
-              score: calcScore(9, [sf.cards[0]], []), 
-              name: "hand_straight_flush", 
-              bestCards: sf.cards 
+            return {
+              score: calcScore(9, [sf.cards[0]], []),
+              name: "hand_straight_flush",
+              bestCards: sf.cards
             };
           }
         }
-        
-        const counts = {}; 
+
+        const counts = {};
         all.forEach((c) => (counts[c.value] = (counts[c.value] || 0) + 1));
-        
+
         const fours = Object.keys(counts).filter((v) => counts[v] === 4).map(Number).sort((a, b) => b - a);
         const threes = Object.keys(counts).filter((v) => counts[v] === 3).map(Number).sort((a, b) => b - a);
         const pairs = Object.keys(counts).filter((v) => counts[v] === 2).map(Number).sort((a, b) => b - a);
 
         if (fours.length > 0) {
-          const fourVal = fours[0]; 
-          const quadCards = all.filter((c) => c.value === fourVal); 
+          const fourVal = fours[0];
+          const quadCards = all.filter((c) => c.value === fourVal);
           const kicker = getKickers(quadCards, 1);
-          return { 
-            score: calcScore(8, [quadCards[0]], kicker), 
-            name: "hand_four_of_a_kind", 
-            bestCards: [...quadCards, ...kicker] 
+          return {
+            score: calcScore(8, [quadCards[0]], kicker),
+            name: "hand_four_of_a_kind",
+            bestCards: [...quadCards, ...kicker]
           };
         }
-        
+
         if (threes.length > 0 && (threes.length > 1 || pairs.length > 0)) {
-          const threeVal = threes[0]; 
+          const threeVal = threes[0];
           const pairVal = threes.length > 1 ? threes[1] : pairs[0];
-          const threeCards = all.filter((c) => c.value === threeVal).slice(0, 3); 
+          const threeCards = all.filter((c) => c.value === threeVal).slice(0, 3);
           const pairCards = all.filter((c) => c.value === pairVal).slice(0, 2);
-          return { 
-            score: calcScore(7, [threeCards[0], pairCards[0]], []), 
-            name: "hand_full_house", 
-            bestCards: [...threeCards, ...pairCards] 
+          return {
+            score: calcScore(7, [threeCards[0], pairCards[0]], []),
+            name: "hand_full_house",
+            bestCards: [...threeCards, ...pairCards]
           };
         }
-        
+
         if (flushCards) {
-          return { 
-            score: calcScore(6, flushCards, []), 
-            name: "hand_flush", 
-            bestCards: flushCards 
+          return {
+            score: calcScore(6, flushCards, []),
+            name: "hand_flush",
+            bestCards: flushCards
           };
         }
-        
+
         const straight = getStraightCards(all);
         if (straight) {
-          return { 
-            score: calcScore(5, [straight.cards[0]], []), 
-            name: "hand_straight", 
-            bestCards: straight.cards 
+          return {
+            score: calcScore(5, [straight.cards[0]], []),
+            name: "hand_straight",
+            bestCards: straight.cards
           };
         }
-        
+
         if (threes.length > 0) {
-          const threeVal = threes[0]; 
-          const threeCards = all.filter((c) => c.value === threeVal).slice(0, 3); 
+          const threeVal = threes[0];
+          const threeCards = all.filter((c) => c.value === threeVal).slice(0, 3);
           const kickers = getKickers(threeCards, 2);
-          return { 
-            score: calcScore(4, [threeCards[0]], kickers), 
-            name: "hand_three_of_a_kind", 
-            bestCards: [...threeCards, ...kickers] 
+          return {
+            score: calcScore(4, [threeCards[0]], kickers),
+            name: "hand_three_of_a_kind",
+            bestCards: [...threeCards, ...kickers]
           };
         }
-        
+
         if (pairs.length >= 2) {
-          const p1 = pairs[0]; 
+          const p1 = pairs[0];
           const p2 = pairs[1];
-          const pair1Cards = all.filter((c) => c.value === p1).slice(0, 2); 
-          const pair2Cards = all.filter((c) => c.value === p2).slice(0, 2); 
+          const pair1Cards = all.filter((c) => c.value === p1).slice(0, 2);
+          const pair2Cards = all.filter((c) => c.value === p2).slice(0, 2);
           const kicker = getKickers([...pair1Cards, ...pair2Cards], 1);
-          return { 
-            score: calcScore(3, [pair1Cards[0], pair2Cards[0]], kicker), 
-            name: "hand_two_pairs", 
-            bestCards: [...pair1Cards, ...pair2Cards, ...kicker] 
+          return {
+            score: calcScore(3, [pair1Cards[0], pair2Cards[0]], kicker),
+            name: "hand_two_pairs",
+            bestCards: [...pair1Cards, ...pair2Cards, ...kicker]
           };
         }
-        
+
         if (pairs.length === 1) {
-          const p1 = pairs[0]; 
-          const pairCards = all.filter((c) => c.value === p1).slice(0, 2); 
+          const p1 = pairs[0];
+          const pairCards = all.filter((c) => c.value === p1).slice(0, 2);
           const kickers = getKickers(pairCards, 3);
-          return { 
-            score: calcScore(2, [pairCards[0]], kickers), 
-            name: "hand_pair", 
-            bestCards: [...pairCards, ...kickers] 
+          return {
+            score: calcScore(2, [pairCards[0]], kickers),
+            name: "hand_pair",
+            bestCards: [...pairCards, ...kickers]
           };
         }
-        
+
         const highCards = all.slice(0, 5);
-        return { 
-          score: calcScore(1, highCards, []), 
-          name: "hand_high_card", 
-          bestCards: highCards 
+        return {
+          score: calcScore(1, highCards, []),
+          name: "hand_high_card",
+          bestCards: highCards
         };
       }
     }
 
     const gameUI = new GameUIManager();
     const network = new NetworkManager(gameUI);
-    window.network = network; 
+    window.network = network;
     window.gameUI = gameUI;
     network.init();
   </script>
 </body>
+
 </html>
