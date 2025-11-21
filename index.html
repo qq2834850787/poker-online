@@ -90,6 +90,21 @@
       transform: rotateY(180deg);
     }
 
+    /* --- 修复：新卡牌结构的颜色定义 --- */
+    .card-face.red {
+      color: #dc2626;
+    }
+
+    .card-face.black {
+      color: #1f2937;
+    }
+
+    /* --- 修复：确保卡牌内容居中且字体正确 --- */
+    .card-face {
+      font-family: "Inter", sans-serif;
+      /* 继承字体 */
+    }
+
     /* 正面和背面通用样式 */
     .card-face {
       position: absolute;
@@ -2209,32 +2224,37 @@
       // --- 在 GameUIManager 类内部 ---
 
       // 创建支持翻转动画的 3D 卡牌结构
-      createCardEl(c, startFaceDown = false) {
-        // 1. 外层容器 (负责宽度挤压动画)
+      createCardEl(c, startFaceDown = false, animate = false) {
+        // 1. 外层容器
         const wrapper = document.createElement("div");
         wrapper.className = "poker-card-wrapper";
-        wrapper.id = `card-${c.id}`; // 标记ID以便追踪
+        wrapper.id = `card-${c.id}`;
+
+        // *** 关键修复：如果不需要动画（比如手牌），立即让它显示 ***
+        // 否则它初始是 width:0 和 opacity:0 的
+        if (!animate) {
+          wrapper.classList.add("entering");
+        }
 
         // 2. 内部翻转容器
         const inner = document.createElement("div");
         inner.className = "card-inner";
 
-        // 如果不要求背面朝上，默认直接是翻开状态 (flipped)
-        // 如果要求背面朝上 (startFaceDown=true)，则不加 flipped，等后续JS控制
+        // 如果不要求背面朝上，默认直接翻开
         if (!startFaceDown) {
           inner.classList.add("flipped");
         }
 
-        // 3. 牌背 (默认可见)
+        // 3. 牌背
         const backFace = document.createElement("div");
         backFace.className = "card-face back";
 
-        // 4. 牌面 (背面可见，翻转后展示)
+        // 4. 牌面
         const frontFace = document.createElement("div");
+        // *** 修复：确保这里加上 color 类 (c.color) ***
         frontFace.className = `card-face front ${c.color}`;
         frontFace.innerHTML = `<span class="absolute top-0 left-1 text-xs">${c.rank}</span><span class="text-2xl">${c.suit}</span>`;
 
-        // 组装
         inner.appendChild(backFace);
         inner.appendChild(frontFace);
         wrapper.appendChild(inner);
@@ -3462,3 +3482,4 @@
 </body>
 
 </html>
+
