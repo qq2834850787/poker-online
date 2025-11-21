@@ -1619,6 +1619,52 @@
 
         // 6. 更新控制按钮
         this.updateControls(state);
+
+        // *** 修复: 移除了旧的房主控制逻辑 (Section 7) ***
+
+        // 8. All-in 特效 (逻辑已移到本函数开头)
+
+        // 9. 游戏结束处理 (修改版：无全屏遮罩，仅弹窗提示)
+        if (localPlayer) {
+          const isEliminated = localPlayer.status === "淘汰" && localPlayer.chips === 0;
+
+          // 检查是否是冠军 (游戏在 waiting 状态结束)
+          const isChampion =
+            state.status === "waiting" &&
+            state.highlightWinner === localId &&
+            state.logs.length > 0 &&
+            state.logs[state.logs.length - 2].includes("游戏结束");
+
+          // 情况 A: 我是冠军
+          if (isChampion) {
+            // 只在第一次检测到时触发音效和提示
+            if (!this.bankruptcyScreenShown) {
+              this.sound.playWin();
+              this.showMessage("恭喜！你是冠军！游戏即将重置...");
+              this.bankruptcyScreenShown = true; // 防止重复播放
+            }
+          }
+          // 情况 B: 我刚破产 (游戏中)
+          else if (isEliminated && state.status === "playing") {
+            if (!this.bankruptcyScreenShown) {
+              this.sound.playLose();
+              this.showMessage("你已破产，进入观战模式");
+              this.bankruptcyScreenShown = true;
+            }
+          }
+          // 情况 C: 游戏重置了 (回到 waiting)，重置标志位
+          else if (state.status === "waiting" && !isChampion) {
+            this.bankruptcyScreenShown = false;
+          }
+        }
+        // 10. *** 新增: 等待室 UI ***
+        const waitOverlay = document.getElementById("waiting-room-overlay");
+        if (state.status === "waiting") {
+          waitOverlay.classList.remove("hidden");
+          network.updateWaitingRoomUI(state, localId); // *** 修复: 改为调用 network.updateWaitingRoomUI ***
+        } else {
+          waitOverlay.classList.add("hidden");
+        }
       }
 
       // --- 渲染牌桌布局 (根据状态) ---
@@ -1942,21 +1988,6 @@
           }, 1250);
         });
       }
-
-      // --- 创建卡牌元素 ---
-      createCardEl(c) {
-        const d = document.createElement("div");
-        d.className = `card ${c.color}`;
-        if (this.highlightCards.has(c.id)) d.classList.add("winning-card");
-        d.innerHTML = `<span class="absolute top-0 left-1 text-xs">${c.rank}</span><span class="text-2xl">${c.suit}</span>`;
-        return d;
-      }
-      createBackEl() {
-        const d = document.createElement("div");
-        d.className = "card card-back";
-        return d;
-      }
-    }
 
     // --- 网络和 Firebase 交互 ---
     class NetworkManager {
