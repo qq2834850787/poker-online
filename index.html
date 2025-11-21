@@ -275,6 +275,7 @@
           #eab308 45%,
           #a16207 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 5px 3px rgba(0, 0, 0, 0.5));
       text-shadow: 0 0 30px rgba(234, 179, 8, 0.6);
@@ -393,43 +394,52 @@
   <!-- *** 新增: Firebase 加载动画 *** -->
   <div id="firebase-loader" class="firebase-loader">
     <div class="spinner"></div>
-    <p class="text-gray-400 mt-4 text-sm font-medium">连接到游戏服务器...</p>
+    <p id="loader-text" data-t="connecting" class="text-gray-400 mt-4 text-sm font-medium">Connecting...</p>
   </div>
 
   <!-- *** 修改: 启动页改为房间选择页 *** -->
   <div id="room-screen"
-    class="hidden absolute z-50 bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700 w-11/12 max-w-md">
-    <h1 class="text-3xl font-bold text-yellow-500 mb-6 tracking-tight text-center">
-      德州扑克
+    class="hidden absolute z-50 bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700 w-11/12 max-w-md relative">
+
+    <div class="absolute top-4 right-4">
+      <select onchange="changeLanguage(this.value)"
+        class="bg-gray-800 text-gray-300 text-xs border border-gray-600 rounded px-2 py-1 outline-none focus:border-yellow-500">
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+        <option value="jp">日本語</option>
+      </select>
+    </div>
+    <h1 data-t="app_title" class="text-3xl font-bold text-yellow-500 mb-6 tracking-tight text-center">
+      Texas Hold'em
     </h1>
 
-    <!-- *** 修复: 移除了 AI 玩家列表 (它们现在在等待室) *** -->
-
     <div class="mb-4">
-      <label class="block text-gray-400 mb-2 text-sm font-bold" for="player-name-input">你的昵称</label>
-      <input type="text" id="player-name-input"
+      <label data-t="nickname_label" class="block text-gray-400 mb-2 text-sm font-bold"
+        for="player-name-input">Nickname</label>
+      <input data-t="nickname_placeholder" type="text" id="player-name-input"
         class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-        placeholder="例如: 赌神" />
+        placeholder="e.g. 007" />
     </div>
     <div class="mb-6">
-      <label class="block text-gray-400 mb-2 text-sm font-bold" for="room-id-input">房间 ID</label>
-      <input type="text" id="room-id-input"
+      <label data-t="room_id_label" class="block text-gray-400 mb-2 text-sm font-bold" for="room-id-input">Room
+        ID</label>
+      <input data-t="room_id_placeholder" type="text" id="room-id-input"
         class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-        placeholder="输入房间ID (例如: 888)" />
+        placeholder="e.g. 888" />
     </div>
     <div class="flex space-x-4 mb-4">
-      <button onclick="network.joinRoom()" id="btn-join-room"
+      <button data-t="btn_join" onclick="network.joinRoom()" id="btn-join-room"
         class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
-        加入房间
+        Join
       </button>
-      <button onclick="network.createRoom()" id="btn-create-room"
+      <button data-t="btn_create" onclick="network.createRoom()" id="btn-create-room"
         class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 shadow-lg border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1">
-        创建房间
+        Create
       </button>
     </div>
     <p id="room-error" class="text-red-400 text-sm h-5"></p>
     <p class="text-gray-500 text-xs mt-4">
-      你的 User ID: <span id="user-id-display">...</span>
+      User ID: <span id="user-id-display">...</span>
     </p>
   </div>
 
@@ -440,28 +450,27 @@
       class="h-16 bg-gray-900 w-full flex items-center justify-between px-6 shadow-lg z-10 border-b border-gray-800 relative z-50">
       <div class="flex items-center space-x-2">
         <div class="text-yellow-500 font-black text-2xl tracking-tight">
-          底池: $<span id="pot-display">0</span>
+          <span data-t="pot">Pot</span>: $<span id="pot-display">0</span>
         </div>
       </div>
 
       <div class="flex items-center space-x-4">
 
         <div class="flex flex-col items-center mr-1 bg-gray-800 px-2 py-1 rounded border border-gray-700">
-          <span class="text-gray-500 text-[10px] font-bold leading-none mb-1">房间号</span>
-          <span id="display-room-id" class="text-yellow-500 font-mono font-bold text-sm leading-none">---</span>
+          <span data-t="room_no" class="text-gray-500 text-[10px] font-bold leading-none mb-1">Room</span>
+          <span id="display-room-id" class="...">---</span>
         </div>
         <div class="text-right hidden sm:block">
           <div id="blinds-display" class="text-gray-400 text-xs font-bold tracking-wider">
-            盲注 $10/$20
+            Blinds $10/$20
           </div>
           <div class="text-gray-600 text-[10px]">
-            在线玩家: <span id="active-players-count">0</span>
+            <span data-t="online">Players</span>: <span id="active-players-count">0</span>
           </div>
         </div>
 
-        <button id="btn-leave-room" onclick="network.leaveRoom()"
-          class="bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg text-xs shadow-md">
-          退出房间
+        <button data-t="btn_leave" id="btn-leave-room" onclick="network.leaveRoom()" ...>
+          Leave
         </button>
       </div>
     </div>
@@ -497,8 +506,12 @@
       </div>
       <div id="player-controls"
         class="flex flex-col items-center opacity-50 pointer-events-none transition-all duration-300 transform translate-y-2">
+
         <div id="raise-slider-container" class="w-full max-w-md mb-4 flex items-center space-x-2 px-2">
-          <span class="text-xs text-gray-500 font-bold tracking-wider w-8 text-center">加注</span>
+
+          <span data-t="status_raise"
+            class="text-xs text-gray-500 font-bold tracking-wider w-8 text-center">Raise</span>
+
           <button onclick="gameUI.adjustRaise(-1)"
             class="adjust-btn w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full text-yellow-500 font-bold flex items-center justify-center shadow border border-gray-700">
             -
@@ -511,28 +524,33 @@
           </button>
           <span id="raise-val-display" class="text-sm text-yellow-400 w-14 text-right font-mono font-bold">$0</span>
         </div>
+
         <div class="flex justify-center space-x-3 w-full max-w-lg">
-          <!-- *** 修改: onclick 事件 *** -->
-          <button onclick="network.handleHumanAction('fold')"
+
+          <button data-t="btn_fold" onclick="network.handleHumanAction('fold')"
             class="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-gray-900 active:border-b-0 active:translate-y-1">
-            弃牌
+            Fold
           </button>
-          <button onclick="network.handleHumanAction('check')" id="btn-check"
+
+          <button data-t="btn_check" onclick="network.handleHumanAction('check')" id="btn-check"
             class="flex-1 bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-blue-900 active:border-b-0 active:translate-y-1">
-            过牌
+            Check
           </button>
-          <button onclick="network.handleHumanAction('call')" id="btn-call"
+
+          <button data-t="btn_call" onclick="network.handleHumanAction('call')" id="btn-call"
             class="flex-1 bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-blue-900 active:border-b-0 active:translate-y-1 hidden">
-            跟注
+            Call
           </button>
-          <button onclick="network.handleHumanAction('raise')" id="btn-raise"
+
+          <button data-t="btn_raise" onclick="network.handleHumanAction('raise')" id="btn-raise"
             class="flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-md shadow-md text-sm border-b-4 border-yellow-800 active:border-b-0 active:translate-y-1">
-            加注
+            Raise
           </button>
         </div>
       </div>
+
       <div class="text-center mt-2 text-gray-700 text-[10px] font-mono tracking-wider">
-        阶段: <span id="phase-display" class="text-gray-500">等待中</span>
+        <span id="phase-display" class="text-gray-500">Waiting</span>
       </div>
     </div>
 
@@ -605,6 +623,283 @@
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     window.firestoreUpdateDoc = updateDoc;
+
+    // 默认语言
+    let currentLang = localStorage.getItem('poker_lang') || 'en';
+
+    const TRANSLATIONS = {
+      en: {
+        // UI
+        app_title: "Texas Hold'em",
+        nickname_label: "Nickname",
+        nickname_placeholder: "e.g. 007",
+        room_id_label: "Room ID",
+        room_id_placeholder: "e.g. 888",
+        btn_join: "Join Room",
+        btn_create: "Create Room",
+        room_error_len: "Nickname must be 2-10 chars",
+        room_error_id: "Room ID cannot be empty",
+        room_error_exist: "Room exists & playing",
+        room_error_dead: "Room dead, cleaning up...",
+        room_full: "Room is full",
+        joined_room: "joined the room.",
+        left_room: "left the room.",
+        connecting: "Connecting to server...",
+
+        // Game UI
+        pot: "Pot",
+        blinds: "Blinds",
+        room_no: "Room",
+        online: "Players",
+        btn_leave: "Leave",
+        btn_fold: "Fold",
+        btn_check: "Check",
+        btn_call: "Call",
+        btn_raise: "Raise",
+        btn_allin: "All-in",
+
+        // Status & Phases
+        waiting: "Waiting",
+        preflop: "Preflop",
+        flop: "Flop",
+        turn: "Turn",
+        river: "River",
+        showdown: "Showdown",
+
+        // Player Status
+        status_fold: "Fold",
+        status_check: "Check",
+        status_call: "Call",
+        status_raise: "Raise",
+        status_allin: "All-in",
+        status_sb: "Small Blind",
+        status_bb: "Big Blind",
+        status_out: "Out",
+        default_player: "Player",
+        status_thinking: "Thinking",
+
+        // Hands
+        hand_high: "High Card",
+        hand_pair: "One Pair",
+        hand_two_pair: "Two Pairs",
+        hand_trips: "Three of a Kind",
+        hand_straight: "Straight",
+        hand_flush: "Flush",
+        hand_fullhouse: "Full House",
+        hand_quads: "Four of a Kind",
+        hand_sf: "Straight Flush",
+        hand_royal: "Royal Flush",
+
+        // Logs & Messages
+        log_welcome: "System: Welcome to Texas Hold'em.",
+        log_fold: "folded",
+        log_check: "checked",
+        log_call: "called",
+        log_raise: "raised to",
+        log_allin: "goes All-in",
+        log_win: "wins",
+        log_refund: "Refund",
+        log_no_one: "No one",
+        log_game_over: "Game Over!",
+        log_reset: "Room reset, waiting for host...",
+        log_new_round: "--- New Round ---",
+
+        // Host Controls
+        host_start: "Start Game",
+        host_waiting: "Waiting for Players",
+        setting_chips: "Stack",
+        setting_bb: "Big Blind",
+        error_blind_even: "Must be even > 1",
+        error_chips_max: "Must be > Big Blind"
+      },
+      zh: {
+        app_title: "德州扑克",
+        nickname_label: "你的昵称",
+        nickname_placeholder: "例如: 赌神",
+        room_id_label: "房间 ID",
+        room_id_placeholder: "例如: 888",
+        btn_join: "加入房间",
+        btn_create: "创建房间",
+        room_error_len: "昵称必须在 2-10 个字符之间",
+        room_error_id: "房间 ID 不能为空",
+        room_error_exist: "房间已存在且正在游戏中",
+        room_error_dead: "僵尸房间，正在清理...",
+        room_full: "房间已满",
+        joined_room: "加入了房间。",
+        left_room: "离开了房间。",
+        connecting: "连接到游戏服务器...",
+
+        pot: "底池",
+        blinds: "盲注",
+        room_no: "房间号",
+        online: "在线",
+        btn_leave: "退出",
+        btn_fold: "弃牌",
+        btn_check: "过牌",
+        btn_call: "跟注",
+        btn_raise: "加注",
+        btn_allin: "全押",
+
+        waiting: "等待中",
+        preflop: "翻牌前",
+        flop: "翻牌",
+        turn: "转牌",
+        river: "河牌",
+        showdown: "摊牌",
+
+        status_fold: "弃牌",
+        status_check: "过牌",
+        status_call: "跟注",
+        status_raise: "加注",
+        status_allin: "全押",
+        status_sb: "小盲",
+        status_bb: "大盲",
+        status_out: "淘汰",
+        default_player: "玩家",
+        status_thinking: "思考中",
+
+        hand_high: "高牌",
+        hand_pair: "一对",
+        hand_two_pair: "两对",
+        hand_trips: "三条",
+        hand_straight: "顺子",
+        hand_flush: "同花",
+        hand_fullhouse: "葫芦",
+        hand_quads: "四条",
+        hand_sf: "同花顺",
+        hand_royal: "皇家同花顺",
+
+        log_welcome: "系统: 欢迎游玩德州扑克。",
+        log_fold: "弃牌",
+        log_check: "过牌",
+        log_call: "跟注",
+        log_raise: "加注至",
+        log_allin: "全押",
+        log_win: "获胜",
+        log_refund: "退还",
+        log_no_one: "无人",
+        log_game_over: "游戏结束!",
+        log_reset: "房间已重置，等待房主...",
+        log_new_round: "--- 新回合开始 ---",
+
+        host_start: "开始游戏",
+        host_waiting: "等待玩家",
+        setting_chips: "初始筹码",
+        setting_bb: "大盲注",
+        error_blind_even: "必须是大于1的偶数",
+        error_chips_max: "必须大于大盲注"
+      },
+      jp: {
+        app_title: "テキサスホールデム",
+        nickname_label: "ニックネーム",
+        nickname_placeholder: "例: ポーカー好き",
+        room_id_label: "ルームID",
+        room_id_placeholder: "例: 777",
+        btn_join: "参加",
+        btn_create: "作成",
+        room_error_len: "名前は2〜10文字で入力してください",
+        room_error_id: "ルームIDを入力してください",
+        room_error_exist: "ルームは既にゲーム中です",
+        room_error_dead: "無効なルームを削除中...",
+        room_full: "満員です",
+        joined_room: "が入室しました。",
+        left_room: "が退室しました。",
+        connecting: "サーバーに接続中...",
+
+        pot: "ポット",
+        blinds: "ブラインド",
+        room_no: "ルーム",
+        online: "人数",
+        btn_leave: "退出",
+        btn_fold: "フォールド",
+        btn_check: "チェック",
+        btn_call: "コール",
+        btn_raise: "レイズ",
+        btn_allin: "オールイン",
+
+        waiting: "待機中",
+        preflop: "プリフロップ",
+        flop: "フロップ",
+        turn: "ターン",
+        river: "リバー",
+        showdown: "ショーダウン",
+
+        status_fold: "フォールド",
+        status_check: "チェック",
+        status_call: "コール",
+        status_raise: "レイズ",
+        status_allin: "オールイン",
+        status_sb: "SB",
+        status_bb: "BB",
+        status_out: "脱落",
+        default_player: "プレイヤー",
+        status_thinking: "考慮中",
+
+        hand_high: "ハイカード",
+        hand_pair: "ワンペア",
+        hand_two_pair: "ツーペア",
+        hand_trips: "スリーカード",
+        hand_straight: "ストレート",
+        hand_flush: "フラッシュ",
+        hand_fullhouse: "フルハウス",
+        hand_quads: "フォーカード",
+        hand_sf: "ストレートフラッシュ",
+        hand_royal: "ロイヤルストレートフラッシュ",
+
+        log_welcome: "システム: テキサスホールデムへようこそ。",
+        log_fold: "フォールド",
+        log_check: "チェック",
+        log_call: "コール",
+        log_raise: "レイズ",
+        log_allin: "オールイン",
+        log_win: "勝利",
+        log_refund: "返金",
+        log_no_one: "勝者なし",
+        log_game_over: "ゲーム終了！",
+        log_reset: "リセットされました。ホスト待ち...",
+        log_new_round: "--- 新しいラウンド ---",
+
+        host_start: "ゲーム開始",
+        host_waiting: "待機中",
+        setting_chips: "持ち点",
+        setting_bb: "BB額",
+        error_blind_even: "1より大きい偶数のみ",
+        error_chips_max: "BBより大きくしてください"
+      }
+    };
+
+    // 翻译辅助函数
+    function t(key) {
+      return TRANSLATIONS[currentLang][key] || key;
+    }
+
+    // 切换语言并刷新页面文字
+    window.changeLanguage = (lang) => {
+      currentLang = lang;
+      localStorage.setItem('poker_lang', lang);
+      updateStaticText();
+      // 如果游戏UI已初始化，更新它
+      if (window.gameUI && window.gameUI.lastState) {
+        window.gameUI.renderGameState(window.gameUI.lastState, window.network.localUserId);
+      }
+    };
+
+    // 更新静态 HTML 文本
+    function updateStaticText() {
+      document.querySelectorAll('[data-t]').forEach(el => {
+        const key = el.getAttribute('data-t');
+        if (key) {
+          // 针对 input placeholder 的特殊处理
+          if (el.tagName === 'INPUT') {
+            el.placeholder = t(key);
+          } else {
+            el.innerText = t(key);
+          }
+        }
+      });
+      // 更新标题
+      document.title = t('app_title');
+    }
 
     // --- 游戏常量和工具函数 ---
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -724,8 +1019,8 @@
       // 3. 处理玩家动作
       if (action === "fold") {
         player.folded = true;
-        player.status = "弃牌";
-        logMsg = `${player.name} 弃牌`;
+        player.status = "Fold";
+        logMsg = `${player.name} folded`;
         // *** 移除: sound.playFold() (请求 #1) ***
       } else if (action === "check") {
         // 只有在 diff 为 0 时才能 check
@@ -733,8 +1028,8 @@
           console.warn(`非法操作: ${player.name} 试图在需要跟注时过牌`);
           return currentState; // 非法操作，返回原状态
         }
-        player.status = "过牌";
-        logMsg = `${player.name} 过牌`;
+        player.status = "Check";
+        logMsg = `${player.name} checked`;
         // *** 移除: sound.playCheck() (请求 #1) ***
       } else if (action === "call") {
         let callAmount = Math.min(diff, player.chips);
@@ -744,8 +1039,8 @@
         player.currentBet += callAmount;
         newState.pot += callAmount;
 
-        player.status = isAllIn ? "全押" : "跟注";
-        logMsg = `${player.name} ${isAllIn ? "全押" : "跟注"} $${callAmount}`;
+        player.status = isAllIn ? "All-in" : "Call";
+        logMsg = `${player.name} ${isAllIn ? "All-in" : "called"} $${callAmount}`;
         if (isAllIn) {
           triggerAllInEffect = true;
           actionContext = "all_in";
@@ -808,9 +1103,8 @@
         newState.currentMaxBet = actualAmount;
         newState.playersActed.length = 0; // 重置已行动玩家
 
-        player.status = isAllIn ? "全押" : "加注";
-        logMsg = `${player.name} ${isAllIn ? "全押" : "加注"
-          } $${raiseAmount}`;
+        player.status = isAllIn ? "All-in" : "Raise";
+        logMsg = `${player.name} ${isAllIn ? "All-in" : "raised to"} $${actualAmount}`;
 
         if (!isAllIn) {
           // *** 移除: sound.playRaise() (请求 #1) ***
@@ -946,17 +1240,17 @@
           newState.deck.pop(),
           newState.deck.pop()
         );
-        newState.logs.push("--- 翻牌 ---"); // *** 修复: 移除 "圈" ***
+        newState.logs.push("--- Flop ---"); // *** 修复: 移除 "圈" ***
         // *** 移除: sound.playCard() (请求 #1) ***
       } else if (newState.phase === "flop") {
         newState.phase = "turn";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 转牌 ---"); // *** 修复: 移除 "圈" ***
+        newState.logs.push("--- Turn ---"); // *** 修复: 移除 "圈" ***
         // *** 移除: sound.playCard() (请求 #1) ***
       } else if (newState.phase === "turn") {
         newState.phase = "river";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 河牌 ---"); // *** 修复: 移除 "圈" ***
+        newState.logs.push("--- River ---"); // *** 修复: 移除 "圈" ***
         // *** 移除: sound.playCard() (请求 #1) ***
       } else if (newState.phase === "river") {
         // 进入摊牌
@@ -1007,19 +1301,19 @@
           newState.deck.pop(),
           newState.deck.pop()
         );
-        newState.logs.push("--- 翻牌 ---");
+        newState.logs.push("--- Flop ---");
         // *** 移除: sound.playCard() (请求 #1) ***
         newState.nextPhaseTimer = 1500; // 设置1.5秒计时器
       } else if (newState.phase === "flop") {
         newState.phase = "turn";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 转牌 ---");
+        newState.logs.push("--- Turn ---");
         // *** 移除: sound.playCard() (请求 #1) ***
         newState.nextPhaseTimer = 1500; // 设置1.5秒计时器
       } else if (newState.phase === "turn") {
         newState.phase = "river";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- 河牌 ---");
+        newState.logs.push("--- River ---");
         // *** 移除: sound.playCard() (请求 #1) ***
         newState.nextPhaseTimer = 1500; // 设置1.5秒计时器
       } else if (newState.phase === "river") {
@@ -1057,7 +1351,7 @@
         newState.pot -= refund;
 
         newState.logs.push(
-          `退还 $${refund} 给 ${playerToRefund.name} (无人跟注)`
+          `Refund $${refund} to ${playerToRefund.name} (Unmatched)`
         );
       }
       return newState;
@@ -1087,9 +1381,7 @@
         });
 
         winnerPlayer.chips += newState.pot;
-        newState.logs.push(
-          `--- ${winnerPlayer.name} 获胜, 赢得 $${newState.pot} ---`
-        );
+        newState.logs.push(`--- ${winnerPlayer.name} wins $${newState.pot} ---`);
         newState.highlightWinner = winnerPlayer.uid; // 标记赢家高亮
       }
       // 4. 情况B: 多人摊牌 (*** 升级: 完整的边池计算逻辑 ***)
@@ -1113,7 +1405,7 @@
         const activePlayers = allPlayers.filter((p) => !p.folded);
 
         if (activePlayers.length === 0) {
-          newState.logs.push("--- 无人获胜？回合结束 ---");
+          newState.logs.push("--- No winner? Round End ---");
         } else {
           // 4a. 计算每个人的最佳手牌
           activePlayers.forEach((p) => {
@@ -1179,11 +1471,9 @@
               let remainder = potAmount % winners.length;
 
               // 5. 正确命名 "主池" 和 "边池"
-              const potName = index === 0 ? "主池" : `边池${index}`;
+              const potName = index === 0 ? "Main Pot" : `Side Pot ${index}`;
               let winnerNames = winners.map((w) => w.name).join(", ");
-              winnerLogs.push(
-                `${potName}($${potAmount}): ${winnerNames} 获胜 (${winHandName})`
-              );
+              winnerLogs.push(`${potName}($${potAmount}): ${winnerNames} wins (${winHandName})`);
 
               winners.forEach((w, idx) => {
                 let winnings = winPer;
@@ -1213,7 +1503,7 @@
 
           // 将 Set 转换为数组以便
           newState.highlightCards = Array.from(newState.highlightCards);
-          newState.logs.push("--- 摊牌结果 ---", ...winnerLogs);
+          newState.logs.push("--- Showdown ---", ...winnerLogs);
         }
       }
       // (*** 结束修改 ***)
@@ -1249,7 +1539,7 @@
           activePlayerIds.push(uid);
         } else {
           newState.players[uid].folded = true; // 标记为旁观
-          newState.players[uid].status = "淘汰";
+          newState.players[uid].status = "Out";
         }
       });
 
@@ -1259,8 +1549,8 @@
         const winnerName = winnerId ? newState.players[winnerId].name : "无人";
 
         let newLogs = [...newState.logs];
-        newLogs.push(`--- 游戏结束! ${winnerName} 获胜! ---`);
-        newLogs.push("--- 房间已重置, 等待房主重新开始 ---");
+        newLogs.push(`--- Game Over! ${winnerName} wins! ---`);
+        newLogs.push("--- Room reset, waiting for host ---");
         if (newLogs.length > 20) newLogs = newLogs.slice(newLogs.length - 20);
 
         // *** 修改 2: 游戏结束后，重置筹码为配置的初始值 ***
@@ -1275,7 +1565,7 @@
               folded: false,
               currentBet: 0,
               accumulatedBet: 0,
-              status: "等待中",
+              status: "Waiting",
               bestHand: null,
             };
           }
@@ -1371,7 +1661,7 @@
       sbPlayer.chips -= sbAmount;
       sbPlayer.currentBet = sbAmount;
       // 如果扣完钱筹码为0，状态必须是 "全押"，否则是 "小盲"
-      sbPlayer.status = sbPlayer.chips === 0 ? "全押" : "小盲";
+      sbPlayer.status = sbPlayer.chips === 0 ? "All-in" : "Small Blind";
       // --- 修改结束 ---
 
       // --- 修改开始: 大盲注全押检测 ---
@@ -1380,7 +1670,7 @@
       bbPlayer.chips -= bbAmount;
       bbPlayer.currentBet = bbAmount;
       // 如果扣完钱筹码为0，状态必须是 "全押"，否则是 "大盲"
-      bbPlayer.status = bbPlayer.chips === 0 ? "全押" : "大盲";
+      bbPlayer.status = bbPlayer.chips === 0 ? "All-in" : "Big Blind";
       // --- 修改结束 ---
 
       newState.pot = sbAmount + bbAmount;
@@ -1423,7 +1713,7 @@
       // 2. 拥有筹码的人数 <= 1 (意味着其他人全押了，或者所有人全押了)
       // 这种情况在单挑时: A(5, All-in), B(10) -> B有筹码, A无 -> count=1 -> 触发
       if (activePlayersInGame.length >= 2 && playersWithChips.length <= 1) {
-        newState.logs.push("--- 盲注导致全押，自动进入摊牌 ---");
+        newState.logs.push("--- Blind All-in, Auto Showdown ---");
 
         // 关键: 直接调用自动摊牌函数
         // runAutoShowdown 会自动:
@@ -1434,7 +1724,7 @@
       }
       // *** 新增结束 ***
 
-      newState.logs.push("--- 新回合开始 ---");
+      newState.logs.push("--- New Round ---");
       return newState;
     }
 
@@ -1463,7 +1753,7 @@
 
             valDisplay.innerText = `$${raiseVal}`;
             btnRaise.innerText =
-              raiseVal === maxVal ? "全押" : `加注 $${raiseVal}`;
+              raiseVal === maxVal ? t('btn_allin') : `${t('btn_raise')} $${raiseVal}`;
           }
         };
       }
@@ -1560,13 +1850,13 @@
 
         // 1. 更新顶部信息
         document.getElementById("pot-display").innerText = state.pot;
-        document.getElementById("phase-display").innerText =
-          PHASE_NAME_MAP[state.phase] || "未知";
+        const phaseKey = state.phase.toLowerCase();
+        document.getElementById("phase-display").innerText = t(phaseKey);
 
         if (state.config) {
           const blindsEl = document.getElementById("blinds-display");
           if (blindsEl) {
-            blindsEl.innerText = `盲注 $${state.config.smallBlind}/$${state.config.bigBlind}`;
+            blindsEl.innerText = `${t('blinds')} $${state.config.smallBlind}/$${state.config.bigBlind}`;
           }
         }
 
@@ -1612,7 +1902,15 @@
         // 4. 更新日志
         const logDiv = document.getElementById("game-log");
         logDiv.innerHTML = state.logs
-          .map((msg) => `<div>> ${msg}</div>`)
+          .map((msg) => {
+            // 简单的本地化尝试 (可选)
+            let displayMsg = msg;
+            if (msg.includes("joined")) displayMsg = msg.replace("joined the room.", t('joined_room'));
+            if (msg.includes("left")) displayMsg = msg.replace("left the room.", t('left_room'));
+            if (msg.includes("folded")) displayMsg = msg.replace("folded", t('log_fold'));
+            // ... 更多简单的字符串替换 ...
+            return `<div>> ${displayMsg}</div>`;
+          })
           .join("");
         logDiv.scrollTop = logDiv.scrollHeight;
 
@@ -1625,35 +1923,43 @@
 
         // 8. All-in 特效 (逻辑已移到本函数开头)
 
-        // 9. 游戏结束处理 (修改版：无全屏遮罩，仅弹窗提示)
+        // 9. 游戏结束处理 (i18n 适配版)
         if (localPlayer) {
-          const isEliminated = localPlayer.status === "淘汰" && localPlayer.chips === 0;
+          // *** 关键修改 A: 状态判定改为英文 "Out" ***
+          // 因为在之前的步骤中，我们把 player.status 统一设为了英文 "Out"
+          const isEliminated = localPlayer.status === "Out" && localPlayer.chips === 0;
 
-          // 检查是否是冠军 (游戏在 waiting 状态结束)
+          // *** 关键修改 B: 日志判定改为英文 "Game Over" ***
+          // 检查倒数两条日志中是否包含 "Game Over" (对应之前的 log_game_over)
+          const lastLogs = state.logs.slice(-3); // 取最后3条防止遗漏
+          const gameEnded = lastLogs.some(log => log.includes("Game Over"));
+
+          // 检查冠军条件
           const isChampion =
-            state.status === "waiting" &&
-            state.highlightWinner === localId &&
-            state.logs.length > 0 &&
-            state.logs[state.logs.length - 2].includes("游戏结束");
+            state.status === "waiting" && // 游戏回到了等待大厅
+            state.highlightWinner === localId && // 赢家是我
+            gameEnded; // 日志里有结束标记
 
           // 情况 A: 我是冠军
           if (isChampion) {
             // 只在第一次检测到时触发音效和提示
             if (!this.bankruptcyScreenShown) {
               this.sound.playWin();
-              this.showMessage("恭喜！你是冠军！游戏即将重置...");
+              // *** 关键修改 C: 使用 t() 获取翻译文本 ***
+              this.showMessage(t('msg_champion'));
               this.bankruptcyScreenShown = true; // 防止重复播放
             }
           }
-          // 情况 B: 我刚破产 (游戏中)
+          // 情况 B: 我刚破产 (游戏仍在进行中)
           else if (isEliminated && state.status === "playing") {
             if (!this.bankruptcyScreenShown) {
               this.sound.playLose();
-              this.showMessage("你已破产，进入观战模式");
+              // *** 关键修改 C: 使用 t() 获取翻译文本 ***
+              this.showMessage(t('msg_bankrupt'));
               this.bankruptcyScreenShown = true;
             }
           }
-          // 情况 C: 游戏重置了 (回到 waiting)，重置标志位
+          // 情况 C: 游戏重置了 (回到 waiting 且我不是冠军)，重置标志位
           else if (state.status === "waiting" && !isChampion) {
             this.bankruptcyScreenShown = false;
           }
@@ -1767,8 +2073,8 @@
                             <div id="status-${p.uid
             }" class="text-gray-400 text-[10px] h-4 truncate font-bold uppercase mt-1">
                                 ${p.currentBet > 0
-              ? `下注 $${p.currentBet}`
-              : p.status || ""
+              ? `$${p.currentBet}`
+              : t('status_' + p.status.toLowerCase().replace(/\s/g, '_')) || p.status
             }
                             </div>
                         </div>`;
@@ -1820,12 +2126,12 @@
 
             if (currentTurnPlayerId === this.localPlayerId) {
               // 如果变成了我 -> 提示“你的回合”
-              this.showMessage("你的回合");
+              this.showMessage(t('your_turn') || "Your Turn");
               // 可以在这里加音效: this.sound.playTone(440, "sine", 0.1);
             } else {
               // 如果变成了别人 -> 提示“某某 思考中”
-              const name = currentTurnPlayer ? currentTurnPlayer.name : "玩家";
-              this.showMessage(`${name} 思考中`);
+              const name = currentTurnPlayer ? currentTurnPlayer.name : t('default_player');
+              this.showMessage(`${name} ${t('status_thinking')}`);
             }
           }
         } else {
@@ -1862,8 +2168,8 @@
         } else {
           btnCheck.classList.add("hidden");
           btnCall.classList.remove("hidden");
-          if (localPlayer.chips <= diff) btnCall.innerText = "全押";
-          else btnCall.innerText = `跟注 $${diff}`;
+          if (localPlayer.chips <= diff) btnCall.innerText = t('btn_allin');
+          else btnCall.innerText = `${t('btn_call')} $${diff}`;
         }
 
         // 加注滑块逻辑
@@ -1876,7 +2182,7 @@
           document.getElementById("raise-slider-container").classList.add("hidden");
         } else if (maxPossibleActionRaise < minPossibleActionRaise) {
           btnRaise.classList.remove("hidden");
-          btnRaise.innerText = "全押";
+          btnRaise.innerText = t('btn_allin');
           document.getElementById("raise-slider-container").classList.remove("hidden");
           slider.min = maxPossibleActionRaise;
           slider.max = maxPossibleActionRaise;
@@ -1897,8 +2203,8 @@
           const updateBtnText = () => {
             const raiseVal = parseInt(slider.value);
             valDisplay.innerText = `$${raiseVal}`;
-            if (raiseVal === maxPossibleActionRaise) btnRaise.innerText = "全押";
-            else btnRaise.innerText = `加注 $${raiseVal}`;
+            if (raiseVal === maxPossibleActionRaise) btnRaise.innerText = t('btn_allin');
+            else btnRaise.innerText = `${t('btn_raise')} $${raiseVal}`;
           };
           updateBtnText();
         }
@@ -2076,7 +2382,7 @@
             if (btnContainer) {
               btnContainer.innerHTML = `
                   <button disabled class="bg-gray-500 text-gray-300 font-black text-2xl py-4 px-12 rounded-full shadow-none border-b-4 border-gray-700 cursor-not-allowed opacity-50">
-                    等待玩家 (${playerCount}/10)
+                    ${t('host_waiting')} (${playerCount}/10)
                   </button>
                 `;
             }
@@ -2088,7 +2394,7 @@
                     id="btn-start-game"
                     onclick="network.startGame()" 
                     class="bg-red-600 hover:bg-red-500 text-white font-black text-2xl py-4 px-12 rounded-full shadow-xl border-b-4 border-red-800 active:border-b-0 active:translate-y-1 transition-all">
-                    开始游戏 (${playerCount}/10)
+                    ${t('host_start')} (${playerCount}/10)
                   </button>
                 `;
             }
@@ -2104,7 +2410,7 @@
           const waitMessage = document.getElementById("wait-message");
           if (waitMessage) {
             waitMessage.classList.remove("hidden");
-            waitMessage.innerText = `等待 ${hostName} 开始游戏...`;
+            waitMessage.innerText = `${t('waiting')} ${hostName} ...`;
           }
         }
       }
@@ -2191,12 +2497,12 @@
             folded: false,
             currentBet: 0,
             accumulatedBet: 0,
-            status: "等待中",
+            status: "Waiting",
           };
 
           // 创建新房间状态
           const initialState = {
-            status: "waiting",
+            status: "Waiting",
             hostId: this.localUserId,
             lastActive: Date.now(), // *** 新增: 初始心跳时间 ***
             config: {
@@ -2216,7 +2522,7 @@
             phase: "waiting",
             lastRaiseAmount: 20,
             deck: [],
-            logs: [`${localPlayerName} 创建了房间.`],
+            logs: [`${localPlayerName} created the room.`],
             highlightWinner: null,
             highlightCards: [],
             nextRoundTimer: 0,
@@ -2290,12 +2596,12 @@
               folded: false,
               currentBet: 0,
               accumulatedBet: 0,
-              status: "等待中",
+              status: "Waiting",
             };
 
             state.players[this.localUserId] = newPlayer;
             state.playerOrder.push(this.localUserId);
-            state.logs.push(`${localPlayerName} 加入了房间.`);
+            state.logs.push(`${localPlayerName} joined the room.`);
 
             transaction.set(roomRef, state);
           });
@@ -2344,7 +2650,7 @@
                 state.playerOrder = state.playerOrder.filter(
                   (uid) => uid !== userId
                 );
-                state.logs.push(`${playerName} 离开了房间.`);
+                state.logs.push(`${playerName} left the room.`);
               }
 
               // 2. 检查是否需要删除房间
@@ -2388,7 +2694,7 @@
                 // 移交房主给下一个人
                 state.hostId = state.playerOrder[0];
                 state.logs.push(
-                  `房主移交给 ${state.players[state.hostId].name}.`
+                  `Host passed to ${state.players[state.hostId].name}.`
                 );
               }
 
@@ -3120,7 +3426,7 @@
           if (sf)
             return {
               score: calcScore(9, [sf.cards[0]], []),
-              name: "同花顺",
+              name: "hand_sf",
               bestCards: sf.cards,
             };
         }
@@ -3146,7 +3452,7 @@
           const kicker = getKickers(quadCards, 1); // getKickers 保持了 'isHole' 排序
           return {
             score: calcScore(8, [quadCards[0]], kicker),
-            name: "四条",
+            name: "hand_quads",
             bestCards: [...quadCards, ...kicker],
           };
         }
@@ -3163,7 +3469,7 @@
             .slice(0, 2); // .filter().slice() 保持了 'isHole' 排序
           return {
             score: calcScore(7, [threeCards[0], pairCards[0]], []),
-            name: "葫芦",
+            name: "hand_fullhouse",
             bestCards: [...threeCards, ...pairCards],
           };
         }
@@ -3172,7 +3478,7 @@
         if (flushCards) {
           return {
             score: calcScore(6, flushCards, []),
-            name: "同花",
+            name: "hand_flush",
             bestCards: flushCards,
           }; // flushCards 保持了 'isHole' 排序
         }
@@ -3182,7 +3488,7 @@
         if (straight) {
           return {
             score: calcScore(5, [straight.cards[0]], []),
-            name: "顺子",
+            name: "hand_straight",
             bestCards: straight.cards,
           };
         }
@@ -3196,7 +3502,7 @@
           const kickers = getKickers(threeCards, 2); // getKickers 保持了 'isHole' 排序
           return {
             score: calcScore(4, [threeCards[0]], kickers),
-            name: "三条",
+            name: "hand_trips",
             bestCards: [...threeCards, ...kickers],
           };
         }
@@ -3210,7 +3516,7 @@
           const kicker = getKickers([...pair1Cards, ...pair2Cards], 1); // getKickers 保持了 'isHole' 排序
           return {
             score: calcScore(3, [pair1Cards[0], pair2Cards[0]], kicker),
-            name: "两对",
+            name: "hand_two_pair",
             bestCards: [...pair1Cards, ...pair2Cards, ...kicker],
           };
         }
@@ -3222,7 +3528,7 @@
           const kickers = getKickers(pairCards, 3); // getKickers 保持了 'isHole' 排序
           return {
             score: calcScore(2, [pairCards[0]], kickers),
-            name: "一对",
+            name: "hand_pair",
             bestCards: [...pairCards, ...kickers],
           };
         }
@@ -3231,7 +3537,7 @@
         const highCards = all.slice(0, 5); // .slice() 保持了 'isHole' 排序
         return {
           score: calcScore(1, highCards, []),
-          name: "高牌",
+          name: "hand_high",
           bestCards: highCards,
         };
       }
@@ -3245,6 +3551,16 @@
 
     window.network = network; // 暴露 network.createRoom, .joinRoom 等
     window.gameUI = gameUI; // 暴露 gameUI.adjustRaise
+
+    // 在 <script> 底部
+    window.addEventListener('DOMContentLoaded', () => {
+      // 设置下拉框的值
+      const select = document.querySelector('select');
+      if (select) select.value = currentLang;
+
+      // 更新所有静态文本
+      updateStaticText();
+    });
 
     // 启动 Firebase
     network.init();
