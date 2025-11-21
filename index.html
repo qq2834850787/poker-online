@@ -472,7 +472,7 @@
       class="bg-gray-900 p-4 shadow-[0_-5px_15px_rgba(0,0,0,0.5)] z-20 border-t border-gray-800 relative z-50">
       <div id="game-log"
         class="h-16 overflow-y-auto text-xs text-gray-500 mb-3 font-mono bg-gray-950 p-2 rounded border border-gray-800 scroll-smooth leading-5">
-        <div class="text-green-600">System: Welcome to Texas Hold'em.</div>
+        <div data-i18n="log_welcome">System: Welcome to Texas Hold'em.</div>
       </div>
       <div id="player-controls"
         class="flex flex-col items-center opacity-50 pointer-events-none transition-all duration-300 transform translate-y-2">
@@ -562,7 +562,7 @@
 
     window.firestoreUpdateDoc = updateDoc;
 
-    // --- I18N SYSTEM ---
+    // --- I18N SYSTEM (ENHANCED) ---
     const TRANSLATIONS = {
       en: {
         connecting: "Connecting to server...",
@@ -589,7 +589,7 @@
         waitForHost: "Waiting for host...",
         startGameBtn: "Start Game",
         waitPlayerBtn: "Waiting Players",
-        // Status & Phase Codes
+        // Status & Phase
         status_fold: "Fold",
         status_check: "Check",
         status_call: "Call",
@@ -627,7 +627,30 @@
         error_game_started: "Game already started",
         error_join_fail: "Join Failed",
         bet_prefix: "Bet",
-        call_prefix: "Call"
+        call_prefix: "Call",
+        // Dynamic Logs
+        log_welcome: "System: Welcome to Texas Hold'em.",
+        log_join: "{name} joined.",
+        log_leave: "{name} left.",
+        log_create: "{name} created room.",
+        log_fold: "{name} Folded",
+        log_check: "{name} Checked",
+        log_call: "{name} Called ${amount}",
+        log_raise: "{name} Raised to ${amount}",
+        log_all_in: "{name} All-in ${amount}",
+        log_phase_flop: "--- Flop ---",
+        log_phase_turn: "--- Turn ---",
+        log_phase_river: "--- River ---",
+        log_refund: "Refunding ${amount} to {name}",
+        log_win_sole: "--- {name} Wins ${amount} ---",
+        log_round_end_no_winner: "--- Round End (No Winner?) ---",
+        log_showdown_result: "{potName}(${amount}): {winners} Wins",
+        log_game_over: "--- Game Over! {name} Wins! ---",
+        log_auto_all_in: "--- Auto All-in (Blinds) ---",
+        log_new_round: "--- New Round ---",
+        log_host_change: "Host is now {name}.",
+        main_pot: "Main Pot",
+        side_pot: "Side Pot"
       },
       ja: {
         connecting: "サーバーに接続中...",
@@ -654,7 +677,6 @@
         waitForHost: "ホストの開始待ち...",
         startGameBtn: "ゲーム開始",
         waitPlayerBtn: "参加者待ち",
-        // Status & Phase
         status_fold: "フォールド",
         status_check: "チェック",
         status_call: "コール",
@@ -669,7 +691,6 @@
         phase_turn: "ターン",
         phase_river: "リバー",
         phase_showdown: "ショーダウン",
-        // Hands
         hand_high_card: "ハイカード",
         hand_pair: "ワンペア",
         hand_two_pairs: "ツーペア",
@@ -679,7 +700,6 @@
         hand_full_house: "フルハウス",
         hand_four_of_a_kind: "フォーカード",
         hand_straight_flush: "ストレートフラッシュ",
-        // Messages
         msg_your_turn: "あなたの番です",
         msg_thinking: " 思考中...",
         msg_winner: "優勝！",
@@ -692,7 +712,30 @@
         error_game_started: "ゲーム進行中",
         error_join_fail: "参加失敗",
         bet_prefix: "ベット",
-        call_prefix: "コール"
+        call_prefix: "コール",
+        // Dynamic Logs
+        log_welcome: "システム: テキサスホールデムへようこそ。",
+        log_join: "{name} が参加しました。",
+        log_leave: "{name} が退出しました。",
+        log_create: "{name} が部屋を作成しました。",
+        log_fold: "{name} 降りる",
+        log_check: "{name} チェック",
+        log_call: "{name} コール ${amount}",
+        log_raise: "{name} レイズ ${amount}",
+        log_all_in: "{name} オールイン ${amount}",
+        log_phase_flop: "--- フロップ ---",
+        log_phase_turn: "--- ターン ---",
+        log_phase_river: "--- リバー ---",
+        log_refund: "{name}に ${amount} を返却",
+        log_win_sole: "--- {name} が ${amount} を獲得 ---",
+        log_round_end_no_winner: "--- 勝者なし？終了 ---",
+        log_showdown_result: "{potName}(${amount}): {winners} 勝利",
+        log_game_over: "--- ゲーム終了! 優勝は {name}! ---",
+        log_auto_all_in: "--- 自動オールイン ---",
+        log_new_round: "--- 新しいラウンド ---",
+        log_host_change: "ホストが {name} になりました。",
+        main_pot: "メインポット",
+        side_pot: "サイドポット"
       },
       zh: {
         connecting: "连接服务器中...",
@@ -719,7 +762,6 @@
         waitForHost: "等待房主开始...",
         startGameBtn: "开始游戏",
         waitPlayerBtn: "等待玩家",
-        // Status & Phase
         status_fold: "弃牌",
         status_check: "过牌",
         status_call: "跟注",
@@ -734,7 +776,6 @@
         phase_turn: "转牌",
         phase_river: "河牌",
         phase_showdown: "摊牌",
-        // Hands
         hand_high_card: "高牌",
         hand_pair: "一对",
         hand_two_pairs: "两对",
@@ -744,7 +785,6 @@
         hand_full_house: "葫芦",
         hand_four_of_a_kind: "四条",
         hand_straight_flush: "同花顺",
-        // Messages
         msg_your_turn: "你的回合",
         msg_thinking: " 思考中",
         msg_winner: "你是冠军！",
@@ -757,34 +797,62 @@
         error_game_started: "游戏已开始",
         error_join_fail: "加入失败",
         bet_prefix: "下注",
-        call_prefix: "跟注"
+        call_prefix: "跟注",
+        // Dynamic Logs
+        log_welcome: "系统: 欢迎游玩德州扑克。",
+        log_join: "{name} 加入了房间。",
+        log_leave: "{name} 离开了房间。",
+        log_create: "{name} 创建了房间。",
+        log_fold: "{name} 弃牌",
+        log_check: "{name} 过牌",
+        log_call: "{name} 跟注 ${amount}",
+        log_raise: "{name} 加注至 ${amount}",
+        log_all_in: "{name} 全押 ${amount}",
+        log_phase_flop: "--- 翻牌 ---",
+        log_phase_turn: "--- 转牌 ---",
+        log_phase_river: "--- 河牌 ---",
+        log_refund: "退还 ${amount} 给 {name}",
+        log_win_sole: "--- {name} 获胜, 赢得 ${amount} ---",
+        log_round_end_no_winner: "--- 无人获胜？回合结束 ---",
+        log_showdown_result: "{potName}(${amount}): {winners} 获胜",
+        log_game_over: "--- 游戏结束! {name} 获胜! ---",
+        log_auto_all_in: "--- 盲注导致全押 ---",
+        log_new_round: "--- 新回合开始 ---",
+        log_host_change: "房主移交给 {name}。",
+        main_pot: "主池",
+        side_pot: "边池"
       }
     };
 
     let currentLang = "en";
 
+    // Enhanced t() to support argument replacement
+    const t = (key, args = {}) => {
+      let text = TRANSLATIONS[currentLang][key] || key;
+      Object.keys(args).forEach(argKey => {
+        text = text.replace(`{${argKey}}`, args[argKey]);
+      });
+      return text;
+    };
+
+    // Helper to create structured log objects (saved as JSON string)
+    const createLog = (key, args = {}) => {
+      return JSON.stringify({ key, args });
+    };
+
     window.updateLanguage = (lang) => {
       currentLang = lang;
       document.documentElement.lang = lang;
-      
-      // Update all static elements with data-i18n
       document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
-        if (TRANSLATIONS[lang][key]) {
-          el.innerText = TRANSLATIONS[lang][key];
-        }
+        // For simple static texts, no args needed
+        el.innerText = t(key);
       });
-
-      // Trigger a re-render if game is active to update dynamic texts
+      // Re-render to update logs and dynamic texts
       if (gameUI && gameUI.lastState) {
         gameUI.renderGameState(gameUI.lastState, network.localUserId);
       }
     };
-
-    const t = (key) => {
-      return TRANSLATIONS[currentLang][key] || key; // Fallback to key if not found
-    };
-
 
     // --- CONSTANTS & UTILS ---
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -792,7 +860,6 @@
     const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
     const RANK_VALUES = { 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, J: 11, Q: 12, K: 13, A: 14 };
     
-    // Map phases to translation keys
     const PHASE_KEY_MAP = {
       waiting: "waiting",
       preflop: "phase_preflop",
@@ -828,9 +895,7 @@
       let player = newState.players[actingUserId];
 
       const currentPlayerId = newState.playerOrder[newState.currentPlayerIndex];
-      if (currentPlayerId !== actingUserId) {
-        return currentState;
-      }
+      if (currentPlayerId !== actingUserId) return currentState;
 
       if (player.folded || (player.chips === 0 && newState.phase !== "waiting")) {
         newState.currentPlayerIndex = (newState.currentPlayerIndex + 1) % newState.playerOrder.length;
@@ -839,16 +904,16 @@
 
       const diff = newState.currentMaxBet - player.currentBet;
       let triggerAllInEffect = false;
-      let logMsg = "";
+      let logJson = "";
 
       if (action === "fold") {
         player.folded = true;
         player.status = "status_fold"; 
-        logMsg = `${player.name} Folded`;
+        logJson = createLog("log_fold", { name: player.name });
       } else if (action === "check") {
         if (diff > 0) return currentState;
         player.status = "status_check";
-        logMsg = `${player.name} Checked`;
+        logJson = createLog("log_check", { name: player.name });
       } else if (action === "call") {
         let callAmount = Math.min(diff, player.chips);
         let isAllIn = callAmount === player.chips && diff > 0;
@@ -856,7 +921,8 @@
         player.currentBet += callAmount;
         newState.pot += callAmount;
         player.status = isAllIn ? "status_all_in" : "status_call";
-        logMsg = `${player.name} ${isAllIn ? "All-in" : "Called"} $${callAmount}`;
+        const logKey = isAllIn ? "log_all_in" : "log_call";
+        logJson = createLog(logKey, { name: player.name, amount: callAmount });
         if (isAllIn) triggerAllInEffect = true;
       } else if (action === "raise") {
         let raiseAmount = amount - player.currentBet; 
@@ -885,11 +951,12 @@
         newState.playersActed.length = 0; 
 
         player.status = isAllIn ? "status_all_in" : "status_raise";
-        logMsg = `${player.name} ${isAllIn ? "All-in" : "Raised to"} $${actualAmount}`;
+        const logKey = isAllIn ? "log_all_in" : "log_raise";
+        logJson = createLog(logKey, { name: player.name, amount: actualAmount });
       }
 
-      if (logMsg) {
-        newState.logs.push(logMsg);
+      if (logJson) {
+        newState.logs.push(logJson);
         if (newState.logs.length > 20) newState.logs.shift();
       }
 
@@ -957,15 +1024,15 @@
       if (newState.phase === "preflop") {
         newState.phase = "flop";
         newState.communityCards.push(newState.deck.pop(), newState.deck.pop(), newState.deck.pop());
-        newState.logs.push("--- Flop ---");
+        newState.logs.push(createLog("log_phase_flop"));
       } else if (newState.phase === "flop") {
         newState.phase = "turn";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- Turn ---");
+        newState.logs.push(createLog("log_phase_turn"));
       } else if (newState.phase === "turn") {
         newState.phase = "river";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- River ---");
+        newState.logs.push(createLog("log_phase_river"));
       } else if (newState.phase === "river") {
         newState = advanceToShowdown(newState);
         return newState; 
@@ -999,17 +1066,17 @@
       if (newState.phase === "preflop") {
         newState.phase = "flop";
         newState.communityCards.push(newState.deck.pop(), newState.deck.pop(), newState.deck.pop());
-        newState.logs.push("--- Flop ---");
+        newState.logs.push(createLog("log_phase_flop"));
         newState.nextPhaseTimer = 1500;
       } else if (newState.phase === "flop") {
         newState.phase = "turn";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- Turn ---");
+        newState.logs.push(createLog("log_phase_turn"));
         newState.nextPhaseTimer = 1500;
       } else if (newState.phase === "turn") {
         newState.phase = "river";
         newState.communityCards.push(newState.deck.pop());
-        newState.logs.push("--- River ---");
+        newState.logs.push(createLog("log_phase_river"));
         newState.nextPhaseTimer = 1500;
       } else if (newState.phase === "river") {
         newState.nextPhaseTimer = 0; 
@@ -1033,7 +1100,7 @@
         playerToRefund.chips += refund;
         playerToRefund.currentBet -= refund;
         newState.pot -= refund;
-        newState.logs.push(`Refunding $${refund} to ${playerToRefund.name}`);
+        newState.logs.push(createLog("log_refund", {amount: refund, name: playerToRefund.name}));
       }
       return newState;
     }
@@ -1047,7 +1114,7 @@
         const winnerPlayer = newState.players[soleWinner.uid];
         newState.playerOrder.forEach(uid => newState.players[uid].currentBet = 0);
         winnerPlayer.chips += newState.pot;
-        newState.logs.push(`--- ${winnerPlayer.name} Wins $${newState.pot} ---`);
+        newState.logs.push(createLog("log_win_sole", { name: winnerPlayer.name, amount: newState.pot }));
         newState.highlightWinner = winnerPlayer.uid; 
       }
       else {
@@ -1063,10 +1130,9 @@
         const activePlayers = allPlayers.filter(p => !p.folded);
 
         if (activePlayers.length === 0) {
-          newState.logs.push("--- Round End (No Winner?) ---");
+          newState.logs.push(createLog("log_round_end_no_winner"));
         } else {
           activePlayers.forEach(p => {
-            // Returns {score, name: 'hand_high_card', ...}
             p.bestHand = HandEvaluator.evaluate(p.holeCards, newState.communityCards);
           });
 
@@ -1098,10 +1164,28 @@
 
               const winPer = Math.floor(potAmount / winners.length);
               let remainder = potAmount % winners.length;
-              const potName = index === 0 ? "Main Pot" : `Side Pot ${index}`;
+              
+              // potName needs to be translated during render, we save a key or handle index logic in translation
+              // For simplicity, we'll save a constructed string args or custom key logic
+              // Better approach: Save raw info and format in render. But strict keys are better.
+              // Let's use a trick: index === 0 ? t('main_pot') : t('side_pot') + index
+              const potNameKey = index === 0 ? "main_pot" : "side_pot";
               let winnerNames = winners.map(w => w.name).join(", ");
-              // Logs remain in English for consistency across clients
-              winnerLogs.push(`${potName}($${potAmount}): ${winnerNames} Wins`);
+              
+              // We'll inject the translated pot name via args in render? No, complex.
+              // Let's store enough data to reconstruct:
+              // { key: 'log_showdown_result', args: { potIndex: index, amount: potAmount, winners: winnerNames } }
+              // And then update TRANSLATIONS to handle potIndex... actually, `t` helper is simple.
+              // Let's do: potName string injection for now, but using keys
+              // Note: Since log arguments are strings, we can't easily inject dynamic keys unless we nest `t` calls which isn't possible in pure JSON.
+              // Compromise: We will store "Main Pot" or "Side Pot 1" as an english string argument, OR we handle this specific log uniquely.
+              // Let's handle uniquely in render.
+              
+              winnerLogs.push(createLog("log_showdown_result", { 
+                potName: index === 0 ? "Main" : `Side ${index}`, // This is a slight compromise, but 'Main'/'Side' are common enough.
+                amount: potAmount, 
+                winners: winnerNames 
+              }));
 
               winners.forEach(w => {
                 let winnings = winPer;
@@ -1115,7 +1199,7 @@
           });
 
           newState.highlightCards = Array.from(newState.highlightCards);
-          newState.logs.push("--- Showdown Results ---", ...winnerLogs);
+          newState.logs.push(...winnerLogs);
         }
       }
       newState.nextRoundTimer = 6000; 
@@ -1142,7 +1226,7 @@
         const winnerId = activePlayerIds.length > 0 ? activePlayerIds[0] : null;
         const winnerName = winnerId ? newState.players[winnerId].name : "No one";
         let newLogs = [...newState.logs];
-        newLogs.push(`--- Game Over! ${winnerName} Wins! ---`);
+        newLogs.push(createLog("log_game_over", { name: winnerName }));
         
         const resetPlayers = {};
         allPlayerIds.forEach(uid => {
@@ -1246,11 +1330,11 @@
       const activePlayersInGame = newState.playerOrder.map(uid => newState.players[uid]).filter(p => !p.folded);
       const playersWithChips = activePlayersInGame.filter(p => p.chips > 0);
       if (activePlayersInGame.length >= 2 && playersWithChips.length <= 1) {
-        newState.logs.push("--- Auto All-in (Blinds) ---");
+        newState.logs.push(createLog("log_auto_all_in"));
         return runAutoShowdown(newState);
       }
 
-      newState.logs.push("--- New Round ---");
+      newState.logs.push(createLog("log_new_round"));
       return newState;
     }
 
@@ -1289,17 +1373,28 @@
         if (!state) return;
         this.initSound();
 
-        const lastLog = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
-        const prevLog = (this.lastState && this.lastState.logs.length > 0) ? this.lastState.logs[this.lastState.logs.length - 1] : "";
+        const lastLogStr = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
+        const prevLogStr = (this.lastState && this.lastState.logs.length > 0) ? this.lastState.logs[this.lastState.logs.length - 1] : "";
 
-        const hasNewLog = this.lastState && (state.logs.length > this.lastState.logs.length || (state.logs.length > 0 && lastLog !== prevLog));
+        // Check for new log
+        const hasNewLog = this.lastState && (state.logs.length > this.lastState.logs.length || (state.logs.length > 0 && lastLogStr !== prevLogStr));
+        
         if (hasNewLog) {
-          const newLog = lastLog;
-          if (newLog.includes("Fold")) this.sound.playFold();
-          else if (newLog.includes("Check")) this.sound.playCheck();
-          else if (newLog.includes("Call")) this.sound.playChip();
-          else if (newLog.includes("Rais")) this.sound.playRaise();
-          if (newLog.includes("---")) this.sound.playCard();
+          let logKey = "";
+          try {
+            const logObj = JSON.parse(lastLogStr);
+            logKey = logObj.key;
+          } catch(e) {
+            logKey = lastLogStr; // Fallback for legacy strings
+          }
+
+          // Play sounds based on keys
+          if (logKey === "log_fold") this.sound.playFold();
+          else if (logKey === "log_check") this.sound.playCheck();
+          else if (logKey === "log_call") this.sound.playChip();
+          else if (logKey === "log_raise") this.sound.playRaise();
+          // Check for "---" equivalent keys
+          if (["log_phase_flop", "log_phase_turn", "log_phase_river"].includes(logKey)) this.sound.playCard();
         }
 
         this.highlightCards = new Set(state.highlightCards || []);
@@ -1321,13 +1416,12 @@
 
         document.getElementById("pot-display").innerText = state.pot;
         
-        // TRANSLATED PHASE
         const phaseKey = PHASE_KEY_MAP[state.phase] || state.phase;
         document.getElementById("phase-display").innerText = t(phaseKey);
 
         if (state.config) {
           const blindsEl = document.getElementById("blinds-display");
-          if (blindsEl) blindsEl.innerText = `Blinds $${state.config.smallBlind}/$${state.config.bigBlind}`;
+          if (blindsEl) blindsEl.innerText = `${t("bigBlind")} $${state.config.bigBlind}`;
         }
 
         this.renderTableLayout(state, localId);
@@ -1352,15 +1446,41 @@
           }
         }
 
+        // --- Render Logs with Translation ---
         const logDiv = document.getElementById("game-log");
-        logDiv.innerHTML = state.logs.map((msg) => `<div>> ${msg}</div>`).join("");
+        logDiv.innerHTML = state.logs.map((logStr) => {
+          let displayMsg = logStr;
+          try {
+            const logObj = JSON.parse(logStr);
+            if (logObj.key) {
+              displayMsg = t(logObj.key, logObj.args);
+              // Hack for Pot Names if they were "Main" or "Side X" in English
+              if (logObj.key === "log_showdown_result") {
+                 const potNameRaw = logObj.args.potName; // "Main" or "Side 1"
+                 let translatedPot = potNameRaw;
+                 if (potNameRaw === "Main") translatedPot = t("main_pot");
+                 else if (potNameRaw && potNameRaw.startsWith("Side")) translatedPot = t("side_pot") + " " + potNameRaw.split(" ")[1];
+                 // Re-interpolate because potName was already in args
+                 displayMsg = displayMsg.replace(potNameRaw, translatedPot);
+              }
+            }
+          } catch (e) {
+            // Fallback: try to detect legacy log patterns if necessary, or just show raw
+          }
+          return `<div>> ${displayMsg}</div>`;
+        }).join("");
         logDiv.scrollTop = logDiv.scrollHeight;
 
         this.updateControls(state);
 
         if (localPlayer) {
+          // Check for win in logs (searching for log_game_over key)
+          // This is slightly fragile checking array content, but works for sound trigger logic previously
+          const lastLog = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
+          const isChampion = state.status === "waiting" && state.highlightWinner === localId && lastLog.includes("log_game_over");
+          
           const isEliminated = localPlayer.status === "status_eliminated" && localPlayer.chips === 0;
-          const isChampion = state.status === "waiting" && state.highlightWinner === localId && state.logs.length > 0 && state.logs[state.logs.length - 2].includes("Game Over");
+          
           if (isChampion) {
             if (!this.bankruptcyScreenShown) {
               this.sound.playWin();
@@ -1441,14 +1561,11 @@
             }
           }
 
-          // TRANSLATE STATUS & HAND NAME
           let statusText = "";
           if (p.currentBet > 0) {
             statusText = `${t("bet_prefix")} $${p.currentBet}`;
           } else if (p.status) {
-            // Check if it is a translation key
             statusText = t(p.status);
-            // Special check for hands (if status was set to hand name in showdown)
             if (p.status.startsWith("hand_")) statusText = t(p.status);
           }
 
@@ -1515,7 +1632,6 @@
         const slider = document.getElementById("raise-slider");
         const valDisplay = document.getElementById("raise-val-display");
 
-        // Update text content with translations
         btnCheck.innerText = t("checkBtn");
         btnCall.innerText = t("callBtn");
         btnRaise.innerText = t("raiseBtn");
@@ -1793,7 +1909,8 @@
             phase: "waiting", 
             lastRaiseAmount: 20, 
             deck: [], 
-            logs: [`${localPlayerName} created room.`],
+            // Use JSON string for initial log
+            logs: [createLog("log_create", { name: localPlayerName })],
             highlightWinner: null, 
             highlightCards: [], 
             nextRoundTimer: 0, 
@@ -1841,7 +1958,7 @@
             };
             state.players[this.localUserId] = newPlayer;
             state.playerOrder.push(this.localUserId);
-            state.logs.push(`${localPlayerName} joined.`);
+            state.logs.push(createLog("log_join", { name: localPlayerName }));
             transaction.set(roomRef, state);
           });
           this.subscribeToRoom(roomId);
@@ -1877,7 +1994,7 @@
                 const playerName = state.players[userId].name;
                 delete state.players[userId];
                 state.playerOrder = state.playerOrder.filter((uid) => uid !== userId);
-                state.logs.push(`${playerName} left.`);
+                state.logs.push(createLog("log_leave", { name: playerName }));
               }
               
               if (state.playerOrder.length === 0) { 
@@ -1893,7 +2010,7 @@
                 state.currentMaxBet = 0; 
                 state.currentPlayerIndex = -1; 
                 state.dealerIndex = 0;
-                state.logs.push("--- Game End (Not enough players) ---");
+                state.logs.push(createLog("log_round_end_no_winner"));
                 state.highlightWinner = null; 
                 state.highlightCards = []; 
                 state.nextRoundTimer = 0; 
@@ -1914,7 +2031,7 @@
               
               if (state.hostId === userId) {
                 state.hostId = state.playerOrder[0];
-                state.logs.push(`Host is now ${state.players[state.hostId].name}.`);
+                state.logs.push(createLog("log_host_change", { name: state.players[state.hostId].name }));
               }
               transaction.set(roomRef, state);
             });
