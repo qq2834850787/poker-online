@@ -483,7 +483,7 @@
             class="adjust-btn w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full text-yellow-500 font-bold flex items-center justify-center shadow border border-gray-700">
             -
           </button>
-          <input type="range" id="raise-slider" step="1" autocomplete="off"
+          <input type="range" id="raise-slider" step="1"
             class="flex-grow h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer mx-2" />
           <button onclick="gameUI.adjustRaise(1)"
             class="adjust-btn w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full text-yellow-500 font-bold flex items-center justify-center shadow border border-gray-700">
@@ -1351,6 +1351,7 @@
         this.highlightCards = new Set();
         this.bankruptcyScreenShown = false;
         this.lastAllInPlayerTriggered = null;
+        this.isSliderReset = false;
 
         document.getElementById("raise-slider").oninput = () => {
           const slider = document.getElementById("raise-slider");
@@ -1669,6 +1670,7 @@
 
         if (!canAct) {
           controls.classList.add("opacity-50", "pointer-events-none", "translate-y-2");
+          this.isSliderReset = false;
           return;
         }
         controls.classList.remove("opacity-50", "pointer-events-none", "translate-y-2");
@@ -1717,6 +1719,10 @@
           slider.min = minPossibleActionRaise;
           slider.max = maxPossibleActionRaise;
           slider.step = 1;
+          if (!this.isSliderReset) {
+            slider.value = slider.min;
+            this.isSliderReset = true; // 标记已重置，防止拖动时被归位
+          }
           slider.disabled = false;
           const updateBtnText = () => {
             const raiseVal = parseInt(slider.value);
