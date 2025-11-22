@@ -101,7 +101,6 @@
       box-shadow: 0 0 15px 5px rgba(251, 191, 36, 0.9);
       border: 3px solid #fbbf24;
       z-index: 100;
-      animation: glow-fade-in 0.3s ease forwards;
     }
 
     /* --- Table --- */
@@ -1513,11 +1512,15 @@
 
       renderTableLayout(state, localId) {
         const container = document.getElementById("seats-container");
-        container.innerHTML = "";
+        // 【关键修改1】不再暴力清空 innerHTML，而是通过 diff 更新
+        // container.innerHTML = "";  <-- 这行被删除了
 
         const playerIdsToRender = state.phase === "waiting" || state.status === "waiting" ? state.playerOrder : state.playerOrder;
         const num = playerIdsToRender.length;
-        if (num === 0) return;
+        if (num === 0) {
+          container.innerHTML = ""; // 如果没人，才清空
+          return;
+        }
 
         const w = container.offsetWidth;
         const h = container.offsetHeight;
@@ -1537,63 +1540,127 @@
         const rx = w * radiusX;
         const ry = h * radiusY;
 
+        // 记录本次渲染涉及到的座位ID，用于稍后清理离开的玩家
+        const activeSeatIds = new Set();
+
         playerIdsToRender.forEach((uid, i) => {
           const p = state.players[uid];
           if (!p) return;
 
+          const seatId = `seat-${p.uid}`;
+          activeSeatIds.add(seatId);
+
+          // 【关键修改2】尝试获取现有座位，如果没有才创建
+          let seatDiv = document.getElementById(seatId);
+          if (!seatDiv) {
+            seatDiv = document.createElement("div");
+            seatDiv.id = seatId;
+            seatDiv.className = "player-seat";
+            // 创建内部结构 (注意给 name 元素加了 ID 方便后续更新)
+            seatDiv.innerHTML = `
+              <div id="cards-${p.uid}" class="absolute flex space-x-1 z-10 transition-all" style="top:-50px;"></div>
+              <div class="player-info-box relative z-20">
+                  <div id="dealer-${p.uid}" class="dealer-btn hidden">D</div>
+                  <div id="name-${p.uid}" class="font-bold text-yellow-400 truncate text-sm tracking-wide"></div>
+                  <div class="text-white text-xs font-mono">$<span id="chips-${p.uid}"></span></div>
+                  <div id="status-${p.uid}" class="text-gray-400 text-[10px] h-4 truncate font-bold uppercase mt-1"></div>
+              </div>`;
+            container.appendChild(seatDiv);
+          }
+
+          // --- 更新位置 ---
           const offsetIndex = (i - renderIndex + num) % num;
           const angle = Math.PI / 2 + (offsetIndex * (2 * Math.PI)) / num;
           const x = cx + rx * Math.cos(angle);
           const y = cy + ry * Math.sin(angle);
 
-          const div = document.createElement("div");
-          div.id = `seat-${p.uid}`;
-          div.className = "player-seat";
-          div.style.left = `${x - 60}px`;
-          div.style.top = `${y - 55}px`;
-          div.style.transform = `scale(${scale})`;
+          // CSS transition 会处理移动时的平滑效果
+          seatDiv.style.left = `${x - 60}px`;
+          seatDiv.style.top = `${y - 55}px`;
+          seatDiv.style.transform = `scale(${scale})`;
 
-          let cardsHTML = "";
-          if (!p.folded && p.holeCards && p.holeCards.length > 0) {
-            const activePlayersCount = Object.values(state.players).filter(player => !player.folded).length;
-            if (p.uid === localId || (state.phase === "showdown" && activePlayersCount > 1)) {
-              cardsHTML = p.holeCards.map((c) => this.createCardEl(c).outerHTML).join("");
-            } else {
-              cardsHTML = this.createBackEl().outerHTML + this.createBackEl().outerHTML;
-            }
-          }
+          // --- 更新文本信息 ---
+          // 使用 querySelector 更新内容而不是重写 innerHTML，保持 DOM 稳定
+          seatDiv.querySelector(`#name-${p.uid}`).innerText = p.name;
+          seatDiv.querySelector(`#chips-${p.uid}`).innerText = p.chips;
+
+          const dealerBtn = seatDiv.querySelector(`#dealer-${p.uid}`);
+          if (i === state.dealerIndex) dealerBtn.classList.remove("hidden");
+          else dealerBtn.classList.add("hidden");
 
           let statusText = "";
-          if (p.currentBet > 0) {
-            statusText = `${t("bet_prefix")} $${p.currentBet}`;
-          } else if (p.status) {
+          if (p.currentBet > 0) statusText = `${t("bet_prefix")} $${p.currentBet}`;
+          else if (p.status) {
             statusText = t(p.status);
             if (p.status.startsWith("hand_")) statusText = t(p.status);
           }
+          seatDiv.querySelector(`#status-${p.uid}`).innerText = statusText;
 
-          div.innerHTML = `
-            <div id="cards-${p.uid}" class="absolute flex space-x-1 z-10 transition-all" style="top:-50px;">
-                ${cardsHTML}
-            </div>
-            <div class="player-info-box relative z-20">
-                <div id="dealer-${p.uid}" class="dealer-btn ${i === state.dealerIndex ? "" : "hidden"}">D</div>
-                <div class="font-bold text-yellow-400 truncate text-sm tracking-wide">${p.name}</div>
-                <div class="text-white text-xs font-mono">$<span id="chips-${p.uid}">${p.chips}</span></div>
-                <div id="status-${p.uid}" class="text-gray-400 text-[10px] h-4 truncate font-bold uppercase mt-1">
-                    ${statusText}
-                </div>
-            </div>`;
-          container.appendChild(div);
-
-          const seat = document.getElementById(`seat-${p.uid}`);
+          // --- 更新高亮状态 (座位本身) ---
           if (state.playerOrder[state.currentPlayerIndex] === p.uid && state.phase !== "showdown") {
-            seat.classList.add("active-player");
+            seatDiv.classList.add("active-player");
           } else {
-            seat.classList.remove("active-player");
+            seatDiv.classList.remove("active-player");
           }
-          if (state.highlightWinner === p.uid) seat.classList.add("winner-highlight");
-          else seat.classList.remove("winner-highlight");
-          seat.style.opacity = p.folded ? 0.4 : 1;
+          if (state.highlightWinner === p.uid) seatDiv.classList.add("winner-highlight");
+          else seatDiv.classList.remove("winner-highlight");
+          seatDiv.style.opacity = p.folded ? 0.4 : 1;
+
+          // --- 【关键修改3】智能更新卡牌 (复用 DOM 以触发 Transition) ---
+          const cardsContainer = document.getElementById(`cards-${p.uid}`);
+          const activePlayersCount = Object.values(state.players).filter(player => !player.folded).length;
+          const shouldShowFace = !p.folded && p.holeCards && p.holeCards.length > 0 &&
+            (p.uid === localId || (state.phase === "showdown" && activePlayersCount > 1));
+
+          if (shouldShowFace) {
+            // 检查容器里是否是牌背，如果是，清空
+            if (cardsContainer.querySelector('.card-back')) cardsContainer.innerHTML = "";
+
+            p.holeCards.forEach((c, cardIdx) => {
+              // 获取对应位置的现有卡牌 DOM
+              let cardEl = cardsContainer.children[cardIdx];
+
+              // 检查这张牌是否需要重建 (如果DOM不存在，或者 ID 不匹配)
+              // 我们把 ID 存入 dataset 方便比对
+              if (!cardEl || cardEl.dataset.cid !== c.id) {
+                const newCard = this.createCardEl(c);
+                newCard.dataset.cid = c.id; // 标记 ID
+                if (cardEl) cardsContainer.replaceChild(newCard, cardEl);
+                else cardsContainer.appendChild(newCard);
+                cardEl = newCard;
+              }
+
+              // 【核心点】仅仅切换 class，浏览器会自动处理 transition 过渡！
+              if (this.highlightCards.has(c.id)) {
+                if (!cardEl.classList.contains("winning-card")) cardEl.classList.add("winning-card");
+              } else {
+                cardEl.classList.remove("winning-card");
+              }
+            });
+
+            // 如果有多余的 DOM (比如之前有牌现在没了)，删掉
+            while (cardsContainer.children.length > p.holeCards.length) {
+              cardsContainer.removeChild(cardsContainer.lastChild);
+            }
+          } else if (!p.folded && p.holeCards && p.holeCards.length > 0) {
+            // 显示牌背 (需要2张)
+            // 如果当前显示的是正面的牌，或者是空的，重置为牌背
+            if (cardsContainer.children.length !== 2 || !cardsContainer.children[0].classList.contains('card-back')) {
+              cardsContainer.innerHTML = "";
+              cardsContainer.appendChild(this.createBackEl());
+              cardsContainer.appendChild(this.createBackEl());
+            }
+          } else {
+            // 没有牌/弃牌
+            cardsContainer.innerHTML = "";
+          }
+        });
+
+        // --- 清理已离开的玩家座位 ---
+        Array.from(container.children).forEach(child => {
+          if (!activeSeatIds.has(child.id)) {
+            container.removeChild(child);
+          }
         });
       }
 
