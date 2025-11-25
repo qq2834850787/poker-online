@@ -1255,17 +1255,31 @@
       });
 
       // 2. 如果只剩1人，游戏结束
+      // 2. 如果只剩1人，游戏结束
       if (activePlayerIds.length < 2) {
         const winnerId = activePlayerIds.length > 0 ? activePlayerIds[0] : null;
         const winnerName = winnerId ? newState.players[winnerId].name : "No one";
         let newLogs = [...newState.logs];
         newLogs.push(createLog("log_game_over", { name: winnerName }));
 
+        // ✅ 修复：获取房间内所有玩家（包含之前破产被移除出 playerOrder 的人）
+        const allRoomPlayers = Object.keys(newState.players);
+
         const resetPlayers = {};
-        allPlayerIds.forEach(uid => {
+        allRoomPlayers.forEach(uid => {
           const p = newState.players[uid];
           if (p) {
-            resetPlayers[uid] = { ...p, chips: config.initialChips, holeCards: [], folded: false, currentBet: 0, accumulatedBet: 0, status: "waiting", bestHand: null };
+            // 重置所有人的筹码和状态
+            resetPlayers[uid] = {
+              ...p,
+              chips: config.initialChips,
+              holeCards: [],
+              folded: false,
+              currentBet: 0,
+              accumulatedBet: 0,
+              status: "waiting",
+              bestHand: null
+            };
           }
         });
 
@@ -1274,7 +1288,7 @@
           hostId: newState.hostId,
           config: config,
           players: resetPlayers,
-          playerOrder: allPlayerIds,
+          playerOrder: allRoomPlayers, // ✅ 将所有在房间里的人都重新安排座位
           communityCards: [],
           pot: 0,
           dealerIndex: 0,
@@ -1364,7 +1378,7 @@
       const sbAmount = Math.min(smallBlindVal, sbPlayer.chips);
       sbPlayer.chips -= sbAmount;
       sbPlayer.currentBet = sbAmount;
-      
+
       if (sbPlayer.chips === 0) {
         sbPlayer.status = "status_all_in";
         newState.lastAllInPlayer = sbPlayer.uid + "_" + Date.now(); // 触发特效
