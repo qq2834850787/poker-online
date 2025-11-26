@@ -373,13 +373,22 @@
   <div id="room-screen"
     class="hidden absolute z-50 bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700 w-11/12 max-w-md">
     <!-- Language Selector -->
-    <div class="absolute top-4 right-4">
-      <select id="language-selector" onchange="updateLanguage(this.value)"
-        class="bg-gray-800 text-gray-300 text-xs rounded px-2 py-1 border border-gray-600 focus:outline-none focus:border-yellow-500">
-        <option value="en" selected>English</option>
-        <option value="ja">日本語</option>
-        <option value="zh">中文</option>
-      </select>
+    <div class="flex justify-center space-x-8 mb-4">
+      <button onclick="updateLanguage('en')"
+        class="text-3xl hover:scale-125 transition-transform duration-200 filter drop-shadow-md grayscale opacity-50 hover:grayscale-0 hover:opacity-100 focus:grayscale-0 focus:opacity-100 active-lang"
+        title="English">
+        🇺🇸
+      </button>
+      <button onclick="updateLanguage('ja')"
+        class="text-3xl hover:scale-125 transition-transform duration-200 filter drop-shadow-md grayscale opacity-50 hover:grayscale-0 hover:opacity-100 focus:grayscale-0 focus:opacity-100"
+        title="日本語">
+        🇯🇵
+      </button>
+      <button onclick="updateLanguage('zh')"
+        class="text-3xl hover:scale-125 transition-transform duration-200 filter drop-shadow-md grayscale opacity-50 hover:grayscale-0 hover:opacity-100 focus:grayscale-0 focus:opacity-100"
+        title="中文">
+        🇨🇳
+      </button>
     </div>
 
     <h1 class="text-3xl font-bold text-yellow-500 mb-6 tracking-tight text-center" data-i18n="gameTitle">
